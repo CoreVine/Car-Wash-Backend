@@ -5,18 +5,54 @@ class User extends Model {
   static init(sequelize) {
     super.init(
       {
-        name: Sequelize.STRING,
-        email: Sequelize.STRING,
-        password: Sequelize.VIRTUAL, //When it is VIRTUAL it does not exist in the database
-        password_hash: Sequelize.STRING,
+        user_id: {
+          type: Sequelize.INTEGER.UNSIGNED,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        acc_type: {
+          type: Sequelize.ENUM('user', 'employee'),
+          allowNull: false
+        },
+        profile_picture_url: {
+          type: Sequelize.TEXT,
+          allowNull: true
+        },
+        name: {
+          type: Sequelize.STRING(70),
+          allowNull: false
+        },
+        username: {
+          type: Sequelize.STRING(255),
+          allowNull: false,
+          unique: true
+        },
+        email: {
+          type: Sequelize.STRING(255),
+          allowNull: false,
+          unique: true
+        },
+        password: Sequelize.VIRTUAL, // Virtual field that doesn't exist in the database
+        password_hash: {
+          type: Sequelize.STRING(255),
+          allowNull: false
+        },
+        phone_number: {
+          type: Sequelize.STRING(255),
+          allowNull: false
+        },
+        address: {
+          type: Sequelize.TEXT,
+          allowNull: false
+        }
       },
       {
         sequelize,
-        timestamps: true, //If it's false do not add the attributes (updatedAt, createdAt).
-        //paranoid: true, //If it's true, it does not allow deleting from the bank, but inserts column deletedAt. Timestamps need be true.
-        //underscored: true, //If it's true, does not add camelcase for automatically generated attributes, so if we define updatedAt it will be created as updated_at.
-        //freezeTableName: false, //If it's false, it will use the table name in the plural. Ex: Users
-        //tableName: 'Users' //Define table name
+        modelName: 'User',
+        tableName: 'Users',
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
       }
     );
 
@@ -30,9 +66,23 @@ class User extends Model {
   }
 
   static associate(models) {
-    this.belongsToMany(models.Address, {
-      through: "UserAddress",
-      foreignKey: "userId",
+    this.hasMany(models.Order, {
+      foreignKey: 'user_id',
+      as: 'orders'
+    });
+    this.hasMany(models.CustomerCar, {
+      foreignKey: 'customer_id',
+      as: 'cars'
+    });
+    this.hasMany(models.Rating, {
+      foreignKey: 'user_id',
+      as: 'ratings'
+    });
+    this.belongsToMany(models.Company, {
+      through: models.Employee,
+      foreignKey: 'user_id',
+      otherKey: 'company_id',
+      as: 'companies'
     });
   }
 

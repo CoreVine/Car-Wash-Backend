@@ -1,42 +1,64 @@
-import express from "express";
-import fs from "fs";
-import bodyParser from "body-parser";
-import globalErrorHandler from "../middlewares/errorHandler.middleware";
-/*
-  body-parser: Parse incoming request bodies in a middleware before your handlers, 
-  available under the req.body property.
-*/
-
-const routeFiles = fs
-  .readdirSync(__dirname + "/../routes/")
-  .filter((file) => file.endsWith(".js"));
+const express = require("express");
+const bodyParser = require("body-parser");
+const { globalErrorHandler, notFoundHandler } = require("../middlewares/errorHandler.middleware");
+const responseMiddleware = require("../middlewares/response.middleware");
+const path = require('path');
+const multerErrorHandler = require('../middlewares/multerErrorHandler.middleware');
+const apiRouter = require("../routes");
+const loggingService = require("./logging.service");
+const rateLimitService = require("./rateLimit.service");
 
 let server;
-let routes = [];
+let logger;
 
 const expressService = {
+
   init: async () => {
     try {
-      /*
-        Loading routes automatically
-      */
-      for (const file of routeFiles) {
-        const route = await import(`../routes/${file}`);
-        const routeName = Object.keys(route)[0];
-        routes.push(route[routeName]);
-      }
-
+      // Initialize logging service first
+      const { logger: winstonLogger, morgan } = await loggingService.init();
+      logger = winstonLogger;
+      
+      // Initialize rate limiting service
+      await rateLimitService.init();
+      
       server = express();
+      
+      // Apply middleware
       server.use(bodyParser.json());
-      server.use(routes);
+      
+      // Apply rate limiting middleware to all requests
+      server.use(rateLimitService.standardLimiter());
+      
+      // Apply morgan middleware for HTTP request logging
+      server.use(morgan);
+
+      // Apply response formatting middleware
+      server.use(responseMiddleware);
+      
+      // Apply routes
+      // Static file serving for uploads
+      server.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+      // API routes under /api
+      server.use('/api', apiRouter);
+
+      
+      // Handle 404 routes
+      server.use('*', notFoundHandler);
+      
+      // Handle multer-specific errors first
+      server.use(multerErrorHandler); 
+      
+      // Apply global error handler
       server.use(globalErrorHandler);
+      
       server.listen(process.env.SERVER_PORT);
-      console.log("[EXPRESS] Express initialized");
+      logger.info(`[EXPRESS] Express initialized on port ${process.env.SERVER_PORT}`);
     } catch (error) {
-      console.log("[EXPRESS] Error during express service initialization");
+      logger.error("[EXPRESS] Error during express service initialization", error);
       throw error;
     }
   },
 };
 
-export default expressService;
+module.exports = expressService;

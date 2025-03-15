@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
-import moment from "moment";
+const jwt = require("jsonwebtoken");
+const moment = require("moment");
 
 let jwtidCounter = 0;
 let blacklist = [];
@@ -8,7 +8,7 @@ const JwtService = {
   jwtSign: (_payload) => {
     try {
       if (process.env.SERVER_JWT !== "true")
-        throw new Error("[JWT] Fastify JWT flag is not setted");
+        throw new Error("[JWT] Fastify JWT flag is not set");
 
       console.log("[JWT] Generating fastify JWT sign");
 
@@ -28,7 +28,7 @@ const JwtService = {
   jwtGetToken: (request) => {
     try {
       if (process.env.SERVER_JWT !== "true")
-        throw new Error("[JWT] JWT flag is not setted");
+        throw new Error("[JWT] JWT flag is not set");
       if (
         !request.headers.authorization ||
         request.headers.authorization.split(" ")[0] !== "Bearer"
@@ -45,7 +45,7 @@ const JwtService = {
   jwtVerify: (token) => {
     try {
       if (process.env.SERVER_JWT !== "true")
-        throw new Error("[JWT] JWT flag is not setted");
+        throw new Error("[JWT] JWT flag is not set");
 
       return jwt.verify(
         token,
@@ -92,4 +92,4 @@ const JwtService = {
   },
 };
 
-export default JwtService;
+module.exports = JwtService;

@@ -1,20 +1,37 @@
-import { Request, Response, NextFunction } from 'express';
-import { IsApiError, ApiError } from '../utils/ApiError';
+const loggingService = require('../services/logging.service');
+const { isApiError } = require("../utils/errors/types/Api.error");
+
+const logger = loggingService.getLogger();
 const currentEnv = process.env.NODE_ENV || 'development';
+
 /**
  * Global error handler for all routes
- * @param {ApiError} err
- * @param {Request} req
- * @param {Response} res
- * @param {NextFunction} next
+ * @param {Error} err - Error object
+ * @param {Request} _req - Express request
+ * @param {Response} res - Express response
+ * @param {NextFunction} next - Express next function
  */
-export default (err, _req, res, next) => {
+const globalErrorHandler = (err, _req, res, next) => {
   if (res.headersSent) return next(err);
-  if (IsApiError(err)) return res.status(err.statusCode).send(err.message);
-  if (currentEnv === 'development') {
-    console.log(err);
-    return res.status(500).send(err.message);
+
+  const customError = isApiError(err);
+  
+  let statusCode = customError ? err.statusCode : 500;
+  let message = (customError || currentEnv === 'development') ? err.message : 'Something went wrong';
+  
+  if (!customError) {
+    logger.error(err);
   }
-  console.log(err);
-  return res.status(500).send('Something went wrong');
+  
+  return res.error(message, statusCode);
 };
+
+/**
+ * Handle 404 errors
+ */
+const notFoundHandler = (req, res) => {
+  return res.error('Route not found', 404);
+};
+
+module.exports = { globalErrorHandler, notFoundHandler };
+

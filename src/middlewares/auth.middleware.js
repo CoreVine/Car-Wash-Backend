@@ -1,5 +1,5 @@
-import JwtService from "../services/jwt.service";
-import {BadTokenError} from "../utils/ApiError"
+const JwtService = require("../services/jwt.service");
+const {BadTokenError} = require("../utils/errors/types/Api.error");
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -17,4 +17,4 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-export default authMiddleware;
+module.exports = authMiddleware;

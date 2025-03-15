@@ -1,77 +1,84 @@
-import * as Yup from "yup";
-import Address from "../models/Address";
-import User from "../models/User";
-import {
+import UserRepository from "../data-access/users";
+const Yup = require("yup");
+const { createPagination } = require("../utils/responseHandler.js");
+const fs = require("fs");
+const { deleteUploadedFile } = require("../config/multer.config");
+const loggingService = require("../services/logging.service");
+const logger = loggingService.getLogger();
+const {
   BadRequestError,
   UnauthorizedError,
   ValidationError,
-} from "../utils/ApiError";
+  ForbiddenError,
+  NotFoundError
+} = require("../utils/errors/types/Api.error.js");
 
 //Yup is a JavaScript schema builder for value parsing and validation.
+logger.debug('User repository model:', UserRepository.model);
 
 let userController = {
   add: async (req, res, next) => {
     try {
-      const schema = Yup.object().shape({
-        name: Yup.string().required(),
-        email: Yup.string().email().required(),
-        password: Yup.string().required().min(6),
-      });
-
-      if (!(await schema.isValid(req.body))) throw new ValidationError();
-
       const { email } = req.body;
 
-      const userExists = await User.findOne({
-        where: { email },
-      });
+      // Check if user already exists
+      const userExists = await UserRepository.findOneByEmail(email);
 
-      if (userExists) throw new BadRequestError();
-
-      const user = await User.create(req.body);
-
-      return res.status(200).json(user);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  addAddress: async (req, res, next) => {
-    try {
-      const { body, userId } = req;
-
-      const schema = Yup.object().shape({
-        city: Yup.string().required(),
-        state: Yup.string().required(),
-        neighborhood: Yup.string().required(),
-        country: Yup.string().required(),
-      });
-
-      if (!(await schema.isValid(body.address))) throw new ValidationError();
-
-      const user = await User.findByPk(userId);
-
-      let address = await Address.findOne({
-        where: { ...body.address },
-      });
-
-      if (!address) {
-        address = await Address.create(body.address);
+      if (userExists) {
+        throw new BadRequestError('Email already in use');
       }
 
-      await user.addAddress(address);
+      const user = await UserRepository.create(req.body);
+      
+      // Remove sensitive data from response
+      user.password_hash = undefined;
 
-      return res.status(200).json(user);
+      return res.success('User created successfully', user);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  get: async (req, res, next) => {
+    try {
+      // Only admin users should be able to get all users
+      if (!req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to view all users');
+      }
+
+      const users = await UserRepository.findAll({
+        attributes: { exclude: ['password_hash'] }
+      });
+
+      return res.success('Users retrieved successfully', users);
     } catch (error) {
       next(error);
     }
   },
 
-  get: async (req, res, next) => {
+  getPaginated: async (req, res, next) => {
     try {
-      const users = await User.findAll();
+      // Only admin users should be able to get all users
+      if (!req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to view all users');
+      }
+      
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
+      const offset = (page - 1) * limit;
 
-      return res.status(200).json(users);
+      const options = {
+        limit,
+        offset,
+        attributes: { exclude: ['password_hash'] }
+      };
+
+      const { count, rows } = await UserRepository.model.findAndCountAll(options);
+
+      // Create pagination object
+      const pagination = createPagination(page, limit, count);
+
+      return res.success('Users retrieved successfully', rows, pagination);
     } catch (error) {
       next(error);
     }
@@ -80,11 +87,19 @@ let userController = {
   find: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const user = await User.findByPk(id);
+      
+      // Only admin or the user themselves can view user details
+      if (req.userId !== parseInt(id) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to view this user');
+      }
+      
+      const user = await UserRepository.findByIdExcludeProps(id, ['password_hash']);
 
-      if (!user) throw new BadRequestError();
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
 
-      return res.status(200).json(user);
+      return res.success('User found', user);
     } catch (error) {
       next(error);
     }
@@ -92,48 +107,41 @@ let userController = {
 
   update: async (req, res, next) => {
     try {
-      const schema = Yup.object().shape({
-        name: Yup.string(),
-        email: Yup.string().email(),
-        oldPassword: Yup.string().min(6),
-        password: Yup.string()
-          .min(6)
-          .when("oldPassword", (oldPassword, field) => {
-            if (oldPassword) {
-              return field.required();
-            } else {
-              return field;
-            }
-          }),
-        confirmPassword: Yup.string().when("password", (password, field) => {
-          if (password) {
-            return field.required().oneOf([Yup.ref("password")]);
-          } else {
-            return field;
-          }
-        }),
-      });
+      const { id } = req.params;
+      
+      // Only admin or the user themselves can update user details
+      if (req.userId !== parseInt(id) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to update this user');
+      }
+      
+      const user = await UserRepository.findById(id);
 
-      if (!(await schema.isValid(req.body))) throw new ValidationError();
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
 
       const { email, oldPassword } = req.body;
 
-      const user = await User.findByPk(req.userId);
+      // Check if email is being changed and already exists
+      if (email && email !== user.email) {
+        const userExists = await UserRepository.findOneByEmail(email);
 
-      if (email) {
-        const userExists = await User.findOne({
-          where: { email },
-        });
-
-        if (userExists) throw new BadRequestError();
+        if (userExists) {
+          throw new BadRequestError('Email already in use');
+        }
       }
 
-      if (oldPassword && !(await user.checkPassword(oldPassword)))
-        throw new UnauthorizedError();
+      // Verify old password if provided
+      if (oldPassword && !(await user.checkPassword(oldPassword))) {
+        throw new UnauthorizedError('Password does not match');
+      }
 
-      const newUser = await user.update(req.body);
+      await UserRepository.update(id, req.body);
+      
+      // Get updated user
+      const updatedUser = await UserRepository.findByIdExcludeProps(id, ['password_hash']);
 
-      return res.status(200).json(newUser);
+      return res.success('User updated successfully', updatedUser);
     } catch (error) {
       next(error);
     }
@@ -142,16 +150,240 @@ let userController = {
   delete: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const user = await User.findByPk(id);
-      if (!user) throw new BadRequestError();
+      
+      // Only admin should be able to delete users
+      if (!req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to delete users');
+      }
+      
+      const user = await UserRepository.findById(id);
+      
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+      
+      // Delete profile picture if exists
+      if (user.profile_picture_url) {
+        await deleteUploadedFile(user.profile_picture_url);
+      }
 
-      user.destroy();
+      await UserRepository.delete(id);
 
-      return res.status(200).json({ msg: "Deleted" });
+      return res.success('User deleted successfully', { id });
     } catch (error) {
       next(error);
     }
   },
+
+  // New API methods
+  
+  getAllUsers: async (req, res, next) => {
+    try {
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
+
+      // Use the new repository method instead of passing Sequelize options
+      const { count, rows } = await UserRepository.findAllPaginatedUsers(page, limit);
+
+      const pagination = createPagination(page, limit, count);
+
+      return res.success('Users retrieved successfully', rows, pagination);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getUser: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      
+      // Only admin or the user themselves can view user details
+      if (req.userId !== parseInt(userId) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to view this user');
+      }
+      
+      const user = await UserRepository.findByIdExcludeProps(userId, ['password_hash']);
+
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      return res.success('User retrieved successfully', user);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  updateUser: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      
+      // Only admin or the user themselves can update user details
+      if (req.userId !== parseInt(userId) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to update this user');
+      }
+
+      const user = await UserRepository.findById(userId);
+
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      const { email, oldPassword } = req.body;
+
+      // Check if email is being changed and already exists
+      if (email && email !== user.email) {
+        const userExists = await UserRepository.findOneByEmail(email);
+
+        if (userExists) {
+          throw new BadRequestError('Email already in use');
+        }
+      }
+
+      // Verify old password if provided
+      if (oldPassword && !(await user.checkPassword(oldPassword))) {
+        throw new UnauthorizedError('Password does not match');
+      }
+
+      const updatedUser = await user.update(req.body);
+      
+      // Remove sensitive data
+      updatedUser.password_hash = undefined;
+
+      return res.success('User updated successfully', updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // New method to upload a profile picture
+  uploadProfilePicture: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      
+      // Only admin or the user themselves can upload profile picture
+      if (req.userId !== parseInt(userId) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to upload a profile picture for this user');
+      }
+      
+      // Check if file exists in the request
+      if (!req.file) {
+        throw new ValidationError(['Profile picture is required']);
+      }
+
+      const user = await UserRepository.findById(userId);
+
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+      
+      // Delete old profile picture if exists using our modular function
+      if (user.profile_picture_url) {
+        await deleteUploadedFile(user.profile_picture_url);
+      }
+      
+      // Create the URL for the uploaded file
+      // If using S3, req.file will have a url property from the middleware
+      const profilePictureUrl = req.file.url || `/uploads/profile-pictures/${req.file.filename}`;
+      
+      // Update user with new profile picture URL
+      const updatedUser = await user.update({ profile_picture_url: profilePictureUrl });
+      
+      // Remove sensitive data
+      updatedUser.password_hash = undefined;
+
+      return res.success('Profile picture uploaded successfully', updatedUser);
+    } catch (error) {
+      // If error occurs, clean up the uploaded file
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Error cleaning up file after error:', err);
+        });
+      }
+      next(error);
+    }
+  },
+
+  // Updated method for updating the profile picture
+  updateProfilePicture: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      
+      // Only admin or the user themselves can update profile picture
+      if (req.userId !== parseInt(userId) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to update this profile picture');
+      }
+      
+      // Check if file exists in the request
+      if (!req.file) {
+        throw new ValidationError(['Profile picture is required']);
+      }
+
+      const user = await UserRepository.findById(userId);
+
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+      
+      // Delete old profile picture if exists using our modular function
+      if (user.profile_picture_url) {
+        await deleteUploadedFile(user.profile_picture_url);
+      }
+      
+      // Create the URL for the uploaded file
+      // If using S3, req.file will have a url property from the middleware
+      const profilePictureUrl = req.file.url || `/uploads/profile-pictures/${req.file.filename}`;
+      
+      // Update user with new profile picture URL
+      const updatedUser = await user.update({ profile_picture_url: profilePictureUrl });
+      
+      // Remove sensitive data
+      updatedUser.password_hash = undefined;
+
+      return res.success('Profile picture updated successfully', updatedUser);
+    } catch (error) {
+      // If error occurs, clean up the uploaded file
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Error cleaning up file after error:', err);
+        });
+      }
+      next(error);
+    }
+  },
+
+  // Updated method to delete profile picture with file handling
+  deleteProfilePicture: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      
+      // Only admin or the user themselves can delete profile picture
+      if (req.userId !== parseInt(userId) && !req.adminEmployee) {
+        throw new ForbiddenError('You do not have permission to delete this profile picture');
+      }
+      
+      const user = await UserRepository.findById(userId);
+
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+      
+      // Delete file from storage using our modular function
+      if (user.profile_picture_url) {
+        await deleteUploadedFile(user.profile_picture_url);
+      }
+      
+      // Update user to remove profile picture URL
+      const updatedUser = await user.update({ profile_picture_url: null });
+      
+      // Remove sensitive data
+      updatedUser.password_hash = undefined;
+
+      return res.success('Profile picture deleted successfully', updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  }
 };
 
-export default userController;
+module.exports = userController;
