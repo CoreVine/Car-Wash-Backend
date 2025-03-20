@@ -1,6 +1,6 @@
-import CarModel from '../../models/Car';
-import BaseRepository from '../base.repository';
-import {DatabaseError, Op, literal} from "sequelize";
+const CarModel = require('../../models/Car');
+const BaseRepository = require('../base.repository');
+const { DatabaseError, Op, literal } = require("sequelize");
 
 class CarRepository extends BaseRepository {
     constructor() {
@@ -123,10 +123,10 @@ class CarRepository extends BaseRepository {
                 
                 whereClause[Op.not] = {
                     car_id: {
-                        [Op.in]: literal(`
-                          SELECT car_id FROM RentalOrders
+                        [Op.in]: literal(`(
+                          SELECT car_id FROM rentalorders
                           WHERE (start_date <= '${available_to}' AND end_date >= '${available_from}')
-                        `)
+                        )`)
                     }
                 };
             }

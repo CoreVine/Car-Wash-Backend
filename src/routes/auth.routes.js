@@ -24,6 +24,16 @@ authRoutes.post(
   authController.login
 );
 
+authRoutes.post(
+  '/auth/refresh',
+  authController.refreshToken
+);
+
+authRoutes.post(
+  '/auth/logout',
+  authController.logout
+)
+
 authRoutes.get('/auth/me', authMiddleware, authController.me);
 
 module.exports = authRoutes;

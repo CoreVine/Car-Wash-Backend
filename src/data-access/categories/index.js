@@ -1,6 +1,6 @@
-import CategoryModel from '../../models/Category';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const CategoryModel = require('../../models/Category');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class CategoryRepository extends BaseRepository {
     constructor() {

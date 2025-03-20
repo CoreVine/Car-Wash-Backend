@@ -1,6 +1,6 @@
-import ProductImageModel from '../../models/ProductImage';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const ProductImageModel = require('../../models/ProductImage');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class ProductImageRepository extends BaseRepository {
     constructor() {

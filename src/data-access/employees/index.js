@@ -1,6 +1,6 @@
-import EmployeeModel from '../../models/Employee';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const EmployeeModel = require('../../models/Employee');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class EmployeeRepository extends BaseRepository {
     constructor() {

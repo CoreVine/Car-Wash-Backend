@@ -1,9 +1,9 @@
-const Company = require('../models/Company');
+const CompanyRepository = require('../data-access/companies');
 const { ForbiddenError } = require('../utils/errors/types/Api.error');
 
 const isCompanyMiddleware = async (req, res, next) => {
   try {
-    const company = await Company.findByPk(req.userId);
+    const company = await CompanyRepository.findById(req.userId);
     
     if (!company) {
       throw new ForbiddenError('Access denied. Company privileges required');
@@ -19,3 +19,4 @@ const isCompanyMiddleware = async (req, res, next) => {
 };
 
 module.exports = isCompanyMiddleware;
+

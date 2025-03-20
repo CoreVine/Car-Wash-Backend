@@ -1,6 +1,6 @@
-import CompanyModel from '../../models/Company';
-import BaseRepository from '../base.repository';
-import {DatabaseError, Op} from "sequelize";
+const CompanyModel = require('../../models/Company');
+const BaseRepository = require('../base.repository');
+const { DatabaseError, Op } = require("sequelize");
 
 class CompanyRepository extends BaseRepository {
     constructor() {

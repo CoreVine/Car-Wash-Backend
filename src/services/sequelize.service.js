@@ -8,9 +8,12 @@ const modelFiles = fs
   .filter((file) => file.endsWith(".js"));
 
 const sequelizeService = {
-  init: async () => {
+  connection: null,
+  
+  init: async (syncOptions = null) => {
     try {
       let connection = new Sequelize(databaseConfig);
+      sequelizeService.connection = connection;
 
       /* Loading models automatically */
       const models = [];
@@ -29,6 +32,14 @@ const sequelizeService = {
       }
 
       console.log("[SEQUELIZE] Database service initialized");
+      
+      // Sync database if syncOptions is provided
+      if (syncOptions !== null) {
+        await connection.sync(syncOptions);
+        console.log("[SEQUELIZE] Database synchronized successfully");
+      }
+      
+      return connection;
     } catch (error) {
       console.log("[SEQUELIZE] Error during database service initialization");
       throw error;

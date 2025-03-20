@@ -1,9 +1,9 @@
-const User = require('../models/User');
+const UserRepository = require('../data-access/users');
 const { ForbiddenError } = require('../utils/errors/types/Api.error');
 
 const isUserMiddleware = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.userId);
+    const user = await UserRepository.findById(req.userId);
     
     if (!user) {
       throw new ForbiddenError('Access denied. User privileges required');
@@ -19,3 +19,4 @@ const isUserMiddleware = async (req, res, next) => {
 };
 
 module.exports = isUserMiddleware;
+

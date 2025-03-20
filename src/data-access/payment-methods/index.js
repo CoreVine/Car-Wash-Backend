@@ -1,6 +1,6 @@
-import PaymentMethodModel from '../../models/PaymentMethod';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const PaymentMethodModel = require('../../models/PaymentMethod');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class PaymentMethodRepository extends BaseRepository {
     constructor() {

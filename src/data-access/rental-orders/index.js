@@ -1,6 +1,6 @@
-import RentalOrderModel from '../../models/RentalOrder';
-import BaseRepository from '../base.repository';
-import {DatabaseError, Op} from "sequelize";
+const RentalOrderModel = require('../../models/RentalOrder');
+const BaseRepository = require('../base.repository');
+const { DatabaseError, Op } = require("sequelize");
 
 class RentalOrderRepository extends BaseRepository {
     constructor() {

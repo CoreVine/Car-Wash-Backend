@@ -42,9 +42,10 @@ const rateLimitService = {
   strictLimiter: () => {
     return rateLimit({
       windowMs: 60 * 60 * 1000, // 1 hour
-      max: 10, // limit each IP to 10 requests per windowMs
+      max: 100, // limit each IP to 10 requests per windowMs
       standardHeaders: true,
       legacyHeaders: false,
+
       handler: (req, res) => {
         logger.warn(`[RATE_LIMIT] Too many attempts on sensitive route from IP: ${req.ip}, path: ${req.originalUrl}`);
         res.status(429).json({

@@ -1,6 +1,6 @@
-import RatingModel from '../../models/Rating';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const RatingModel = require('../../models/Rating');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class RatingRepository extends BaseRepository {
     constructor() {

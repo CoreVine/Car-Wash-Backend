@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const { globalErrorHandler, notFoundHandler } = require("../middlewares/errorHandler.middleware");
 const responseMiddleware = require("../middlewares/response.middleware");
 const path = require('path');
@@ -26,6 +27,9 @@ const expressService = {
       
       // Apply middleware
       server.use(bodyParser.json());
+
+      // Use cookie-parser middleware
+      server.use(cookieParser());
       
       // Apply rate limiting middleware to all requests
       server.use(rateLimitService.standardLimiter());

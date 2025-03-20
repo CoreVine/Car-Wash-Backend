@@ -1,6 +1,6 @@
-import RentalCarImageModel from '../../models/RentalCarImage';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const RentalCarImageModel = require('../../models/RentalCarImage');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class RentalCarImageRepository extends BaseRepository {
     constructor() {

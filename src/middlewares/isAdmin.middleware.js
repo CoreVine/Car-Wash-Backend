@@ -1,10 +1,10 @@
-const User = require('../models/User');
-const Employee = require('../models/Employee');
+const UserRepository = require('../data-access/users');
+const EmployeeRepository = require('../data-access/employees');
 const { ForbiddenError } = require('../utils/errors/types/Api.error');
 
 const isAdminMiddleware = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.userId);
+    const user = await UserRepository.findByIdExcludeProps(req.userId, ['password_hash']);
     
     if (!user) {
       throw new ForbiddenError('User not found');
@@ -14,14 +14,9 @@ const isAdminMiddleware = async (req, res, next) => {
       throw new ForbiddenError('Access denied. Admin privileges required');
     }
     
-    const employee = await Employee.findOne({
-      where: {
-        user_id: user.user_id,
-        role: 'super-admin'
-      }
-    });
+    const employee = await EmployeeRepository.findByUserAndCompany(user.user_id, req.companyId);
     
-    if (!employee) {
+    if (!employee || employee.role !== 'super-admin') {
       throw new ForbiddenError('Access denied. Admin privileges required');
     }
     
@@ -35,3 +30,4 @@ const isAdminMiddleware = async (req, res, next) => {
 };
 
 module.exports = isAdminMiddleware;
+

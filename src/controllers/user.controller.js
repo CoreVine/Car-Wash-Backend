@@ -13,9 +13,6 @@ const {
   NotFoundError
 } = require("../utils/errors/types/Api.error.js");
 
-//Yup is a JavaScript schema builder for value parsing and validation.
-logger.debug('User repository model:', UserRepository.model);
-
 let userController = {
   add: async (req, res, next) => {
     try {

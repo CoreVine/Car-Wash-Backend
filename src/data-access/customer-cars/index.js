@@ -1,6 +1,6 @@
-import CustomerCarModel from '../../models/CustomerCar';
-import BaseRepository from '../base.repository';
-import {DatabaseError} from "sequelize";
+const CustomerCarModel = require('../../models/CustomerCar');
+const BaseRepository = require('../base.repository');
+const { DatabaseError } = require("sequelize");
 
 class CustomerCarRepository extends BaseRepository {
     constructor() {

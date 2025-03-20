@@ -1,8 +1,13 @@
+import * as crypto from 'crypto';
+import { BadTokenError } from '../utils/errors/types/Api.error';
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
+const loggingService = require('../services/logging.service');
+const logger = loggingService.getLogger();
+
 
 let jwtidCounter = 0;
-let blacklist = [];
+let blacklist = []; // TODO: Use redis
 
 const JwtService = {
   jwtSign: (_payload) => {
@@ -15,10 +20,22 @@ const JwtService = {
       const payload = JSON.parse(JSON.stringify(_payload));
 
       jwtidCounter = jwtidCounter + 1;
-      return jwt.sign({ payload }, process.env.SERVER_JWT_SECRET, {
+
+      const token = jwt.sign({ payload }, process.env.SERVER_JWT_SECRET, {
         expiresIn: Number(process.env.SERVER_JWT_TIMEOUT),
         jwtid: jwtidCounter + "",
+        algorithm: 'HS256'
       });
+      const refreshToken = jwt.sign(
+        { 
+          sub: payload,
+          jti: crypto.randomBytes(16).toString('hex')
+        },
+        process.env.SERVER_JWT_REFRESH_SECRET,
+        { expiresIn: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE) }
+      );
+
+      return { token, refreshToken };
     } catch (error) {
       console.log("[JWT] Error during fastify JWT sign");
       throw error;
@@ -29,13 +46,21 @@ const JwtService = {
     try {
       if (process.env.SERVER_JWT !== "true")
         throw new Error("[JWT] JWT flag is not set");
-      if (
-        !request.headers.authorization ||
-        request.headers.authorization.split(" ")[0] !== "Bearer"
-      )
+
+      let token = null;
+      const authHeader = request.headers.authorization;
+
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      } else {
+        // If not in header, try cookies (for web)
+        token = request.cookies?.token;        
+      }
+
+      if (!token)
         throw new Error("[JWT] JWT token not provided");
 
-      return request.headers.authorization.split(" ")[1];
+      return token;
     } catch (error) {
       console.log("[JWT] Error getting JWT token");
       throw error;
@@ -82,6 +107,11 @@ const JwtService = {
         );
         blacklist.shift();
       }
+      
+      if(!token) {
+        throw BadTokenError();
+      }
+
       const { jti, exp, iat } = jwt.decode(token);
       console.log(`[JWT] Adding JWT ${token} with id ${jti} to blacklist`);
       blacklist.push({ jti, exp, iat });
@@ -90,6 +120,23 @@ const JwtService = {
       throw error;
     }
   },
+
+  jwtRefreshToken: (refreshToken) => {
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.SERVER_JWT_REFRESH_SECRET);
+
+      const token = jwt.sign({ payload: decoded.payload }, process.env.SERVER_JWT_SECRET, {
+        expiresIn: Number(process.env.SERVER_JWT_TIMEOUT),
+        jwtid: jwtidCounter + "",
+        algorithm: 'HS256'
+      });
+
+      return token;
+    } catch (error) {
+      throw error;
+    }
+    
+  }
 };
 
 module.exports = JwtService;

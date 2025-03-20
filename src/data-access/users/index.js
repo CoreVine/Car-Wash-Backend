@@ -1,6 +1,6 @@
-import UserModel from '../../models/User';
-import BaseRepository from '../base.repository';
-import {DatabaseError, Op} from "sequelize";
+const UserModel = require('../../models/User');
+const BaseRepository = require('../base.repository');
+const { DatabaseError, Op } = require("sequelize");
 
 class UserRepository extends BaseRepository {
     constructor() {
