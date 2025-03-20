@@ -1,53 +1,53 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class Company extends Model {
   static init(sequelize) {
     super.init(
       {
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         company_name: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false,
           unique: true
         },
         email: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false,
           unique: true
         },
         phone_number: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         location: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         },
         logo_url: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         password_hash: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         approved: {
-          type: Sequelize.BOOLEAN,
+          type: DataTypes.BOOLEAN,
           allowNull: false
         },
         created_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         },
         updated_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         }
       },
       {
@@ -97,4 +97,4 @@ class Company extends Model {
   }
 }
 
-export default Company;
+module.exports = Company;

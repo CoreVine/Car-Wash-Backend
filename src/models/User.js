@@ -1,48 +1,48 @@
-import Sequelize, { Model } from "sequelize";
-import bcrypt from "bcryptjs";
+const { Model, DataTypes } = require("sequelize");
+const bcrypt = require("bcryptjs");
 
 class User extends Model {
   static init(sequelize) {
     super.init(
       {
         user_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         acc_type: {
-          type: Sequelize.ENUM('user', 'employee'),
+          type: DataTypes.ENUM('user', 'employee'),
           allowNull: false
         },
         profile_picture_url: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: true
         },
         name: {
-          type: Sequelize.STRING(70),
+          type: DataTypes.STRING(70),
           allowNull: false
         },
         username: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false,
           unique: true
         },
         email: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false,
           unique: true
         },
-        password: Sequelize.VIRTUAL, // Virtual field that doesn't exist in the database
+        password: DataTypes.VIRTUAL, // Virtual field that doesn't exist in the database
         password_hash: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         phone_number: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         address: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         }
       },
@@ -91,4 +91,4 @@ class User extends Model {
   }
 }
 
-export default User;
+module.exports = User;

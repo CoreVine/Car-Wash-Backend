@@ -589,6 +589,11 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
+"@faker-js/faker@^9.6.0":
+  version "9.6.0"
+  resolved "https://registry.npmjs.org/@faker-js/faker/-/faker-9.6.0.tgz"
+  integrity sha512-3vm4by+B5lvsFPSyep3ELWmZfE3kicDtmemVpuwl1yH7tqtnHdsA6hG8fbXedMVdkzgtvzWoRgjSB4Q+FHnZiw==
+
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
   resolved "https://registry.npmjs.org/@isaacs/cliui/-/cliui-8.0.2.tgz"

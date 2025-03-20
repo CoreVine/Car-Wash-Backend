@@ -1343,6 +1343,215 @@ Proper database management ensures data integrity and application performance:
    - Handle connection errors gracefully
    - Close connections when not needed
 
+5. **Data Seeding:**
+   - Use factories to generate realistic test data
+   - Create seeders for populating development and test databases
+   - Structure seeders to maintain referential integrity
+   - Build seeders that can be safely run multiple times
+
+   **Database Initialization Before Seeding:**
+   
+   The application provides a helper to initialize the database before seeding:
+   
+   ```javascript
+   // Import the initialization helper
+   const { initBeforeSeeding } = require('../seedHelper');
+   
+   module.exports = {
+     async up(queryInterface, Sequelize) {
+       // Initialize database and models before seeding
+       await initBeforeSeeding();
+       
+       // Proceed with seeding operations...
+     }
+   }
+   ```
+   
+   **Creating and Using Factories:**
+   
+   Factories help generate multiple instances of test data with realistic values. The application uses 
+   the `@faker-js/faker` library to create realistic test data.
+   
+   ```javascript
+   // src/database/factories/userFactory.js
+   const { faker } = require('@faker-js/faker');
+   const bcrypt = require('bcryptjs');
+   const { User } = require('../../models');
+   
+   const userFactory = {
+     /**
+      * Create one or more user records
+      * @param {number} count - Number of users to create
+      * @param {Object} attrs - Override default attributes
+      * @returns {Promise<Array>} Array of created user instances
+      */
+     async create(count = 1, attrs = {}) {
+       const users = [];
+       
+       for (let i = 0; i < count; i++) {
+         const userData = this.makeOne(attrs);
+         users.push(await User.create(userData));
+       }
+       
+       return users;
+     },
+     
+     /**
+      * Generate user data without saving to database
+      * @param {Object} attrs - Override default attributes
+      * @returns {Object} User data object
+      */
+     makeOne(attrs = {}) {
+       const defaultAttrs = {
+         acc_type: faker.helpers.arrayElement(['user', 'employee']),
+         name: faker.person.fullName(),
+         username: faker.internet.userName(),
+         email: faker.internet.email(),
+         password_hash: bcrypt.hashSync('password123', 8),
+         phone_number: faker.phone.number(),
+         address: faker.location.streetAddress(true)
+       };
+       
+       return { ...defaultAttrs, ...attrs };
+     },
+     
+     /**
+      * Generate multiple user data objects without saving
+      * @param {number} count - Number of users to generate
+      * @param {Object} attrs - Override default attributes
+      * @returns {Array<Object>} Array of user data objects
+      */
+     make(count = 1, attrs = {}) {
+       const users = [];
+       
+       for (let i = 0; i < count; i++) {
+         users.push(this.makeOne(attrs));
+       }
+       
+       return users;
+     }
+   };
+   
+   module.exports = userFactory;
+   ```
+   
+   **Creating Comprehensive Seeders:**
+   
+   Modern seeders should create complete data sets with proper relationships:
+   
+   ```javascript
+   // src/database/seeders/20230816123456-complete-data.js
+   const { initBeforeSeeding } = require('../seedHelper');
+   const factories = require('../factories'); // Import all factories from a central location
+   
+   module.exports = {
+     async up(queryInterface, Sequelize) {
+       console.log('Starting database seeding...');
+       
+       // Initialize database and models before seeding
+       await initBeforeSeeding();
+       
+       try {
+         // 1. Create independent entities first (no dependencies)
+         console.log('Creating base entities...');
+         const categories = await factories.categoryFactory.create(4);
+         const users = await factories.userFactory.create(15, { acc_type: 'user' });
+         const companies = await factories.companyFactory.create(3, { approved: 1 });
+         
+         // 2. Create entities with single dependencies
+         console.log('Creating dependent entities...');
+         
+         // Create subcategories (depends on categories)
+         const subCategories = [];
+         for (const category of categories) {
+           const subs = await factories.subCategoryFactory.create(2, { 
+             category_id: category.category_id 
+           });
+           subCategories.push(...subs);
+         }
+         
+         // Create customer cars (depends on users)
+         for (const user of users) {
+           await factories.customerCarFactory.create(2, { 
+             customer_id: user.user_id 
+           });
+         }
+         
+         // 3. Create entities with multiple dependencies
+         console.log('Creating complex relationship entities...');
+         
+         // For each company, create employees
+         for (const company of companies) {
+           // First create employee users
+           const employeeUsers = await factories.userFactory.create(6, { acc_type: 'employee' });
+           
+           // Create 1 super-admin, 2 managers, and 3 employees for each company
+           await factories.employeeFactory.create(1, { 
+             user_id: employeeUsers[0].user_id,
+             company_id: company.company_id,
+             role: 'super-admin'
+           });
+           
+           await factories.employeeFactory.create(2, { 
+             user_id: [employeeUsers[1].user_id, employeeUsers[2].user_id],
+             company_id: company.company_id,
+             role: 'manager'
+           });
+           
+           await factories.employeeFactory.create(3, { 
+             user_id: [employeeUsers[3].user_id, employeeUsers[4].user_id, employeeUsers[5].user_id],
+             company_id: company.company_id,
+             role: 'employee'
+           });
+         }
+         
+         console.log('Database seeding completed successfully!');
+       } catch (error) {
+         console.error('Error seeding database:', error);
+         throw error;
+       }
+     },
+     
+     async down(queryInterface, Sequelize) {
+       // Remove data in reverse order of dependencies
+       await queryInterface.bulkDelete('Employee', null, {});
+       await queryInterface.bulkDelete('Company', null, {});
+       await queryInterface.bulkDelete('CustomerCar', null, {});
+       await queryInterface.bulkDelete('SubCategory', null, {});
+       await queryInterface.bulkDelete('Category', null, {});
+       await queryInterface.bulkDelete('Users', null, {});
+       
+       console.log('All seeded data has been removed.');
+     }
+   };
+   ```
+   
+   **Best Practices for Seeders:**
+   
+   - **Order matters:** Create independent entities first, then dependent ones
+   - **Use transactions:** Wrap complex seeding operations in transactions
+   - **Handle errors:** Use try/catch blocks to catch and report seeding errors
+   - **Clean removal:** In the `down` method, remove data in reverse order of dependencies
+   - **Use factories:** Let factories handle the generation of realistic data
+   - **Logging:** Include clear logging to track seeding progress
+   - **Batch operations:** When possible, use bulk operations for better performance
+   
+   **Running Seeders:**
+   
+   ```bash
+   # Run all seeders
+   yarn sequelize db:seed:all
+   
+   # Run a specific seeder
+   yarn sequelize db:seed --seed 20230816123456-complete-data.js
+   
+   # Undo all seeders
+   yarn sequelize db:seed:undo:all
+   
+   # Undo a specific seeder
+   yarn sequelize db:seed:undo --seed 20230816123456-complete-data.js
+   ```
+
 ### Performance
 
 Optimizing performance ensures a responsive and scalable application:

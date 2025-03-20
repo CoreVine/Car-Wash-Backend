@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class CarWashOrder extends Model {
   static init(sequelize) {
     super.init(
       {
         wash_order_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         order_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Orders',
@@ -18,16 +18,16 @@ class CarWashOrder extends Model {
           }
         },
         within_company: {
-          type: Sequelize.BOOLEAN,
+          type: DataTypes.BOOLEAN,
           allowNull: false,
           comment: 'if it is indoors or within company\'s workshop'
         },
         location: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         },
         customer_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Users',
@@ -35,7 +35,7 @@ class CarWashOrder extends Model {
           }
         },
         customer_car_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'CustomerCar',
@@ -74,4 +74,4 @@ class CarWashOrder extends Model {
   }
 }
 
-export default CarWashOrder;
+module.exports = CarWashOrder;

@@ -1,9 +1,9 @@
 {
-  "name": "express-sequelize-boilerplate",
+  "name": "car-wash",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/gadfaria/express-sequelize-boilerplate.git",
-  "author": "gadfaria <gadfaria@gmail.com>",
+  "repository": "",
+  "author": "Ezzeldin Husen (ezz.professional@gmail.com)",
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/index.js",
@@ -28,6 +28,7 @@
     "yup": "^1.0.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.6.0",
     "nodemon": "^2.0.18",
     "sequelize-cli": "^6.4.1",
     "sucrase": "^3.23.0"

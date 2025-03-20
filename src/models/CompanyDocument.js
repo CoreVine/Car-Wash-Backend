@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class CompanyDocument extends Model {
   static init(sequelize) {
     super.init(
       {
         document_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Company',
@@ -18,15 +18,15 @@ class CompanyDocument extends Model {
           }
         },
         document_type: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         document_url: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         upload_date: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false
         }
       },
@@ -49,4 +49,4 @@ class CompanyDocument extends Model {
   }
 }
 
-export default CompanyDocument;
+module.exports = CompanyDocument;

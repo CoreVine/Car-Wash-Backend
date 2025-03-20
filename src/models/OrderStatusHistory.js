@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class OrderStatusHistory extends Model {
   static init(sequelize) {
     super.init(
       {
         status_history_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         order_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Orders',
@@ -18,13 +18,13 @@ class OrderStatusHistory extends Model {
           }
         },
         status: {
-          type: Sequelize.ENUM('pending', 'complete'),
+          type: DataTypes.ENUM('pending', 'complete'),
           allowNull: false
         },
         timestamp: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         }
       },
       {
@@ -46,4 +46,4 @@ class OrderStatusHistory extends Model {
   }
 }
 
-export default OrderStatusHistory;
+module.exports = OrderStatusHistory;

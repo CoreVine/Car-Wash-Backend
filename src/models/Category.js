@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class Category extends Model {
   static init(sequelize) {
     super.init(
       {
         category_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         category_name: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         }
       },
@@ -33,4 +33,4 @@ class Category extends Model {
   }
 }
 
-export default Category;
+module.exports = Category;

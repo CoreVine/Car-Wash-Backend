@@ -1,20 +1,20 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class ProductImage extends Model {
   static init(sequelize) {
     super.init(
       {
         image_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         image_url: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         product_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Products',
@@ -41,5 +41,5 @@ class ProductImage extends Model {
   }
 }
 
-export default ProductImage;
+module.exports = ProductImage;
 

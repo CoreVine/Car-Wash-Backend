@@ -1,0 +1,24 @@
+// Export all factories to make them easier to import
+module.exports = {
+  userFactory: require('./userFactory'),
+  companyFactory: require('./companyFactory'),
+  employeeFactory: require('./employeeFactory'),
+  categoryFactory: require('./categoryFactory'),
+  subCategoryFactory: require('./subCategoryFactory'),
+  productsFactory: require('./productsFactory'),
+  productsImagesFactory: require('./productsImagesFactory'),
+  subCatProductFactory: require('./subCatProductFactory'),
+  companyDocumentsFactory: require('./companyDocumentsFactory'),
+  paymentMethodFactory: require('./paymentMethodFactory'),
+  customerCarFactory: require('./customerCarFactory'),
+  companyExhibitionFactory: require('./companyExhibitionFactory'),
+  carsFactory: require('./carsFactory'),
+  rentalCarsImagesFactory: require('./rentalCarsImagesFactory'),
+  ordersFactory: require('./ordersFactory'),
+  orderItemsFactory: require('./orderItemsFactory'),
+  carWashOrdersFactory: require('./carWashOrdersFactory'),
+  washOrderOperationFactory: require('./washOrderOperationFactory'),
+  rentalOrdersFactory: require('./rentalOrdersFactory'),
+  orderStatusHistoryFactory: require('./orderStatusHistoryFactory'),
+  ratingsFactory: require('./ratingsFactory')
+};

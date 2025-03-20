@@ -1,24 +1,24 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class CustomerCar extends Model {
   static init(sequelize) {
     super.init(
       {
         customer_car_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         model: {
-          type: Sequelize.TEXT('tiny'),
+          type: DataTypes.TEXT('tiny'),
           allowNull: false
         },
         car_plate_number: {
-          type: Sequelize.TEXT('tiny'),
+          type: DataTypes.TEXT('tiny'),
           allowNull: false
         },
         customer_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Users',
@@ -49,4 +49,4 @@ class CustomerCar extends Model {
   }
 }
 
-export default CustomerCar;
+module.exports = CustomerCar;

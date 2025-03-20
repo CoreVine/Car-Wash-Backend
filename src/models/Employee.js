@@ -1,11 +1,11 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class Employee extends Model {
   static init(sequelize) {
     super.init(
       {
         user_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
             model: 'Users',
@@ -13,7 +13,7 @@ class Employee extends Model {
           }
         },
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
             model: 'Company',
@@ -21,18 +21,18 @@ class Employee extends Model {
           }
         },
         role: {
-          type: Sequelize.ENUM('super-admin', 'manager', 'employee'),
+          type: DataTypes.ENUM('super-admin', 'manager', 'employee'),
           allowNull: false
         },
         created_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         },
         updated_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         }
       },
       {
@@ -64,4 +64,4 @@ class Employee extends Model {
   }
 }
 
-export default Employee;
+module.exports = Employee;

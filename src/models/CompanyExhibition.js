@@ -1,20 +1,20 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class CompanyExhibition extends Model {
   static init(sequelize) {
     super.init(
       {
         exhibition_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         location: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Company',
@@ -45,4 +45,4 @@ class CompanyExhibition extends Model {
   }
 }
 
-export default CompanyExhibition;
+module.exports = CompanyExhibition;

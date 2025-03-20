@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class Order extends Model {
   static init(sequelize) {
     super.init(
       {
         order_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         user_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Users',
@@ -18,7 +18,7 @@ class Order extends Model {
           }
         },
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Company',
@@ -26,19 +26,19 @@ class Order extends Model {
           }
         },
         order_type: {
-          type: Sequelize.ENUM('product', 'wash', 'rental'),
+          type: DataTypes.ENUM('product', 'wash', 'rental'),
           allowNull: false
         },
         order_date: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false
         },
         total_amount: {
-          type: Sequelize.DECIMAL(8, 2),
+          type: DataTypes.DECIMAL(8, 2),
           allowNull: false
         },
         payment_method_id: {
-          type: Sequelize.TINYINT.UNSIGNED,
+          type: DataTypes.TINYINT.UNSIGNED,
           allowNull: false,
           references: {
             model: 'PaymentMethod',
@@ -46,22 +46,22 @@ class Order extends Model {
           }
         },
         payment_gateway_response: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         },
         shipping_address: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         },
         created_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         },
         updated_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         }
       },
       {
@@ -109,4 +109,4 @@ class Order extends Model {
   }
 }
 
-export default Order;
+module.exports = Order;

@@ -1,11 +1,11 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class Rating extends Model {
   static init(sequelize) {
     super.init(
       {
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
             model: 'Company',
@@ -13,7 +13,7 @@ class Rating extends Model {
           }
         },
         user_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
             model: 'Users',
@@ -21,17 +21,17 @@ class Rating extends Model {
           }
         },
         rating_value: {
-          type: Sequelize.DECIMAL(8, 2),
+          type: DataTypes.DECIMAL(8, 2),
           allowNull: false
         },
         review_text: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         },
         created_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         }
       },
       {
@@ -57,5 +57,5 @@ class Rating extends Model {
   }
 }
 
-export default Rating;
+module.exports = Rating;
 

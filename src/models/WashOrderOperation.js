@@ -1,11 +1,11 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class WashOrderOperation extends Model {
   static init(sequelize) {
     super.init(
       {
         wash_order_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
             model: 'CarWashOrders',
@@ -13,7 +13,7 @@ class WashOrderOperation extends Model {
           }
         },
         employee_assigned_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Employee',
@@ -21,16 +21,16 @@ class WashOrderOperation extends Model {
           }
         },
         operation_start_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         },
         operation_done_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: true
         },
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Employee',
@@ -61,5 +61,5 @@ class WashOrderOperation extends Model {
   }
 }
 
-export default WashOrderOperation;
+module.exports = WashOrderOperation;
 

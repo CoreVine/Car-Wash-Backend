@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class SubCategory extends Model {
   static init(sequelize) {
     super.init(
       {
         sub_category_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         category_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Category',
@@ -18,7 +18,7 @@ class SubCategory extends Model {
           }
         },
         name: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         }
       },
@@ -47,5 +47,5 @@ class SubCategory extends Model {
   }
 }
 
-export default SubCategory;
+module.exports = SubCategory;
 

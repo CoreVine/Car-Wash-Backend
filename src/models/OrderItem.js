@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class OrderItem extends Model {
   static init(sequelize) {
     super.init(
       {
         order_item_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         order_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Orders',
@@ -18,7 +18,7 @@ class OrderItem extends Model {
           }
         },
         product_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Products',
@@ -26,11 +26,11 @@ class OrderItem extends Model {
           }
         },
         quantity: {
-          type: Sequelize.INTEGER,
+          type: DataTypes.INTEGER,
           allowNull: false
         },
         price: {
-          type: Sequelize.DECIMAL(8, 2),
+          type: DataTypes.DECIMAL(8, 2),
           allowNull: false
         }
       },
@@ -57,4 +57,4 @@ class OrderItem extends Model {
   }
 }
 
-export default OrderItem;
+module.exports = OrderItem;

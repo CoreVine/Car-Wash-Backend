@@ -1,16 +1,16 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class Product extends Model {
   static init(sequelize) {
     super.init(
       {
         product_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         company_id: {
-          type: Sequelize.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
             model: 'Company',
@@ -18,30 +18,30 @@ class Product extends Model {
           }
         },
         product_name: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: false
         },
         description: {
-          type: Sequelize.TEXT,
+          type: DataTypes.TEXT,
           allowNull: false
         },
         price: {
-          type: Sequelize.DECIMAL(8, 2),
+          type: DataTypes.DECIMAL(8, 2),
           allowNull: false
         },
         stock: {
-          type: Sequelize.INTEGER,
+          type: DataTypes.INTEGER,
           allowNull: false
         },
         created_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         },
         updated_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW
+          defaultValue: DataTypes.NOW
         }
       },
       {
@@ -79,5 +79,5 @@ class Product extends Model {
   }
 }
 
-export default Product;
+module.exports = Product;
 

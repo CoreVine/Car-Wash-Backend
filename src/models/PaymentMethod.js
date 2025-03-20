@@ -1,24 +1,24 @@
-import Sequelize, { Model } from "sequelize";
+const { Model, DataTypes } = require("sequelize");
 
 class PaymentMethod extends Model {
   static init(sequelize) {
     super.init(
       {
         payment_id: {
-          type: Sequelize.TINYINT.UNSIGNED,
+          type: DataTypes.TINYINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true
         },
         name: {
-          type: Sequelize.TEXT('tiny'),
+          type: DataTypes.TEXT('tiny'),
           allowNull: false
         },
         public_key: {
-          type: Sequelize.STRING(100),
+          type: DataTypes.STRING(100),
           allowNull: false
         },
         secret_key: {
-          type: Sequelize.STRING(100),
+          type: DataTypes.STRING(100),
           allowNull: false
         }
       },
@@ -41,5 +41,4 @@ class PaymentMethod extends Model {
   }
 }
 
-export default PaymentMethod;
-
+module.exports = PaymentMethod;
