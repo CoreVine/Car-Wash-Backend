@@ -45,9 +45,7 @@ cd express-sequelize-boilerplate/
 3. Install dependencies:
 
 ```bash
-yarn install
-# or
-npm install
+pnpm install
 ```
 
 4. Set up environment variables:
@@ -77,9 +75,8 @@ npx sequelize-cli db:migrate
 8. Start the development server:
 
 ```bash
-yarn dev
 # or
-npm run dev
+pnpm dev
 ```
 
 ## Environment Configuration

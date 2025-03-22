@@ -1,6 +1,4 @@
-const Yup = require("yup");
 const bcrypt = require("bcryptjs");
-const { Op } = require("sequelize");
 // Import repositories
 import UserRepository from "../data-access/users";
 import EmployeeRepository from "../data-access/employees";

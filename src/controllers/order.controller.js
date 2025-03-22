@@ -1,4 +1,4 @@
-const { Op, literal } = require("sequelize");
+const { Op } = require("sequelize");
 // Import repositories
 import OrderRepository from "../data-access/orders";
 import OrderItemRepository from "../data-access/order-items";
@@ -6,19 +6,13 @@ import OrderStatusHistoryRepository from "../data-access/order-status-histories"
 import CarWashOrderRepository from "../data-access/car-wash-orders";
 import RentalOrderRepository from "../data-access/rental-orders";
 import ProductRepository from "../data-access/products";
-import CompanyRepository from "../data-access/companies";
 import CustomerCarRepository from "../data-access/customer-cars";
 import CarRepository from "../data-access/cars";
-import UserRepository from "../data-access/users";
-import EmployeeRepository from "../data-access/employees";
 import WashOrderOperationRepository from "../data-access/wash-order-operations";
 import PaymentMethodRepository from "../data-access/payment-methods";
 const { createPagination } = require("../utils/responseHandler");
-const loggingService = require("../services/logging.service");
-const logger = loggingService.getLogger();
 const {
   BadRequestError,
-  ForbiddenError,
   NotFoundError
 } = require("../utils/errors/types/Api.error");
 
