@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+// cors will be imported through the corsService
 const { globalErrorHandler, notFoundHandler } = require("../middlewares/errorHandler.middleware");
 const responseMiddleware = require("../middlewares/response.middleware");
 const path = require('path');
@@ -8,6 +9,7 @@ const multerErrorHandler = require('../middlewares/multerErrorHandler.middleware
 const apiRouter = require("../routes");
 const loggingService = require("./logging.service");
 const rateLimitService = require("./rateLimit.service");
+const corsService = require("./cors.service");
 
 let server;
 let logger;
@@ -23,7 +25,16 @@ const expressService = {
       // Initialize rate limiting service
       await rateLimitService.init();
       
+      // Initialize CORS service
+      corsService.init(logger);
+      
       server = express();
+
+      // Apply response formatting middleware
+      server.use(responseMiddleware);
+      
+      // Apply CORS middleware (before other middleware)
+      server.use(corsService.getCorsMiddleware());
       
       // Apply middleware
       server.use(bodyParser.json());
@@ -36,9 +47,6 @@ const expressService = {
       
       // Apply morgan middleware for HTTP request logging
       server.use(morgan);
-
-      // Apply response formatting middleware
-      server.use(responseMiddleware);
       
       // Apply routes
       // Static file serving for uploads
@@ -49,10 +57,11 @@ const expressService = {
       
       // Handle 404 routes
       server.use('*', notFoundHandler);
-      
+
+      // MUST BE AT THE END TO HANDLE ERRORS!
       // Handle multer-specific errors first
-      server.use(multerErrorHandler); 
-      
+      server.use(multerErrorHandler);
+
       // Apply global error handler
       server.use(globalErrorHandler);
       

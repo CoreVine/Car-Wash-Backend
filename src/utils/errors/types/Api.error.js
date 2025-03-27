@@ -27,12 +27,16 @@ export class BadRequestError extends ApiError {
     super(message, 400, type);
   }
 }
+
 export class ValidationError extends ApiError {
   constructor(
     message = DEFAULT_ERRORS.VALIDATION.message,
     type = DEFAULT_ERRORS.VALIDATION.code
   ) {
     super(message, 400, type);
+    
+    // Add errors property to contain the detailed validation errors
+    this.errors = Array.isArray(message) ? message : [message];
   }
 }
 
@@ -80,6 +84,17 @@ export class TokenExpiredError extends ApiError {
   }
 }
 
+export class CorsError extends ApiError {
+  constructor(
+    origin = null,
+    message = DEFAULT_ERRORS.CORS_ERROR.message,
+    type = DEFAULT_ERRORS.CORS_ERROR.code
+  ) {
+    const errorMessage = origin ? `${message}: ${origin}` : message;
+    super(errorMessage, 403, type);
+    this.origin = origin;
+  }
+}
 
 /**
  * Check if error is an api specific error

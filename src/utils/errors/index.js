@@ -7,6 +7,7 @@ import {
     UnauthorizedError,
     ForbiddenError,
     InternalServerError,
+    CorsError,
     isApiError
 } from "./types/Api.error";
 
@@ -25,6 +26,7 @@ module.exports = {
     UnauthorizedError,
     ForbiddenError,
     InternalServerError,
+    CorsError,
     // Database Errors
     DatabaseError,
     // Utils

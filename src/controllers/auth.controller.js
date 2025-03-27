@@ -56,26 +56,35 @@ const authController = {
         // Remove sensitive data
         company.password_hash = undefined;
         
-        const { token, refreshToken } = JwtService.jwtSign(company.company_id);
+        const jwtResponse = JwtService.jwtSign(company.company_id);
+        const { token } = jwtResponse;
         
-        // Set token in HTTP-only cookie
-        res.cookie('token', token, {
+        const cookieOptions = {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: Number(process.env.SERVER_JWT_TIMEOUT),
           sameSite: 'strict',
           path: '/'
-        });
+        };
+        
+        if (process.env.SERVER_JWT_USE_EXPIRY === "true") {
+          cookieOptions.maxAge = Number(process.env.SERVER_JWT_TIMEOUT);
+        }
+        
+        res.cookie('token', token, cookieOptions);
 
-        res.cookie('refresh_token', refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge:  Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
-          sameSite: 'strict',
-          path: '/'
-        });
+        if (jwtResponse.refreshToken) {
+          res.cookie('refresh_token', jwtResponse.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
+            sameSite: 'strict',
+            path: '/'
+          });
+          
+          return res.success('Company registered successfully', { company, token, refreshToken: jwtResponse.refreshToken });
+        }
         
-        return res.success('Company registered successfully', { company, token, refreshToken });
+        return res.success('Company registered successfully', { company, token });
         
       } else {
         // Default to user registration
@@ -118,26 +127,35 @@ const authController = {
         // Remove sensitive data
         user.password_hash = undefined;
         
-        const { token, refreshToken } = JwtService.jwtSign(user.user_id);
+        const jwtResponse = JwtService.jwtSign(user.user_id);
+        const { token } = jwtResponse;
         
-        // Set token in HTTP-only cookie
-        res.cookie('token', token, {
+        const cookieOptions = {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: Number(process.env.SERVER_JWT_TIMEOUT),
           sameSite: 'strict',
           path: '/'
-        });
+        };
+        
+        if (process.env.SERVER_JWT_USE_EXPIRY === "true") {
+          cookieOptions.maxAge = Number(process.env.SERVER_JWT_TIMEOUT);
+        }
+        
+        res.cookie('token', token, cookieOptions);
 
-        res.cookie('refresh_token', refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge:  Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
-          sameSite: 'strict',
-          path: '/'
-        });
+        if (jwtResponse.refreshToken) {
+          res.cookie('refresh_token', jwtResponse.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
+            sameSite: 'strict',
+            path: '/'
+          });
+          
+          return res.success('User registered successfully', { user, token, refreshToken: jwtResponse.refreshToken });
+        }
         
-        return res.success('User registered successfully', { user, token, refreshToken });
+        return res.success('User registered successfully', { user, token });
       }
     } catch (error) {
       logger.error('Registration error', { error: error.message, stack: error.stack });
@@ -175,28 +193,37 @@ const authController = {
         // Remove sensitive data
         company.password_hash = undefined;
         
-        const { token, refreshToken } = JwtService.jwtSign(company.company_id);
+        const jwtResponse = JwtService.jwtSign(company.company_id);
+        const { token } = jwtResponse;
         
         logger.info(`Login successful for company: ${email}`, { company_id: company.company_id });
         
-        // Set token in HTTP-only cookie
-        res.cookie('token', token, {
+        const cookieOptions = {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: Number(process.env.SERVER_JWT_TIMEOUT),
           sameSite: 'strict',
           path: '/'
-        });
-
-        res.cookie('refresh_token', refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge:  Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
-          sameSite: 'strict',
-          path: '/'
-        });
+        };
         
-        return res.success('Login successful', { company, token, refreshToken });
+        if (process.env.SERVER_JWT_USE_EXPIRY === "true") {
+          cookieOptions.maxAge = Number(process.env.SERVER_JWT_TIMEOUT);
+        }
+        
+        res.cookie('token', token, cookieOptions);
+
+        if (jwtResponse.refreshToken) {
+          res.cookie('refresh_token', jwtResponse.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
+            sameSite: 'strict',
+            path: '/'
+          });
+          
+          return res.success('Login successful', { company, token, refreshToken: jwtResponse.refreshToken });
+        }
+        
+        return res.success('Login successful', { company, token });
         
       } else {
         // Default to user login
@@ -224,28 +251,37 @@ const authController = {
           logger.info(`Employee data retrieved for user: ${email}`, { user_id: user.user_id });
         }
         
-        const { token, refreshToken } = JwtService.jwtSign(user.user_id);
+        const jwtResponse = JwtService.jwtSign(user.user_id);
+        const { token } = jwtResponse;
         
         logger.info(`Login successful for user: ${email}`, { user_id: user.user_id });
         
-        // Set token in HTTP-only cookie
-        res.cookie('token', token, {
+        const cookieOptions = {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: Number(process.env.SERVER_JWT_TIMEOUT),
           sameSite: 'strict',
           path: '/'
-        });
-
-        res.cookie('refresh_token', refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge:  Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
-          sameSite: 'strict',
-          path: '/'
-        });
+        };
         
-        return res.success('Login successful', { employeeData, token, refreshToken });
+        if (process.env.SERVER_JWT_USE_EXPIRY === "true") {
+          cookieOptions.maxAge = Number(process.env.SERVER_JWT_TIMEOUT);
+        }
+        
+        res.cookie('token', token, cookieOptions);
+
+        if (jwtResponse.refreshToken) {
+          res.cookie('refresh_token', jwtResponse.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE),
+            sameSite: 'strict',
+            path: '/'
+          });
+          
+          return res.success('Login successful', { user, employeeData, token, refreshToken: jwtResponse.refreshToken });
+        }
+        
+        return res.success('Login successful', { user, employeeData, token });
       }
     } catch (error) {
       logger.error('Login error', { error: error.message, stack: error.stack });
@@ -287,44 +323,59 @@ const authController = {
     }
   },
 
-  refreshToken: (req, res) => {
-    // Try to get refresh token from different sources
-    let refreshToken = req.cookies.refresh_token; // Web
-    
-    // If not in cookies, check request body (mobile)
-    if (!refreshToken && req.body.refresh_token) {
-      refreshToken = req.body.refresh_token;
-    }
-
-    if (!refreshToken)
-      throw new BadRequestError('Refresh token is required!');
-
+  refreshToken: (req, res, next) => {
     try {
+      if (process.env.SERVER_JWT_REFRESH_ENABLED !== "true") {
+        throw new BadRequestError('Refresh token functionality is not enabled');
+      }
+      
+      let refreshToken = req.cookies.refresh_token;
+      
+      if (!refreshToken && req.body.refresh_token) {
+        refreshToken = req.body.refresh_token;
+      }
+
+      if (!refreshToken)
+        throw new BadRequestError('Refresh token is required!');
+
       const token = JwtService.jwtRefreshToken(refreshToken);
 
-      // Set token in HTTP-only cookie
-      res.cookie('token', token, {
+      const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: Number(process.env.SERVER_JWT_TIMEOUT),
         sameSite: 'strict',
         path: '/'
-      });
+      };
+      
+      if (process.env.SERVER_JWT_USE_EXPIRY === "true") {
+        cookieOptions.maxAge = Number(process.env.SERVER_JWT_TIMEOUT);
+      }
+      
+      res.cookie('token', token, cookieOptions);
 
       res.success('Refresh token exchanged successfully', { token });
     } catch (error) {
-      throw new BadTokenError('Bad refresh token');
+      logger.error('Refresh token error', { error: error.message, stack: error.stack });
+      next(new BadTokenError('Bad refresh token'));
     }
   },
-  logout: (req, res) => {
-    const token = JwtService.jwtGetToken(req);
+  
+  logout: (req, res, next) => {
+    try {
+      const token = JwtService.jwtGetToken(req);
 
-    JwtService.jwtBlacklistToken(token);
+      JwtService.jwtBlacklistToken(token);
 
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
+      res.clearCookie('token');
+      if (process.env.SERVER_JWT_REFRESH_ENABLED === "true") {
+        res.clearCookie('refresh_token');
+      }
 
-    res.success('Logged out successfully!');
+      res.success('Logged out successfully!');
+    } catch (error) {
+      logger.error('Logout error', { error: error.message });
+      next(error);
+    }
   }
 };
 

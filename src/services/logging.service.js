@@ -9,28 +9,41 @@ if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
+// Custom format that properly handles objects
+const consoleFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.printf(({ timestamp, level, message, ...rest }) => {
+    // Basic message with timestamp and level
+    let output = `${timestamp} ${level}: ${message}`;
+    
+    // Only process and append additional data if it exists and isn't empty
+    const metaData = Object.keys(rest).filter(key => !['service', 'stack'].includes(key));
+    if (metaData.length > 0) {
+      output += ` ${JSON.stringify(rest, null, 0)}`;
+    }
+    
+    // Add stack trace if it exists
+    if (rest.stack) {
+      output += `\n${rest.stack}`;
+    }
+    
+    return output;
+  })
+);
+
 // Configure Winston logger
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
-    winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
-    }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
     winston.format.json()
   ),
   defaultMeta: { service: 'api' },
   transports: [
-    // Console transport for all environments
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.printf(
-          info => `${info.timestamp} ${info.level}: ${info.message}${info.stack ? '\n' + info.stack : ''}`
-        )
-      )
-    }),
+    // Console transport with optimized format
+    new winston.transports.Console({ format: consoleFormat }),
     // File transport for all logs
     new winston.transports.File({ 
       filename: path.join(logDir, 'combined.log')

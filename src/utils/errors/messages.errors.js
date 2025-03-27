@@ -7,6 +7,14 @@ const DEFAULT_ERRORS = {
         code: "TOKEN_EXPIRED",
         message: "Token expired",
     },
+    REFRESH_DISABLED: {
+        code: "REFRESH_DISABLED",
+        message: "Refresh token functionality is not enabled",
+    },
+    JWT_EXPIRY_DISABLED: {
+        code: "JWT_EXPIRY_DISABLED",
+        message: "JWT expiration is not enabled",
+    },
     UNAUTHORIZED: {
         code: "UNAUTHORIZED",
         message: "Invalid credentials",
@@ -34,6 +42,10 @@ const DEFAULT_ERRORS = {
     DATABASE_ERROR: {
         code: "DATABASE_ERROR",
         message: "Database error",
+    },
+    CORS_ERROR: {
+        code: "CORS_ERROR",
+        message: "CORS policy violation: Origin not allowed",
     }
 };
 

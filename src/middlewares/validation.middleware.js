@@ -34,22 +34,24 @@ const validate = (schema, source = 'body') => {
         
         if (errors.length > 0) {
           logger.warn('Validation errors:', errors);
-          return next(new ValidationError(errors));
+          throw new ValidationError(errors);
         }
       } 
       // Handle single source validation (original functionality)
       else {
-        await schema.validate(req[source], { abortEarly: false });
+        try {
+          await schema.validate(req[source], { abortEarly: false });
+        } catch (error) {
+          // Create a structured array of validation errors
+          const errors = error.errors || [error.message];
+          logger.warn('Validation errors:', errors);
+          throw new ValidationError(errors);
+        }
       }
-      
       // If validation passes, continue to next middleware
       next();
-    } catch (error) {
-      // Log validation errors
-      logger.warn('Validation errors:', error.errors);
-      
-      // Pass validation error to error handler
-      next(new ValidationError(error.errors));
+    } catch(error) {
+      next(error);
     }
   };
 };

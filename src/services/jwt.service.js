@@ -21,21 +21,31 @@ const JwtService = {
 
       jwtidCounter = jwtidCounter + 1;
 
+      const useExpiry = process.env.SERVER_JWT_USE_EXPIRY === "true";
+      const expiresIn = useExpiry ? Number(process.env.SERVER_JWT_TIMEOUT) : undefined;
+
       const token = jwt.sign({ payload }, process.env.SERVER_JWT_SECRET, {
-        expiresIn: Number(process.env.SERVER_JWT_TIMEOUT),
+        ...(useExpiry && { expiresIn }),
         jwtid: jwtidCounter + "",
         algorithm: 'HS256'
       });
-      const refreshToken = jwt.sign(
-        { 
-          sub: payload,
-          jti: crypto.randomBytes(16).toString('hex')
-        },
-        process.env.SERVER_JWT_REFRESH_SECRET,
-        { expiresIn: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE) }
-      );
 
-      return { token, refreshToken };
+      const response = { token };
+
+      // Only generate refresh token if using expiry and refresh token is enabled
+      if (useExpiry && process.env.SERVER_JWT_REFRESH_ENABLED === "true") {
+        const refreshToken = jwt.sign(
+          { 
+            sub: payload,
+            jti: crypto.randomBytes(16).toString('hex')
+          },
+          process.env.SERVER_JWT_REFRESH_SECRET,
+          { expiresIn: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE) }
+        );
+        response.refreshToken = refreshToken;
+      }
+
+      return response;
     } catch (error) {
       console.log("[JWT] Error during fastify JWT sign");
       throw error;
@@ -45,7 +55,7 @@ const JwtService = {
   jwtGetToken: (request) => {
     try {
       if (process.env.SERVER_JWT !== "true")
-        throw new Error("[JWT] JWT flag is not set");
+        throw new BadTokenError("[JWT] JWT flag is not set");
 
       let token = null;
       const authHeader = request.headers.authorization;
@@ -58,7 +68,7 @@ const JwtService = {
       }
 
       if (!token)
-        throw new Error("[JWT] JWT token not provided");
+        throw new BadTokenError("[JWT] JWT token not provided");
 
       return token;
     } catch (error) {
@@ -123,10 +133,17 @@ const JwtService = {
 
   jwtRefreshToken: (refreshToken) => {
     try {
+      if (process.env.SERVER_JWT_REFRESH_ENABLED !== "true") {
+        throw new Error("[JWT] Refresh tokens are not enabled");
+      }
+
       const decoded = jwt.verify(refreshToken, process.env.SERVER_JWT_REFRESH_SECRET);
 
+      const useExpiry = process.env.SERVER_JWT_USE_EXPIRY === "true";
+      const expiresIn = useExpiry ? Number(process.env.SERVER_JWT_TIMEOUT) : undefined;
+
       const token = jwt.sign({ payload: decoded.payload }, process.env.SERVER_JWT_SECRET, {
-        expiresIn: Number(process.env.SERVER_JWT_TIMEOUT),
+        ...(useExpiry && { expiresIn }),
         jwtid: jwtidCounter + "",
         algorithm: 'HS256'
       });
