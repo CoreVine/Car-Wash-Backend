@@ -18,6 +18,15 @@ class AdRepository extends BaseRepository {
         }
     }
     
+    // Method for finding all ads
+    async findAllAds(options = {}) {
+        try {
+            return await this.model.findAll(options);
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
+
     // Method for paginated ads
     async findAdsPaginated(page = 1, limit = 10) {
         try {

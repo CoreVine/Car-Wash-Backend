@@ -48,14 +48,8 @@ const adController = {
 
   getAllAds: async (req, res, next) => {
     try {
-      const page = parseInt(req.query.page, 10) || 1;
-      const limit = parseInt(req.query.limit, 10) || 10;
-
-      const { count, rows } = await AdRepository.findAdsPaginated(page, limit);
-
-      const pagination = createPagination(page, limit, count);
-
-      return res.success('Ads retrieved successfully', rows, pagination);
+      const ads = await AdRepository.findAllAds();
+      return res.success('Ads retrieved successfully', ads);
     } catch (error) {
       next(error);
     }
