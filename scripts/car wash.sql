@@ -19,6 +19,20 @@ CREATE SCHEMA IF NOT EXISTS `car-wash` DEFAULT CHARACTER SET utf8 ;
 USE `car-wash` ;
 
 -- -----------------------------------------------------
+-- Table `car-wash`.`Ads`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `car-wash`.`Ads` ;
+
+CREATE TABLE IF NOT EXISTS `car-wash`.`Ads` (
+  `ad_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `image_url` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ad_id`)
+);
+
+-- -----------------------------------------------------
 -- Table `car-wash`.`Users`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `car-wash`.`Users` ;

@@ -325,6 +325,8 @@ const authController = {
 
   refreshToken: (req, res, next) => {
     try {
+      console.log(process.env.SERVER_JWT_REFRESH_ENABLED);
+      
       if (process.env.SERVER_JWT_REFRESH_ENABLED !== "true") {
         throw new BadRequestError('Refresh token functionality is not enabled');
       }

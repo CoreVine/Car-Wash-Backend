@@ -292,6 +292,18 @@ module.exports = {
         }
       }
       
+      // 20. Create ads
+      console.log('Creating ads...');
+      await factories.adFactory.create(5, {
+        name: [
+          'Summer Car Wash Discount',
+          'Premium Car Maintenance',
+          'New Car Rental Arrivals',
+          'Special Weekend Offers',
+          'Holiday Season Deals'
+        ]
+      });
+      
       console.log('Database seeding completed successfully! 🚀');
       
     } catch (error) {
@@ -301,29 +313,78 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    // Remove data in reverse order of dependencies
-    await queryInterface.bulkDelete('Ratings', null, {});
-    await queryInterface.bulkDelete('WashOrderOperation', null, {});
-    await queryInterface.bulkDelete('OrderStatusHistory', null, {});
-    await queryInterface.bulkDelete('RentalOrders', null, {});
-    await queryInterface.bulkDelete('CarWashOrders', null, {});
-    await queryInterface.bulkDelete('OrderItems', null, {});
-    await queryInterface.bulkDelete('Orders', null, {});
-    await queryInterface.bulkDelete('RentalCarsImages', null, {});
-    await queryInterface.bulkDelete('Cars', null, {});
-    await queryInterface.bulkDelete('CompanyExhibition', null, {});
-    await queryInterface.bulkDelete('ProductsImages', null, {});
-    await queryInterface.bulkDelete('SubCatProduct', null, {});
-    await queryInterface.bulkDelete('Products', null, {});
-    await queryInterface.bulkDelete('SubCategory', null, {});
-    await queryInterface.bulkDelete('Category', null, {});
-    await queryInterface.bulkDelete('CustomerCar', null, {});
-    await queryInterface.bulkDelete('CompanyDocuments', null, {});
-    await queryInterface.bulkDelete('Employee', null, {});
-    await queryInterface.bulkDelete('Company', null, {});
-    await queryInterface.bulkDelete('Users', null, {});
-    await queryInterface.bulkDelete('PaymentMethod', null, {});
-    
-    console.log('All seeded data has been removed.');
+    try {
+      // Remove data in reverse order of dependencies
+      console.log('Removing ads...');
+      await queryInterface.bulkDelete('Ads', null, {});
+      
+      console.log('Removing WashOrderOperation...');
+      await queryInterface.bulkDelete('WashOrderOperation', null, {});
+      
+      console.log('Removing OrderStatusHistory...');
+      await queryInterface.bulkDelete('OrderStatusHistory', null, {});
+      
+      console.log('Removing RentalOrders...');
+      await queryInterface.bulkDelete('RentalOrders', null, {});
+      
+      console.log('Removing CarWashOrders...');
+      await queryInterface.bulkDelete('CarWashOrders', null, {});
+      
+      console.log('Removing OrderItems...');
+      await queryInterface.bulkDelete('OrderItems', null, {});
+      
+      console.log('Removing Orders...');
+      await queryInterface.bulkDelete('Orders', null, {});
+      
+      console.log('Removing RentalCarsImages...');
+      await queryInterface.bulkDelete('RentalCarsImages', null, {});
+      
+      console.log('Removing Cars...');
+      await queryInterface.bulkDelete('Cars', null, {});
+      
+      console.log('Removing CompanyExhibition...');
+      await queryInterface.bulkDelete('CompanyExhibition', null, {});
+      
+      console.log('Removing ProductsImages...');
+      await queryInterface.bulkDelete('ProductsImages', null, {});
+      
+      console.log('Removing SubCatProduct...');
+      await queryInterface.bulkDelete('SubCatProduct', null, {});
+      
+      console.log('Removing Products...');
+      await queryInterface.bulkDelete('Products', null, {});
+      
+      console.log('Removing SubCategory...');
+      await queryInterface.bulkDelete('SubCategory', null, {});
+      
+      console.log('Removing Category...');
+      await queryInterface.bulkDelete('Category', null, {});
+      
+      console.log('Removing CustomerCar...');
+      await queryInterface.bulkDelete('CustomerCar', null, {});
+      
+      console.log('Removing CompanyDocuments...');
+      await queryInterface.bulkDelete('CompanyDocuments', null, {});
+      
+      console.log('Removing Ratings...');
+      await queryInterface.bulkDelete('Ratings', null, {});
+      
+      console.log('Removing Employee...');
+      await queryInterface.bulkDelete('Employee', null, {});
+      
+      console.log('Removing Company...');
+      await queryInterface.bulkDelete('Company', null, {});
+      
+      console.log('Removing Users...');
+      await queryInterface.bulkDelete('Users', null, {});
+      
+      console.log('Removing PaymentMethod...');
+      await queryInterface.bulkDelete('PaymentMethod', null, {});
+      
+      console.log('All seeded data has been removed.');
+    } catch (error) {
+      console.error('Error removing data:', error);
+      throw error;
+    }
   }
 };

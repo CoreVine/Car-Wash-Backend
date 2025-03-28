@@ -13,7 +13,7 @@ const userFactory = {
     const users = [];
     
     for (let i = 0; i < count; i++) {
-      const userData = this.makeOne(attrs);
+      const userData = await this.makeOne(attrs);
       users.push(await User.create(userData));
     }
     
@@ -25,14 +25,14 @@ const userFactory = {
    * @param {Object} attrs - Override default attributes
    * @returns {Object} User data object
    */
-  makeOne(attrs = {}) {
+  async makeOne(attrs = {}) {
     const defaultAttrs = {
       acc_type: faker.helpers.arrayElement(['user', 'employee']),
       profile_picture_url: faker.image.avatar(),
       name: faker.person.fullName(),
       username: faker.internet.username(),
       email: faker.internet.email(),
-      password_hash: bcrypt.hashSync('password123', 8),
+      password_hash: await bcrypt.hash('password123', 8),
       phone_number: faker.phone.number(),
       address: faker.location.streetAddress(true),
       created_at: new Date(),

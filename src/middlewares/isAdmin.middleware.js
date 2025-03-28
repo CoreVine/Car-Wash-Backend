@@ -14,7 +14,7 @@ const isAdminMiddleware = async (req, res, next) => {
       throw new ForbiddenError('Access denied. Admin privileges required');
     }
     
-    const employee = await EmployeeRepository.findByUserAndCompany(user.user_id, req.companyId);
+    const employee = await EmployeeRepository.findByUserId(user.user_id, req.companyId);
     
     if (!employee || employee.role !== 'super-admin') {
       throw new ForbiddenError('Access denied. Admin privileges required');

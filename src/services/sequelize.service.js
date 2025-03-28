@@ -7,6 +7,8 @@ const modelFiles = fs
   .readdirSync(__dirname + "/../models/")
   .filter((file) => file.endsWith(".js"));
 
+const syncOptions = { force: false };
+
 const sequelizeService = {
   connection: null,
   
@@ -34,7 +36,7 @@ const sequelizeService = {
       console.log("[SEQUELIZE] Database service initialized");
       
       // Sync database if syncOptions is provided
-      if (syncOptions !== null) {
+      if (process.env.SYNC_DATABASE === "true") {
         await connection.sync(syncOptions);
         console.log("[SEQUELIZE] Database synchronized successfully");
       }
