@@ -10,7 +10,12 @@ const employeeSchema = Yup.object().shape({
     name: Yup.string().required(),
     username: Yup.string().required(),
     email: Yup.string().email().required(),
-    password: Yup.string().required().min(6),
+    password: Yup.string().min(8)
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      )
+      .required(),
     phone_number: Yup.string().required(),
     address: Yup.string().required(),
     role: Yup.string().oneOf(['super-admin', 'manager', 'employee']).required()

@@ -7,12 +7,13 @@ const modelFiles = fs
   .readdirSync(__dirname + "/../models/")
   .filter((file) => file.endsWith(".js"));
 
-const syncOptions = { force: false };
+const syncOptions = { force: process.env.SYNC_DB_FORCE === "true" };
 
 const sequelizeService = {
   connection: null,
   
-  init: async (syncOptions = null) => {
+
+  init: async () => {
     try {
       let connection = new Sequelize(databaseConfig);
       sequelizeService.connection = connection;

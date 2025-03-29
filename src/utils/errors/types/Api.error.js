@@ -84,6 +84,51 @@ export class TokenExpiredError extends ApiError {
   }
 }
 
+export class VerificationCodeExpiredError extends ApiError {
+  constructor(
+    message = DEFAULT_ERRORS.VERIFICATION_CODE_EXPIRED.message,
+    type = DEFAULT_ERRORS.VERIFICATION_CODE_EXPIRED.code
+  ) {
+    super(message, 400, type);
+  }
+}
+
+export class VerificationCodeInvalidError extends ApiError {
+  constructor(
+    message = DEFAULT_ERRORS.VERIFICATION_CODE_INVALID.message,
+    type = DEFAULT_ERRORS.VERIFICATION_CODE_INVALID.code
+  ) {
+    super(message, 400, type);
+  }
+}
+
+export class PasswordResetRequiredError extends ApiError {
+  constructor(
+    message = DEFAULT_ERRORS.PASSWORD_RESET_REQUIRED.message,
+    type = DEFAULT_ERRORS.PASSWORD_RESET_REQUIRED.code
+  ) {
+    super(message, 400, type);
+  }
+}
+
+export class InvalidResetTokenError extends ApiError {
+  constructor(
+    message = DEFAULT_ERRORS.INVALID_RESET_TOKEN.message,
+    type = DEFAULT_ERRORS.INVALID_RESET_TOKEN.code
+  ) {
+    super(message, 400, type);
+  }
+}
+
+export class ResetTokenUsedError extends ApiError {
+  constructor(
+    message = DEFAULT_ERRORS.RESET_TOKEN_USED.message,
+    type = DEFAULT_ERRORS.RESET_TOKEN_USED.code
+  ) {
+    super(message, 400, type);
+  }
+}
+
 export class CorsError extends ApiError {
   constructor(
     origin = null,
@@ -93,6 +138,14 @@ export class CorsError extends ApiError {
     const errorMessage = origin ? `${message}: ${origin}` : message;
     super(errorMessage, 403, type);
     this.origin = origin;
+  }
+}
+
+export class TooManyAttemptsError extends Error {
+  constructor(message = 'Too many attempts. Please try again later.') {
+    super(message);
+    this.name = 'TooManyAttemptsError';
+    this.statusCode = 429; // Too Many Requests
   }
 }
 

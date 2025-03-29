@@ -8,6 +8,12 @@ import {
     ForbiddenError,
     InternalServerError,
     CorsError,
+    VerificationCodeExpiredError,
+    VerificationCodeInvalidError,
+    PasswordResetRequiredError,
+    InvalidResetTokenError,
+    ResetTokenUsedError,
+    TooManyAttemptsError,
     isApiError
 } from "./types/Api.error";
 
@@ -27,6 +33,12 @@ module.exports = {
     ForbiddenError,
     InternalServerError,
     CorsError,
+    VerificationCodeExpiredError,
+    VerificationCodeInvalidError,
+    PasswordResetRequiredError,
+    InvalidResetTokenError,
+    ResetTokenUsedError,
+    TooManyAttemptsError,
     // Database Errors
     DatabaseError,
     // Utils

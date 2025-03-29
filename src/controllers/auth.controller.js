@@ -20,7 +20,12 @@ const authController = {
         const companySchema = Yup.object().shape({
           company_name: Yup.string().required(),
           email: Yup.string().email().required(),
-          password: Yup.string().required().min(6),
+          password: Yup.string().min(8)
+            .matches(
+              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+              'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+            )
+            .required(),
           phone_number: Yup.string().required(),
           location: Yup.string().required(),
           logo_url: Yup.string().required()
@@ -43,7 +48,7 @@ const authController = {
           throw new BadRequestError('Company with this email or name already exists');
         }
         
-        const password_hash = await bcrypt.hash(password, 8);
+        const password_hash = await bcrypt.hash(password, 12);
         
         const company = await CompanyRepository.create({
           ...req.body,
@@ -92,7 +97,7 @@ const authController = {
           name: Yup.string().required(),
           username: Yup.string().required(),
           email: Yup.string().email().required(),
-          password: Yup.string().required().min(6),
+          password: Yup.string().min(8).required(),
           phone_number: Yup.string().required(),
           address: Yup.string().required(),
           profile_picture_url: Yup.string().nullable()
@@ -115,7 +120,7 @@ const authController = {
           throw new BadRequestError('User with this email or username already exists');
         }
         
-        const password_hash = await bcrypt.hash(password, 8);
+        const password_hash = await bcrypt.hash(password, 12);
         const user = await UserRepository.create({
           ...req.body,
           acc_type: 'user',

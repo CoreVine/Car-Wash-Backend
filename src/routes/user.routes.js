@@ -13,7 +13,12 @@ const userRoutes = Router();
 const userCreateSchema = Yup.object().shape({
   name: Yup.string().required(),
   email: Yup.string().email().required(),
-  password: Yup.string().required().min(6),
+  password: Yup.string().min(8)
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    )
+    .required(),
   phone_number: Yup.string(),
   address: Yup.string(),
   profile_picture_url: Yup.string().nullable()
@@ -25,23 +30,10 @@ const userUpdateSchema = Yup.object().shape({
   phone_number: Yup.string(),
   address: Yup.string(),
   profile_picture_url: Yup.string().nullable(),
-  oldPassword: Yup.string().min(6),
+  oldPassword: Yup.string().min(8),
   password: Yup.string()
-    .min(6)
-    .when("oldPassword", (oldPassword, field) => {
-      if (oldPassword) {
-        return field.required();
-      } else {
-        return field;
-      }
-    }),
-  confirmPassword: Yup.string().when("password", (password, field) => {
-    if (password) {
-      return field.required().oneOf([Yup.ref("password")]);
-    } else {
-      return field;
-    }
-  }),
+    .min(8)
+    .required(),
 });
 
 const userIdParamSchema = Yup.object().shape({
