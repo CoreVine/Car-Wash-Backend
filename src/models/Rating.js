@@ -37,7 +37,7 @@ class Rating extends Model {
       {
         sequelize,
         modelName: 'Rating',
-        tableName: 'Ratings',
+        tableName: 'ratings',
         timestamps: false
       }
     );

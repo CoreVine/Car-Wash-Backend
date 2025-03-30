@@ -55,6 +55,10 @@ const ratingController = {
           ]
         });
         
+        // Calculate new average rating and update company
+        const averageRating = await RatingRepository.getAverageRatingByCompany(company_id);
+        await CompanyRepository.update(company_id, { total_rating: averageRating });
+        
         return res.success('Rating updated successfully', updatedRating);
       }
       
@@ -86,6 +90,10 @@ const ratingController = {
           }
         ]
       });
+
+      // Calculate new average rating and update company
+      const averageRating = await RatingRepository.getAverageRatingByCompany(company_id);
+      await CompanyRepository.update(company_id, { total_rating: averageRating });
 
       return res.success('Rating added successfully', completeRating);
     } catch (error) {
@@ -163,6 +171,10 @@ const ratingController = {
       
       // Delete the rating
       await RatingRepository.destroy(rating.id);
+      
+      // Calculate new average rating and update company
+      const averageRating = await RatingRepository.getAverageRatingByCompany(companyId);
+      await CompanyRepository.update(companyId, { total_rating: averageRating || 0 });
 
       return res.success('Rating deleted successfully');
     } catch (error) {

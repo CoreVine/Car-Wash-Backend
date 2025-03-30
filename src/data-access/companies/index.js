@@ -40,7 +40,6 @@ class CompanyRepository extends BaseRepository {
         }
     }
     
-    // New methods for common operations
     async findCompaniesWithApprovalStatus(approved = null, page = 1, limit = 10) {
         try {
             const whereClause = {};
@@ -48,15 +47,16 @@ class CompanyRepository extends BaseRepository {
                 whereClause.approved = approved;
             }
             
-            return await this.findWithPagination(
-                whereClause,
-                page,
+            return await this.model.findAndCountAll({
+                where: whereClause,
+                attributes: { 
+                    exclude: ['password_hash']
+                    // total_rating is already included in the Company model
+                },
                 limit,
-                [['created_at', 'DESC']],
-                {
-                    attributes: { exclude: ['password_hash'] }
-                }
-            );
+                offset: (page - 1) * limit,
+                order: [['created_at', 'DESC']]
+            });
         } catch (error) {
             throw new DatabaseError(error);
         }
@@ -84,14 +84,10 @@ class CompanyRepository extends BaseRepository {
                 include: [
                     {
                         association: 'employees',
-                        include: [{
-                            association: 'user',
-                            attributes: { exclude: ['password_hash'] }
-                        }]
+                        attributes: { exclude: ['password_hash'] }
                     },
                     {
-                        association: 'ratings',
-                        include: ['user']
+                        association: 'ratings'
                     },
                     {
                         association: 'products',
@@ -113,6 +109,23 @@ class CompanyRepository extends BaseRepository {
     async approveCompany(companyId) {
         try {
             return await this.update(companyId, { approved: true });
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
+
+    async findCompanyBasicDetails(companyId) {
+        try {
+            return await this.model.findByPk(companyId, {
+                attributes: { 
+                    exclude: [
+                        'password_hash',
+                        'created_at',
+                        'updated_at',
+                        'approved'
+                    ] 
+                }
+            });
         } catch (error) {
             throw new DatabaseError(error);
         }

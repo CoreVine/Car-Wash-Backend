@@ -21,5 +21,7 @@ module.exports = {
   rentalOrdersFactory: require('./rentalOrdersFactory'),
   orderStatusHistoryFactory: require('./orderStatusHistoryFactory'),
   ratingsFactory: require('./ratingsFactory'),
-  adFactory: require('./adFactory')
+  adFactory: require('./adFactory'),
+  washTypeFactory: require('./washTypeFactory'),
+  washOrderWashTypeFactory: require('./washOrderWashTypeFactory')
 };

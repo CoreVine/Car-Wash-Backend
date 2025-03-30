@@ -35,7 +35,6 @@ class ProductRepository extends BaseRepository {
         }
     }
     
-    // New methods
     async findProductsWithFilters({
         page = 1, 
         limit = 10, 
@@ -78,16 +77,23 @@ class ProductRepository extends BaseRepository {
                 {
                     model: this.model.sequelize.model('Company'),
                     as: 'company',
-                    attributes: ['company_id', 'company_name', 'logo_url']
+                    attributes: ['company_name', 'logo_url']
                 },
                 {
                     model: this.model.sequelize.model('ProductImage'),
-                    as: 'images'
+                    as: 'images',
+                    attributes: ['image_url']
                 },
                 {
                     model: this.model.sequelize.model('SubCategory'),
                     as: 'subCategories',
-                    through: { attributes: [] }
+                    attributes: ['name'],
+                    through: { attributes: [] },
+                    include: [{
+                        model: this.model.sequelize.model('Category'),
+                        as: 'category',
+                        attributes: ['category_name']
+                    }]
                 }
             ];
             
@@ -97,11 +103,7 @@ class ProductRepository extends BaseRepository {
                     includeOptions[2].where = { sub_category_id };
                 } else if (category_id) {
                     includeOptions[2].where = {};
-                    includeOptions[2].include = [{
-                        model: this.model.sequelize.model('Category'),
-                        as: 'category',
-                        where: { category_id }
-                    }];
+                    includeOptions[2].include[0].where = { category_id };
                 }
             }
             
@@ -124,18 +126,21 @@ class ProductRepository extends BaseRepository {
                     {
                         model: this.model.sequelize.model('Company'),
                         as: 'company',
-                        attributes: ['company_id', 'company_name', 'logo_url']
+                        attributes: ['company_name', 'logo_url']
                     },
                     {
                         model: this.model.sequelize.model('ProductImage'),
-                        as: 'images'
+                        as: 'images',
+                        attributes: ['image_url']
                     },
                     {
                         model: this.model.sequelize.model('SubCategory'),
                         as: 'subCategories',
+                        attributes: ['name'],
                         include: [{
                             model: this.model.sequelize.model('Category'),
-                            as: 'category'
+                            as: 'category',
+                            attributes: ['category_name']
                         }]
                     }
                 ]

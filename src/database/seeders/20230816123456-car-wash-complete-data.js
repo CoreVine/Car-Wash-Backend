@@ -49,6 +49,33 @@ module.exports = {
       console.log('Creating companies...');
       const companies = await factories.companyFactory.create(5, { approved: 1 });
       
+      // Add wash types for each company after creating companies
+      console.log('Creating wash types for companies...');
+      const washTypes = [];
+      const washTypeNames = [
+        'Basic Wash',
+        'Premium Wash',
+        'Deluxe Wash',
+        'Interior Cleaning',
+        'Exterior Polish',
+        'Full Service'
+      ];
+
+      for (const company of companies) {
+        // Each company has 3-5 wash types
+        const washTypeCount = Math.floor(Math.random() * 3) + 3;
+        
+        // Create wash types one by one instead of using the name array
+        for (let i = 0; i < washTypeCount; i++) {
+          const nameIndex = i % washTypeNames.length;
+          const companyWashType = await factories.washTypeFactory.create(1, {
+            company_id: company.company_id,
+            name: washTypeNames[nameIndex]
+          });
+          washTypes.push(companyWashType[0]);
+        }
+      }
+      
       // 7. Create company documents (depends on companies)
       console.log('Creating company documents...');
       for (const company of companies) {
@@ -217,12 +244,31 @@ module.exports = {
           order_type: 'wash'
         });
         
-        // Create car wash order
+        // Create wash order
         const washOrder = await factories.carWashOrdersFactory.create(1, {
           order_id: order[0].order_id,
           customer_id: randomUser.user_id,
           customer_car_id: randomCar.customer_car_id
         });
+        
+        // Get wash types for the company
+        const companyWashTypes = washTypes.filter(wt => wt.company_id === randomCompany.company_id);
+        
+        // Add 1-3 wash types to the order
+        if (companyWashTypes.length > 0) {
+          const typeCount = Math.min(Math.floor(Math.random() * 3) + 1, companyWashTypes.length);
+          const selectedTypes = companyWashTypes
+            .sort(() => 0.5 - Math.random())
+            .slice(0, typeCount);
+            
+          for (const washType of selectedTypes) {
+            await factories.washOrderWashTypeFactory.create(1, {
+              carwashorders_order_id: washOrder[0].wash_order_id,
+              WashTypes_type_id: washType.type_id,
+              paid_price: washType.price
+            });
+          }
+        }
         
         // Assign employee to wash order
         const companyEmployees = employees.filter(e => e.company_id === randomCompany.company_id);
@@ -317,6 +363,12 @@ module.exports = {
       // Remove data in reverse order of dependencies
       console.log('Removing ads...');
       await queryInterface.bulkDelete('Ads', null, {});
+      
+      console.log('Removing washorders_washtypes data...');
+      await queryInterface.bulkDelete('washorders_washtypes', null, {});
+      
+      console.log('Removing WashTypes data...');
+      await queryInterface.bulkDelete('WashTypes', null, {});
       
       console.log('Removing WashOrderOperation...');
       await queryInterface.bulkDelete('WashOrderOperation', null, {});

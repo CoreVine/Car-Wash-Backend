@@ -3,6 +3,7 @@ const { Op } = require("sequelize");
 // Import repositories
 const CompanyRepository = require("../data-access/companies");
 const CompanyDocumentRepository = require("../data-access/company-documents");
+const WashTypeRepository = require("../data-access/wash-types"); // Add this import
 const awsService = require("../services/aws.service");
 const { createPagination } = require("../utils/responseHandler");
 const {
@@ -46,6 +47,32 @@ const companyController = {
       next(error);
     }
   },
+  
+  getCompanyWithWashTypes: async (req, res, next) => {
+    try {
+      const { companyId } = req.params;
+      
+      // Use the new repository method that only gets basic company details
+      const company = await CompanyRepository.findCompanyBasicDetails(companyId);
+
+      if (!company) {
+        throw new NotFoundError('Company not found');
+      }
+      
+      // Get wash types for this company
+      const washTypes = await WashTypeRepository.findByCompanyId(companyId);
+      
+      // Combine the data
+      const result = {
+        ...company.toJSON(),
+        wash_types: washTypes
+      };
+
+      return res.success('Company with wash types retrieved successfully', result);
+    } catch (error) {
+      next(error);
+    }
+  },
 
   updateCompany: async (req, res, next) => {
     try {
@@ -62,7 +89,7 @@ const companyController = {
         throw new NotFoundError('Company not found');
       }
 
-      const { email, company_name } = req.body;
+      const { email, company_name, total_rating, ...otherData } = req.body;
 
       // Check if email or company name is being changed and already exists
       if ((email && email !== company.email) || (company_name && company_name !== company.company_name)) {
@@ -81,7 +108,13 @@ const companyController = {
         }
       }
 
-      await CompanyRepository.update(companyId, req.body);
+      // Prevent updating total_rating directly by excluding it from the update
+      await CompanyRepository.update(companyId, { 
+        email, 
+        company_name, 
+        ...otherData 
+      });
+      
       const updatedCompany = await CompanyRepository.findById(companyId, {
         attributes: { exclude: ['password_hash'] }
       });

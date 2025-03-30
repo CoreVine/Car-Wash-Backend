@@ -49,6 +49,12 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     try {
       // Remove data in reverse order of dependencies
+      console.log('Removing washorders_washtypes data...');
+      await queryInterface.bulkDelete('washorders_washtypes', null, {});
+      
+      console.log('Removing WashTypes data...');
+      await queryInterface.bulkDelete('WashTypes', null, {});
+      
       console.log('Removing WashOrderOperation data...');
       await queryInterface.bulkDelete('WashOrderOperation', null, {});
       

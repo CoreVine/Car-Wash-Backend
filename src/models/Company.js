@@ -39,6 +39,15 @@ class Company extends Model {
           type: DataTypes.BOOLEAN,
           allowNull: false
         },
+        about: {
+          type: DataTypes.TEXT,
+          allowNull: false
+        },
+        total_rating: {
+          type: DataTypes.TINYINT,
+          allowNull: false,
+          defaultValue: 0
+        },
         created_at: {
           type: DataTypes.DATE,
           allowNull: false,

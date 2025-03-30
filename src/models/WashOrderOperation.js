@@ -36,6 +36,10 @@ class WashOrderOperation extends Model {
             model: 'Employee',
             key: 'company_id'
           }
+        },
+        assignedEmployeeUserId: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true
         }
       },
       {

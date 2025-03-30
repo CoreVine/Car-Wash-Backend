@@ -22,7 +22,9 @@ const companyFactory = {
       location: faker.location.streetAddress(true),
       logo_url: faker.image.urlLoremFlickr({ category: 'business' }),
       password_hash: bcrypt.hashSync('company123', 8),
+      about: faker.company.catchPhrase() + '. ' + faker.company.buzzPhrase(),
       approved: faker.helpers.arrayElement([0, 1]),
+      total_rating: faker.number.int({ min: 0, max: 5 }),
       created_at: new Date(),
       updated_at: new Date()
     };

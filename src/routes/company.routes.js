@@ -36,14 +36,20 @@ const upload = multer({
 
 const companyRoutes = Router();
 
-// Removing /api prefix since it's added globally
-companyRoutes.get("/companies", authMiddleware, isAdminMiddleware, companyController.getAllCompanies);
+companyRoutes.get("/companies", companyController.getAllCompanies);
 
 companyRoutes.get(
   "/companies/:companyId", 
   authMiddleware,
   validate(companyIdParamSchema, 'params'),
   companyController.getCompany
+);
+
+// Update the route path to follow the naming pattern
+companyRoutes.get(
+  "/companies/:companyId/with-wash-types", 
+  validate(companyIdParamSchema, 'params'),
+  companyController.getCompanyWithWashTypes
 );
 
 companyRoutes.put(
