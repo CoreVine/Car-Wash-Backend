@@ -46,7 +46,7 @@ class CarWashOrder extends Model {
       {
         sequelize,
         modelName: 'CarWashOrder',
-        tableName: 'CarWashOrders',
+        tableName: 'carwashorders',
         timestamps: false
       }
     );

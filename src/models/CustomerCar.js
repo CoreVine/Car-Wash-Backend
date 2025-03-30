@@ -29,7 +29,7 @@ class CustomerCar extends Model {
       {
         sequelize,
         modelName: 'CustomerCar',
-        tableName: 'CustomerCar',
+        tableName: 'customercar',
         timestamps: false
       }
     );

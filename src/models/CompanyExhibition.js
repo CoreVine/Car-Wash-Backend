@@ -25,7 +25,7 @@ class CompanyExhibition extends Model {
       {
         sequelize,
         modelName: 'CompanyExhibition',
-        tableName: 'CompanyExhibition',
+        tableName: 'companyexhibition',
         timestamps: false
       }
     );

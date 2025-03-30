@@ -41,7 +41,7 @@ class Car extends Model {
       {
         sequelize,
         modelName: 'Car',
-        tableName: 'Cars',
+        tableName: 'cars',
         timestamps: false
       }
     );

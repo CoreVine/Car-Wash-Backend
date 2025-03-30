@@ -31,7 +31,7 @@ class Ad extends Model {
       {
         sequelize,
         modelName: 'Ad',
-        tableName: 'Ads',
+        tableName: 'ads',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'

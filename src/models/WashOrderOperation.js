@@ -45,7 +45,7 @@ class WashOrderOperation extends Model {
       {
         sequelize,
         modelName: 'WashOrderOperation',
-        tableName: 'WashOrderOperation',
+        tableName: 'washorderoperation',
         timestamps: false
       }
     );

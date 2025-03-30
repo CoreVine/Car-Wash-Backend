@@ -67,7 +67,7 @@ class Order extends Model {
       {
         sequelize,
         modelName: 'Order',
-        tableName: 'Orders',
+        tableName: 'orders',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'

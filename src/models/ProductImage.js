@@ -25,7 +25,7 @@ class ProductImage extends Model {
       {
         sequelize,
         modelName: 'ProductImage',
-        tableName: 'ProductsImages',
+        tableName: 'productsimages',
         timestamps: false
       }
     );

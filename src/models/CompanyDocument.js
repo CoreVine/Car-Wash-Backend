@@ -33,7 +33,7 @@ class CompanyDocument extends Model {
       {
         sequelize,
         modelName: 'CompanyDocument',
-        tableName: 'CompanyDocuments',
+        tableName: 'companydocuments',
         timestamps: false
       }
     );

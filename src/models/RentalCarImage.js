@@ -25,7 +25,7 @@ class RentalCarImage extends Model {
       {
         sequelize,
         modelName: 'RentalCarImage',
-        tableName: 'RentalCarsImages',
+        tableName: 'rentalcarsimages',
         timestamps: false
       }
     );

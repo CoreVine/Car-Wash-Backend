@@ -29,7 +29,7 @@ class SubCatProduct extends Model {
       {
         sequelize,
         modelName: 'SubCatProduct',
-        tableName: 'SubCatProduct',
+        tableName: 'subcatproduct',
         timestamps: false
       }
     );

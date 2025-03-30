@@ -37,7 +37,7 @@ class RentalOrder extends Model {
       {
         sequelize,
         modelName: 'RentalOrder',
-        tableName: 'RentalOrders',
+        tableName: 'rentalorders',
         timestamps: false
       }
     );

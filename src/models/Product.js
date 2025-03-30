@@ -47,7 +47,7 @@ class Product extends Model {
       {
         sequelize,
         modelName: 'Product',
-        tableName: 'Products',
+        tableName: 'products',
         timestamps: true,
         createdAt: 'created_at',
         updatedAt: 'updated_at'

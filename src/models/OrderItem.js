@@ -37,7 +37,7 @@ class OrderItem extends Model {
       {
         sequelize,
         modelName: 'OrderItem',
-        tableName: 'OrderItems',
+        tableName: 'orderitems',
         timestamps: false
       }
     );

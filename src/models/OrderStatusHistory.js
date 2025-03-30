@@ -30,7 +30,7 @@ class OrderStatusHistory extends Model {
       {
         sequelize,
         modelName: 'OrderStatusHistory',
-        tableName: 'OrderStatusHistory',
+        tableName: 'orderstatushistory',
         timestamps: false
       }
     );

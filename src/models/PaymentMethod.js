@@ -25,7 +25,7 @@ class PaymentMethod extends Model {
       {
         sequelize,
         modelName: 'PaymentMethod',
-        tableName: 'PaymentMethod',
+        tableName: 'paymentmethod',
         timestamps: false
       }
     );
