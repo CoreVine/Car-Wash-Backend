@@ -362,7 +362,7 @@ module.exports = {
     try {
       // Remove data in reverse order of dependencies
       console.log('Removing ads...');
-      await queryInterface.bulkDelete('Ads', null, {});
+      await queryInterface.bulkDelete('ads', null, {});
       
       console.log('Removing washorders_washtypes data...');
       await queryInterface.bulkDelete('washorders_washtypes', null, {});
@@ -370,68 +370,68 @@ module.exports = {
       console.log('Removing WashTypes data...');
       await queryInterface.bulkDelete('WashTypes', null, {});
       
-      console.log('Removing WashOrderOperation...');
-      await queryInterface.bulkDelete('WashOrderOperation', null, {});
+      console.log('Removing washorderoperation...');
+      await queryInterface.bulkDelete('washorderoperation', null, {});
       
-      console.log('Removing OrderStatusHistory...');
-      await queryInterface.bulkDelete('OrderStatusHistory', null, {});
+      console.log('Removing orderstatushistory...');
+      await queryInterface.bulkDelete('orderstatushistory', null, {});
       
-      console.log('Removing RentalOrders...');
-      await queryInterface.bulkDelete('RentalOrders', null, {});
+      console.log('Removing rentalorders...');
+      await queryInterface.bulkDelete('rentalorders', null, {});
       
-      console.log('Removing CarWashOrders...');
-      await queryInterface.bulkDelete('CarWashOrders', null, {});
+      console.log('Removing carwashorders...');
+      await queryInterface.bulkDelete('carwashorders', null, {});
       
-      console.log('Removing OrderItems...');
-      await queryInterface.bulkDelete('OrderItems', null, {});
+      console.log('Removing orderitems...');
+      await queryInterface.bulkDelete('orderitems', null, {});
       
-      console.log('Removing Orders...');
-      await queryInterface.bulkDelete('Orders', null, {});
+      console.log('Removing orders...');
+      await queryInterface.bulkDelete('orders', null, {});
       
-      console.log('Removing RentalCarsImages...');
-      await queryInterface.bulkDelete('RentalCarsImages', null, {});
+      console.log('Removing rentalcarsimages...');
+      await queryInterface.bulkDelete('rentalcarsimages', null, {});
       
-      console.log('Removing Cars...');
-      await queryInterface.bulkDelete('Cars', null, {});
+      console.log('Removing cars...');
+      await queryInterface.bulkDelete('cars', null, {});
       
-      console.log('Removing CompanyExhibition...');
-      await queryInterface.bulkDelete('CompanyExhibition', null, {});
+      console.log('Removing companyexhibition...');
+      await queryInterface.bulkDelete('companyexhibition', null, {});
       
-      console.log('Removing ProductsImages...');
-      await queryInterface.bulkDelete('ProductsImages', null, {});
+      console.log('Removing productsimages...');
+      await queryInterface.bulkDelete('productsimages', null, {});
       
-      console.log('Removing SubCatProduct...');
-      await queryInterface.bulkDelete('SubCatProduct', null, {});
+      console.log('Removing subcatproduct...');
+      await queryInterface.bulkDelete('subcatproduct', null, {});
       
-      console.log('Removing Products...');
-      await queryInterface.bulkDelete('Products', null, {});
+      console.log('Removing products...');
+      await queryInterface.bulkDelete('products', null, {});
       
-      console.log('Removing SubCategory...');
-      await queryInterface.bulkDelete('SubCategory', null, {});
+      console.log('Removing subcategory...');
+      await queryInterface.bulkDelete('subcategory', null, {});
       
-      console.log('Removing Category...');
-      await queryInterface.bulkDelete('Category', null, {});
+      console.log('Removing category...');
+      await queryInterface.bulkDelete('category', null, {});
       
-      console.log('Removing CustomerCar...');
-      await queryInterface.bulkDelete('CustomerCar', null, {});
+      console.log('Removing customercar...');
+      await queryInterface.bulkDelete('customercar', null, {});
       
-      console.log('Removing CompanyDocuments...');
-      await queryInterface.bulkDelete('CompanyDocuments', null, {});
+      console.log('Removing companydocuments...');
+      await queryInterface.bulkDelete('companydocuments', null, {});
       
-      console.log('Removing Ratings...');
-      await queryInterface.bulkDelete('Ratings', null, {});
+      console.log('Removing ratings...');
+      await queryInterface.bulkDelete('ratings', null, {});
       
-      console.log('Removing Employee...');
-      await queryInterface.bulkDelete('Employee', null, {});
+      console.log('Removing employee...');
+      await queryInterface.bulkDelete('employee', null, {});
       
-      console.log('Removing Company...');
-      await queryInterface.bulkDelete('Company', null, {});
+      console.log('Removing company...');
+      await queryInterface.bulkDelete('company', null, {});
       
-      console.log('Removing Users...');
-      await queryInterface.bulkDelete('Users', null, {});
+      console.log('Removing users...');
+      await queryInterface.bulkDelete('users', null, {});
       
-      console.log('Removing PaymentMethod...');
-      await queryInterface.bulkDelete('PaymentMethod', null, {});
+      console.log('Removing paymentmethod...');
+      await queryInterface.bulkDelete('paymentmethod', null, {});
       
       console.log('All seeded data has been removed.');
     } catch (error) {

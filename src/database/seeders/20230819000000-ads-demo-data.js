@@ -22,7 +22,7 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     // Remove ads data
-    await queryInterface.bulkDelete('Ads', null, {});
+    await queryInterface.bulkDelete('ads', null, {});
     console.log('All ads have been removed.');
   }
 };
