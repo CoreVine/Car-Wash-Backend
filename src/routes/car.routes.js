@@ -40,9 +40,9 @@ const carFilterSchema = Yup.object().shape({
   ),
   search: Yup.string(),
   available_from: Yup.date(),
-  available_to: Yup.date().when('available_from', (available_from, schema) => 
-    available_from ? schema.min(available_from) : schema
-  )
+  // available_to: Yup.date().when('available_from', (available_from, schema) => 
+  //   available_from ? schema.min(available_from) : schema
+  // )
 });
 
 const carIdParamSchema = Yup.object().shape({

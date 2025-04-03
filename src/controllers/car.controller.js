@@ -64,7 +64,8 @@ const carController = {
         max_year: req.query.max_year,
         search: req.query.search,
         available_from: req.query.available_from,
-        available_to: req.query.available_to
+        available_to: req.query.available_to,
+        only_available: !!req.query.only_available
       });
 
       const pagination = createPagination(page, limit, count);

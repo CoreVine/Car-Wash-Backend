@@ -51,7 +51,8 @@ class CarRepository extends BaseRepository {
         max_year = null,
         search = null,
         available_from = null,
-        available_to = null
+        available_to = null,
+        only_available = false
     }) {
         try {
             const whereClause = {};
@@ -106,6 +107,22 @@ class CarRepository extends BaseRepository {
                     association: 'images'
                 }
             ];
+
+            if (only_available) {
+                includeOptions.push({
+                    model: this.model.sequelize.model('RentalOrder'),
+                    as: 'rentalOrders',
+                    required: false
+                });
+                
+                whereClause[Op.not] = {
+                    car_id: {
+                        [Op.in]: literal(`(
+                          SELECT car_id FROM rentalorders
+                        )`)
+                    }
+                };
+            }
             
             // Advanced filtering for availability
             if (available_from && available_to) {
