@@ -33,7 +33,7 @@ class WashType extends Model {
       {
         sequelize,
         modelName: 'WashType',
-        tableName: 'WashTypes',
+        tableName: 'washtypes',
         timestamps: false
       }
     );

@@ -17,7 +17,7 @@ class WashOrderWashType extends Model {
           type: DataTypes.INTEGER,
           primaryKey: true,
           references: {
-            model: 'WashTypes',
+            model: 'washtypes',
             key: 'type_id'
           },
           field: 'WashTypes_type_id'
