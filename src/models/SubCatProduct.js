@@ -38,7 +38,16 @@ class SubCatProduct extends Model {
   }
 
   static associate(models) {
-    // This is a join table, so no additional associations needed
+    // Add associations to both Product and SubCategory
+    this.belongsTo(models.Product, {
+      foreignKey: 'product_id',
+      as: 'product'
+    });
+    
+    this.belongsTo(models.SubCategory, {
+      foreignKey: 'sub_category_id',
+      as: 'subCategory'
+    });
   }
 }
 

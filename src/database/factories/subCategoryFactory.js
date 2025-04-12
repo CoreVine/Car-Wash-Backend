@@ -22,7 +22,8 @@ const subCategoryFactory = {
   
   makeOne(attrs = {}) {
     const defaultAttrs = {
-      name: faker.commerce.productAdjective() + ' ' + faker.commerce.product()
+      name: faker.commerce.productAdjective() + ' ' + faker.commerce.product(),
+      icon: faker.helpers.arrayElement(['fa-car-wash', 'fa-spray-can', 'fa-tire', 'fa-oil-can', 'fa-gas-pump'])
     };
     
     return { ...defaultAttrs, ...attrs };

@@ -12,7 +12,6 @@ const syncOptions = { force: process.env.SYNC_DB_FORCE === "true" };
 const sequelizeService = {
   connection: null,
   
-
   init: async () => {
     try {
       let connection = new Sequelize(databaseConfig);
@@ -38,8 +37,21 @@ const sequelizeService = {
       
       // Sync database if syncOptions is provided
       if (process.env.SYNC_DATABASE === "true") {
-        await connection.sync(syncOptions);
-        console.log("[SEQUELIZE] Database synchronized successfully");
+        if (syncOptions.force && databaseConfig.dialect === 'mysql') {
+          // For MySQL, temporarily disable foreign key checks
+          await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+          try {
+            await connection.sync(syncOptions);
+            console.log("[SEQUELIZE] Database synchronized successfully");
+          } finally {
+            // Re-enable foreign key checks
+            await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+          }
+        } else {
+          // For other dialects or when force is false, use normal sync
+          await connection.sync(syncOptions);
+          console.log("[SEQUELIZE] Database synchronized successfully");
+        }
       }
       
       return connection;

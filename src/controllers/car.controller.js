@@ -5,6 +5,7 @@ import RentalCarImageRepository from "../data-access/rental-car-images";
 import RentalOrderRepository from "../data-access/rental-orders";
 import CompanyExhibitionRepository from "../data-access/company-exhibitions";
 import CompanyRepository from "../data-access/companies";
+import CarBrandRepository from "../data-access/car-brands";
 const awsService = require("../services/aws.service");
 const { createPagination } = require("../utils/responseHandler");
 const loggingService = require("../services/logging.service");
@@ -18,7 +19,7 @@ const {
 const carController = {
   addCar: async (req, res, next) => {
     try {
-      const { model, year, price_per_day, exhibition_id } = req.body;
+      const { model, year, price_per_day, exhibition_id, carbrand_id } = req.body;
       
       // Verify exhibition belongs to this company
       const exhibition = await CompanyExhibitionRepository.findOne({
@@ -31,6 +32,13 @@ const carController = {
       if (!exhibition) {
         throw new BadRequestError('Exhibition not found or does not belong to your company');
       }
+      
+      // Verify brand exists
+      const brand = await CarBrandRepository.findById(carbrand_id);
+      
+      if (!brand) {
+        throw new BadRequestError('Car brand not found');
+      }
 
       // Create the car
       const car = await CarRepository.create({
@@ -38,6 +46,7 @@ const carController = {
         year,
         price_per_day,
         exhibition_id,
+        carbrand_id,
         company_id: req.company.company_id
       });
 
@@ -58,6 +67,7 @@ const carController = {
         limit,
         company_id: req.query.company_id,
         exhibition_id: req.query.exhibition_id,
+        carbrand_id: req.query.brand_id, // Add brand filtering
         min_price: req.query.min_price,
         max_price: req.query.max_price,
         min_year: req.query.min_year,
@@ -81,7 +91,7 @@ const carController = {
       const { carId } = req.params;
       
       // Use new repository method for detailed car info
-      const car = await CarRepository.findCarWithFullDetails(carId);
+      const car = await CarRepository.findCarWithFullDetailsUser(carId);
 
       if (!car) {
         throw new NotFoundError('Car not found');
@@ -122,6 +132,15 @@ const carController = {
         }
       }
       
+      // If brand is being changed, verify it exists
+      if (req.body.carbrand_id && req.body.carbrand_id !== car.carbrand_id) {
+        const brand = await CarBrandRepository.findById(req.body.carbrand_id);
+        
+        if (!brand) {
+          throw new BadRequestError('Car brand not found');
+        }
+      }
+      
       // Update car
       await car.update(req.body);
       
@@ -131,6 +150,10 @@ const carController = {
           {
             model: CompanyExhibition,
             as: 'exhibition'
+          },
+          {
+            model: CarBrand,
+            as: 'brand'
           },
           {
             model: RentalCarImage,

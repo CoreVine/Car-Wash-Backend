@@ -57,13 +57,74 @@ const productController = {
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 10;
       
-      // Use the new repository method with filters from query params
+      // If category_id is specifically provided without sub_category_id
+      if (req.query.category_id && !req.query.sub_category_id) {
+        const categoryId = req.query.category_id;
+        
+        // Check if category exists
+        const category = await CategoryRepository.findById(categoryId);
+        
+        if (!category) {
+          throw new NotFoundError('Category not found');
+        }
+        
+        // Use the repository method to get products by category ID
+        const productAssociations = await SubCatProductRepository.findByCategoryId(categoryId, {
+          limit,
+          offset: (page - 1) * limit
+        });
+        
+        // Extract products from associations
+        const products = productAssociations.map(assoc => assoc.product);
+        
+        // Count total products for pagination
+        const totalCount = await SubCatProductRepository.model.count({
+          include: [{
+            association: 'subCategory',
+            where: { category_id: categoryId }
+          }]
+        });
+        
+        const pagination = createPagination(page, limit, totalCount);
+        
+        return res.success('Products retrieved successfully', products, pagination);
+      }
+      
+      // If sub_category_id is specifically provided
+      if (req.query.sub_category_id) {
+        const subCategoryId = req.query.sub_category_id;
+        
+        // Check if subcategory exists
+        const subCategory = await SubCategoryRepository.findById(subCategoryId);
+        
+        if (!subCategory) {
+          throw new NotFoundError('Subcategory not found');
+        }
+        
+        // Use the repository method to get products by subcategory ID
+        const productAssociations = await SubCatProductRepository.findBySubCategoryId(subCategoryId, {
+          limit,
+          offset: (page - 1) * limit
+        });
+        
+        // Extract products from associations
+        const products = productAssociations.map(assoc => assoc.product);
+        
+        // Count total products for pagination
+        const totalCount = await SubCatProductRepository.model.count({
+          where: { sub_category_id: subCategoryId }
+        });
+        
+        const pagination = createPagination(page, limit, totalCount);
+        
+        return res.success('Products retrieved successfully', products, pagination);
+      }
+      
+      // For all other cases, use the general filtering approach
       const { count, rows } = await ProductRepository.findProductsWithFilters({
         page,
         limit,
         company_id: req.query.company_id,
-        category_id: req.query.category_id,
-        sub_category_id: req.query.sub_category_id,
         min_price: req.query.min_price,
         max_price: req.query.max_price,
         search: req.query.search

@@ -12,6 +12,11 @@ class Category extends Model {
         category_name: {
           type: DataTypes.STRING(255),
           allowNull: false
+        },
+        icon: {
+          type: DataTypes.STRING(255),
+          allowNull: true,
+          comment: 'URL, font icon class, or file path for category icon'
         }
       },
       {

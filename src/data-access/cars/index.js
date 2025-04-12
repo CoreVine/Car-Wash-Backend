@@ -32,7 +32,7 @@ class CarRepository extends BaseRepository {
     async findWithImages(carId) {
         try {
             return await this.model.findByPk(carId, {
-                include: ['images', 'company', 'exhibition']
+                include: ['images', 'company', 'exhibition', 'brand']
             });
         } catch (error) {
             throw new DatabaseError(error);
@@ -45,6 +45,7 @@ class CarRepository extends BaseRepository {
         limit = 10, 
         company_id = null, 
         exhibition_id = null,
+        carbrand_id = null,
         min_price = null,
         max_price = null,
         min_year = null,
@@ -65,6 +66,11 @@ class CarRepository extends BaseRepository {
             // Filter by exhibition
             if (exhibition_id) {
                 whereClause.exhibition_id = exhibition_id;
+            }
+            
+            // Filter by brand
+            if (carbrand_id) {
+                whereClause.carbrand_id = carbrand_id;
             }
             
             // Filter by price range
@@ -102,6 +108,9 @@ class CarRepository extends BaseRepository {
                 },
                 {
                     association: 'exhibition'
+                },
+                {
+                    association: 'brand'
                 },
                 {
                     association: 'images'
@@ -159,7 +168,7 @@ class CarRepository extends BaseRepository {
         }
     }
     
-    async findCarWithFullDetails(carId) {
+    async findCarWithFullDetailsAdmin(carId) {
         try {
             return await this.model.findByPk(carId, {
                 include: [
@@ -168,8 +177,10 @@ class CarRepository extends BaseRepository {
                         attributes: ['company_id', 'company_name', 'logo_url', 'location']
                     },
                     {
-                        association: 'exhibition',
-                        include: ['company']
+                        association: 'exhibition'
+                    },
+                    {
+                        association: 'brand'
                     },
                     {
                         association: 'images'
@@ -183,6 +194,30 @@ class CarRepository extends BaseRepository {
                             association: 'order',
                             include: ['user']
                         }]
+                    }
+                ]
+            });
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
+
+    async findCarWithFullDetailsUser(carId) {
+        try {
+            return await this.model.findByPk(carId, {
+                include: [
+                    {
+                        association: 'company',
+                        attributes: ['company_id', 'company_name', 'logo_url', 'location']
+                    },
+                    {
+                        association: 'exhibition'
+                    },
+                    {
+                        association: 'brand'
+                    },
+                    {
+                        association: 'images'
                     }
                 ]
             });

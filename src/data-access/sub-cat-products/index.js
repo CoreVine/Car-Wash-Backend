@@ -22,8 +22,39 @@ class SubCatProductRepository extends BaseRepository {
         try {
             return await this.model.findAll({
                 where: { sub_category_id: subCategoryId },
+                include: [
+                    {
+                        model: this.model.sequelize.model('Product'),
+                        as: 'product'
+                    }
+                ],
                 ...options
             });
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
+    
+    async findByCategoryId(categoryId, options = {}) {
+        try {
+            // First get all subcategories for this category
+            const subCategories = await this.model.sequelize.model('SubCategory').findAll({
+                where: { category_id: categoryId },
+                include: [{
+                    association: 'subCatProducts',
+                    include: [{
+                        model: this.model.sequelize.model('Product'),
+                        as: 'product'
+                    }]
+                }]
+            });
+            
+            // Extract and flatten the product associations
+            const subCatProducts = subCategories.flatMap(subCat => 
+                subCat.subCatProducts || []
+            );
+            
+            return subCatProducts;
         } catch (error) {
             throw new DatabaseError(error);
         }

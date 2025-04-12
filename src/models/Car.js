@@ -36,6 +36,14 @@ class Car extends Model {
             model: 'CompanyExhibition',
             key: 'exhibition_id'
           }
+        },
+        carbrand_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'CarBrand',
+            key: 'brand_id'
+          }
         }
       },
       {
@@ -57,6 +65,10 @@ class Car extends Model {
     this.belongsTo(models.CompanyExhibition, {
       foreignKey: 'exhibition_id',
       as: 'exhibition'
+    });
+    this.belongsTo(models.CarBrand, {
+      foreignKey: 'carbrand_id',
+      as: 'brand'
     });
     this.hasMany(models.RentalOrder, {
       foreignKey: 'car_id',

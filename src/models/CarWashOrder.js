@@ -73,8 +73,8 @@ class CarWashOrder extends Model {
     });
     this.belongsToMany(models.WashType, {
       through: models.WashOrderWashType,
-      foreignKey: 'carwashorders_order_id',
-      otherKey: 'WashTypes_type_id',
+      foreignKey: 'order_id',
+      otherKey: 'type_id',
       as: 'washTypes'
     });
   }

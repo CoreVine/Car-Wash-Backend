@@ -17,6 +17,10 @@ class Ad extends Model {
           type: DataTypes.STRING(255),
           allowNull: false
         },
+        link_url: {
+          type: DataTypes.STRING(255),
+          allowNull: true
+        },
         created_at: {
           type: DataTypes.DATE,
           allowNull: false,

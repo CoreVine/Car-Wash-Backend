@@ -52,6 +52,9 @@ class SubCategoryRepository extends BaseRepository {
                     },
                     {
                         association: 'category'
+                    },
+                    {
+                        association: 'subCatProducts'
                     }
                 ]
             });

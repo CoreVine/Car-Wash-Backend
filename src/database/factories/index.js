@@ -1,4 +1,6 @@
 // Export all factories to make them easier to import
+const carBrandFactory = require('./carBrandFactory');
+
 module.exports = {
   userFactory: require('./userFactory'),
   companyFactory: require('./companyFactory'),
@@ -23,5 +25,6 @@ module.exports = {
   ratingsFactory: require('./ratingsFactory'),
   adFactory: require('./adFactory'),
   washTypeFactory: require('./washTypeFactory'),
-  washOrderWashTypeFactory: require('./washOrderWashTypeFactory')
+  washOrderWashTypeFactory: require('./washOrderWashTypeFactory'),
+  carBrandFactory
 };

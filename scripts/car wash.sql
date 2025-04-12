@@ -4,15 +4,6 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
--- -----------------------------------------------------
--- Schema car-wash
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `car-wash` ;
-
--- -----------------------------------------------------
--- Schema car-wash
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `car-wash` DEFAULT CHARACTER SET utf8mb3 ;
 USE `car-wash` ;
 
 -- -----------------------------------------------------
@@ -22,11 +13,24 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`ads` (
   `ad_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
   `image_url` VARCHAR(255) NOT NULL,
+  `link_url` VARCHAR(255) NULL DEFAULT NULL,
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,
   PRIMARY KEY (`ad_id`))
 ENGINE = InnoDB
 AUTO_INCREMENT = 11
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car-wash`.`carbrand`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car-wash`.`carbrand` (
+  `brand_id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NOT NULL,
+  `logo` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`brand_id`))
+ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -42,15 +46,15 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`company` (
   `logo_url` VARCHAR(255) NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `approved` TINYINT(1) NOT NULL,
+  `about` TEXT NOT NULL,
+  `total_rating` TINYINT NOT NULL DEFAULT '0',
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,
-  `about` TEXT NOT NULL,
-  `total_rating` TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`company_id`),
   UNIQUE INDEX `company_name` (`company_name` ASC) VISIBLE,
   UNIQUE INDEX `email` (`email` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 9
+AUTO_INCREMENT = 19
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -69,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`companyexhibition` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 6
+AUTO_INCREMENT = 35
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -83,9 +87,14 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`cars` (
   `year` INT NOT NULL,
   `price_per_day` DECIMAL(8,2) NOT NULL,
   `exhibition_id` INT UNSIGNED NOT NULL,
+  `carbrand_id` INT NOT NULL,
   PRIMARY KEY (`car_id`),
   INDEX `company_id` (`company_id` ASC) VISIBLE,
   INDEX `exhibition_id` (`exhibition_id` ASC) VISIBLE,
+  INDEX `cars_brand_fk_idx` (`carbrand_id` ASC) VISIBLE,
+  CONSTRAINT `cars_brand_fk`
+    FOREIGN KEY (`carbrand_id`)
+    REFERENCES `car-wash`.`carbrand` (`brand_id`),
   CONSTRAINT `cars_ibfk_1`
     FOREIGN KEY (`company_id`)
     REFERENCES `car-wash`.`company` (`company_id`)
@@ -95,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`cars` (
     REFERENCES `car-wash`.`companyexhibition` (`exhibition_id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 26
+AUTO_INCREMENT = 158
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -118,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`users` (
   UNIQUE INDEX `username` (`username` ASC) VISIBLE,
   UNIQUE INDEX `email` (`email` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 65
+AUTO_INCREMENT = 134
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -132,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`paymentmethod` (
   `secret_key` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`payment_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
+AUTO_INCREMENT = 10
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -169,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`orders` (
     REFERENCES `car-wash`.`paymentmethod` (`payment_id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 51
+AUTO_INCREMENT = 103
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -188,7 +197,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`customercar` (
     REFERENCES `car-wash`.`users` (`user_id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 38
+AUTO_INCREMENT = 93
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -219,7 +228,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`carwashorders` (
     REFERENCES `car-wash`.`customercar` (`customer_car_id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 16
+AUTO_INCREMENT = 18
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -229,9 +238,10 @@ DEFAULT CHARACTER SET = utf8mb3;
 CREATE TABLE IF NOT EXISTS `car-wash`.`category` (
   `category_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `category_name` VARCHAR(255) NOT NULL,
+  `icon` VARCHAR(255) NULL DEFAULT NULL COMMENT 'URL, font icon class, or file path for category icon',
   PRIMARY KEY (`category_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
+AUTO_INCREMENT = 13
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -252,7 +262,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`companydocuments` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 16
+AUTO_INCREMENT = 46
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -266,7 +276,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`employee` (
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,
   PRIMARY KEY (`user_id`, `company_id`),
-  UNIQUE INDEX `Employee_user_id_company_id_unique` (`user_id` ASC, `company_id` ASC) VISIBLE,
+  UNIQUE INDEX `employee_user_id_company_id_unique` (`user_id` ASC, `company_id` ASC) VISIBLE,
   INDEX `company_id` (`company_id` ASC) VISIBLE,
   CONSTRAINT `employee_ibfk_1`
     FOREIGN KEY (`user_id`)
@@ -302,7 +312,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`products` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 42
+AUTO_INCREMENT = 113
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -328,7 +338,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`orderitems` (
     REFERENCES `car-wash`.`products` (`product_id`)
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 78
+AUTO_INCREMENT = 208
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -348,7 +358,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`orderstatushistory` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 101
+AUTO_INCREMENT = 201
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -367,7 +377,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`productsimages` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 124
+AUTO_INCREMENT = 337
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -410,7 +420,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`rentalcarsimages` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 101
+AUTO_INCREMENT = 629
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -448,6 +458,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`subcategory` (
   `sub_category_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `category_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(255) NOT NULL,
+  `icon` VARCHAR(255) NULL DEFAULT NULL COMMENT 'URL, font icon class, or file path for subcategory icon',
   PRIMARY KEY (`sub_category_id`),
   INDEX `category_id` (`category_id` ASC) VISIBLE,
   CONSTRAINT `subcategory_ibfk_1`
@@ -456,7 +467,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`subcategory` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 37
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -468,7 +479,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`subcatproduct` (
   `product_id` INT UNSIGNED NOT NULL,
   `sub_category_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `SubCatProduct_sub_category_id_product_id_unique` (`product_id` ASC, `sub_category_id` ASC) VISIBLE,
+  UNIQUE INDEX `subcatproduct_sub_category_id_product_id_unique` (`product_id` ASC, `sub_category_id` ASC) VISIBLE,
   INDEX `sub_category_id` (`sub_category_id` ASC) VISIBLE,
   CONSTRAINT `subcatproduct_ibfk_1`
     FOREIGN KEY (`product_id`)
@@ -481,7 +492,7 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`subcatproduct` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 69
+AUTO_INCREMENT = 170
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -495,20 +506,18 @@ CREATE TABLE IF NOT EXISTS `car-wash`.`verification_codes` (
   `type` ENUM('password_reset', 'email_verification', 'account_activation') NOT NULL DEFAULT 'password_reset',
   `verified` TINYINT(1) NOT NULL DEFAULT '0',
   `reset_token` VARCHAR(64) NULL DEFAULT NULL,
-  `reset_token_secret` VARCHAR(64) NULL DEFAULT NULL,
-  `device_identifier` VARCHAR(255) NULL DEFAULT NULL,
-  `attempt_count` INT NOT NULL DEFAULT '0',
   `token_used` TINYINT(1) NOT NULL DEFAULT '0',
+  `attempt_count` INT NOT NULL DEFAULT '0',
   `expires_at` DATETIME NOT NULL,
   `account_type` ENUM('user', 'company', 'employee') NOT NULL,
   `createdAt` DATETIME NOT NULL,
   `updatedAt` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `reset_token` (`reset_token` ASC) VISIBLE,
-  INDEX `verification_code_email_idx` (`email` ASC) VISIBLE,
-  INDEX `verification_code_email_type_idx` (`email` ASC, `type` ASC) VISIBLE)
+  INDEX `verification_code_email_type_idx` (`email` ASC, `type` ASC) VISIBLE,
+  INDEX `verification_code_reset_token_idx` (`reset_token` ASC) VISIBLE,
+  INDEX `verification_code_expires_at_idx` (`expires_at` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 6
 DEFAULT CHARACTER SET = utf8mb3;
 
 
@@ -541,22 +550,23 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `car-wash`.`WashTypes`
+-- Table `car-wash`.`washtypes`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `car-wash`.`WashTypes` (
-  `type_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `car-wash`.`washtypes` (
+  `type_id` INT NOT NULL AUTO_INCREMENT,
   `company_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(45) NOT NULL,
   `price` MEDIUMINT NOT NULL,
-  `description` TEXT NULL,
+  `description` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`type_id`),
-  INDEX `fk_WashTypes_company1_idx` (`company_id` ASC) VISIBLE,
-  CONSTRAINT `fk_WashTypes_company1`
+  INDEX `company_id` (`company_id` ASC) VISIBLE,
+  CONSTRAINT `washtypes_ibfk_1`
     FOREIGN KEY (`company_id`)
     REFERENCES `car-wash`.`company` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 58
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
@@ -564,21 +574,22 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `car-wash`.`washorders_washtypes` (
   `carwashorders_order_id` INT UNSIGNED NOT NULL,
-  `WashTypes_type_id` INT UNSIGNED NOT NULL,
+  `WashTypes_type_id` INT NOT NULL,
   `paid_price` MEDIUMINT NOT NULL,
   PRIMARY KEY (`carwashorders_order_id`, `WashTypes_type_id`),
-  INDEX `fk_carwashorders_has_WashTypes_WashTypes1_idx` (`WashTypes_type_id` ASC) VISIBLE,
-  INDEX `fk_carwashorders_has_WashTypes_carwashorders1_idx` (`carwashorders_order_id` ASC) VISIBLE,
-  CONSTRAINT `fk_carwashorders_has_WashTypes_carwashorders1`
+  UNIQUE INDEX `washorders_washtypes_type_id_order_id_unique` (`carwashorders_order_id` ASC, `WashTypes_type_id` ASC) VISIBLE,
+  UNIQUE INDEX `wash_order_type_unique` (`carwashorders_order_id` ASC, `WashTypes_type_id` ASC) VISIBLE,
+  INDEX `WashTypes_type_id` (`WashTypes_type_id` ASC) VISIBLE,
+  CONSTRAINT `washorders_washtypes_ibfk_1`
     FOREIGN KEY (`carwashorders_order_id`)
     REFERENCES `car-wash`.`carwashorders` (`wash_order_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_carwashorders_has_WashTypes_WashTypes1`
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `washorders_washtypes_ibfk_2`
     FOREIGN KEY (`WashTypes_type_id`)
-    REFERENCES `car-wash`.`WashTypes` (`type_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `car-wash`.`washtypes` (`type_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 

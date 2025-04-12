@@ -76,6 +76,17 @@ module.exports = {
         }
       }
       
+      // NEW STEP: Create car brands before creating rental cars
+      console.log('Creating car brands...');
+      const carBrandNames = [
+        'Toyota', 'Honda', 'BMW', 'Mercedes-Benz', 'Audi', 
+        'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan'
+      ];
+      
+      const carBrands = await factories.carBrandFactory.create(carBrandNames.length, {
+        name: carBrandNames
+      });
+      
       // 7. Create company documents (depends on companies)
       console.log('Creating company documents...');
       for (const company of companies) {
@@ -164,22 +175,47 @@ module.exports = {
         exhibitions.push(...companyExhibitions);
       }
       
-      // 14. Create rental cars (depends on companies and exhibitions)
+      // 14. Create rental cars (depends on companies, exhibitions and car brands)
       console.log('Creating rental cars...');
       const cars = [];
+      const carModels = {
+        'Toyota': ['Corolla', 'Camry', 'RAV4', 'Highlander', 'Tacoma'],
+        'Honda': ['Civic', 'Accord', 'CR-V', 'Pilot', 'Odyssey'],
+        'BMW': ['3 Series', '5 Series', 'X3', 'X5', '7 Series'],
+        'Mercedes-Benz': ['C-Class', 'E-Class', 'GLC', 'GLE', 'S-Class'],
+        'Audi': ['A3', 'A4', 'Q5', 'Q7', 'A6'],
+        'Ford': ['F-150', 'Explorer', 'Escape', 'Mustang', 'Edge'],
+        'Chevrolet': ['Silverado', 'Equinox', 'Malibu', 'Traverse', 'Tahoe'],
+        'Hyundai': ['Elantra', 'Sonata', 'Tucson', 'Santa Fe', 'Kona'],
+        'Kia': ['Forte', 'Optima', 'Sportage', 'Sorento', 'Telluride'],
+        'Nissan': ['Altima', 'Rogue', 'Sentra', 'Pathfinder', 'Maxima']
+      };
+      
       for (const exhibition of exhibitions) {
         // Each exhibition has 3-7 cars
         const carCount = Math.floor(Math.random() * 5) + 3;
-        const exhibitionCars = await factories.carsFactory.create(carCount, {
-          company_id: exhibition.company_id,
-          exhibition_id: exhibition.exhibition_id
-        });
-        cars.push(...exhibitionCars);
         
-        // 15. Create car images (depends on cars)
-        for (const car of exhibitionCars) {
+        for (let i = 0; i < carCount; i++) {
+          // Select a random brand
+          const randomBrand = carBrands[Math.floor(Math.random() * carBrands.length)];
+          
+          // Select a model from this brand
+          const brandModels = carModels[randomBrand.name] || ['Model S', 'Model X', 'Model Y'];
+          const randomModel = brandModels[Math.floor(Math.random() * brandModels.length)];
+          
+          // Create the car with model name and brand ID
+          const car = await factories.carsFactory.create(1, {
+            company_id: exhibition.company_id,
+            exhibition_id: exhibition.exhibition_id,
+            model: `${randomBrand.name} ${randomModel}`,
+            carbrand_id: randomBrand.brand_id
+          });
+          
+          cars.push(...car);
+          
+          // 15. Create car images (depends on cars)
           await factories.rentalCarsImagesFactory.create(4, {
-            car_id: car.car_id
+            car_id: car[0].car_id
           });
         }
       }
@@ -263,8 +299,8 @@ module.exports = {
             
           for (const washType of selectedTypes) {
             await factories.washOrderWashTypeFactory.create(1, {
-              carwashorders_order_id: washOrder[0].wash_order_id,
-              WashTypes_type_id: washType.type_id,
+              order_id: washOrder[0].wash_order_id,        // Use order_id instead of carwashorders_order_id
+              type_id: washType.type_id,                  // Use type_id instead of WashTypes_type_id
               paid_price: washType.price
             });
           }

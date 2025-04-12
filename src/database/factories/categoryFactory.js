@@ -15,7 +15,8 @@ const categoryFactory = {
   
   makeOne(attrs = {}) {
     const defaultAttrs = {
-      category_name: faker.commerce.department()
+      category_name: faker.commerce.department(),
+      icon: faker.helpers.arrayElement(['fa-car', 'fa-tools', 'fa-cog', 'fa-shopping-cart', 'fa-wrench'])
     };
     
     return { ...defaultAttrs, ...attrs };
