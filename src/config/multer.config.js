@@ -7,6 +7,20 @@ const { v4: uuidv4 } = require('uuid');
 const loggingService = require("../services/logging.service");
 const logger = loggingService.getLogger();
 
+
+// Create a custom middleware to check for file upload
+const requireFileUpload = (fieldName) => (req, res, next) => {
+  if (!req.file) {
+    return res.status(400).json({
+      status: 'error',
+      message: `${fieldName} is required`,
+      code: 'BAD_REQUEST',
+      data: null
+    });
+  }
+  next();
+};
+
 /**
  * Predefined file type filters
  */
@@ -296,5 +310,6 @@ module.exports = {
   createUploader,
   fileFilters,
   createFileFilter,
-  deleteUploadedFile
+  deleteUploadedFile,
+  requireFileUpload
 };

@@ -5,7 +5,7 @@ const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
 const isAdminMiddleware = require("../middlewares/isAdmin.middleware");
 const validate = require("../middlewares/validation.middleware");
 const Yup = require("yup");
-const multer = require("multer");
+const { createUploader, requireFileUpload } = require("../config/multer.config");
 
 // Define validation schemas
 const productSchema = Yup.object().shape({
@@ -28,8 +28,16 @@ const categorySchema = Yup.object().shape({
   category_name: Yup.string().required()
 });
 
+const categoryUpdateSchema = Yup.object().shape({
+  category_name: Yup.string()
+});
+
 const subCategorySchema = Yup.object().shape({
   name: Yup.string().required()
+});
+
+const subCategoryUpdateSchema = Yup.object().shape({
+  name: Yup.string()
 });
 
 const productFilterSchema = Yup.object().shape({
@@ -50,14 +58,34 @@ const categoryIdParamSchema = Yup.object().shape({
   categoryId: Yup.number().integer().positive().required()
 });
 
+const subCategoryIdParamSchema = Yup.object().shape({
+  subCategoryId: Yup.number().integer().positive().required()
+});
+
 const imageIdParamSchema = Yup.object().shape({
   imageId: Yup.number().integer().positive().required()
 });
 
-// Configure multer for file uploads
-const upload = multer({ 
-  dest: 'uploads/',
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+// Configure uploaders
+const productImageUploader = createUploader({
+  storageType: process.env.STORAGE_TYPE || 'disk',
+  uploadPath: 'uploads/product-images',
+  fileFilter: 'images',
+  fileSize: 5 * 1024 * 1024 // 5MB limit
+});
+
+const categoryIconUploader = createUploader({
+  storageType: process.env.STORAGE_TYPE || 'disk',
+  uploadPath: 'uploads/category-icons',
+  fileFilter: 'images',
+  fileSize: 2 * 1024 * 1024 // 2MB limit
+});
+
+const subCategoryIconUploader = createUploader({
+  storageType: process.env.STORAGE_TYPE || 'disk',
+  uploadPath: 'uploads/subcategory-icons',
+  fileFilter: 'images',
+  fileSize: 2 * 1024 * 1024 // 2MB limit
 });
 
 const productRoutes = Router();
@@ -103,8 +131,10 @@ productRoutes.delete(
 productRoutes.post(
   "/products/:productId/images", 
   authMiddleware,
+  ...(Array.isArray(productImageUploader.single('image')) 
+  ? productImageUploader.single('image') 
+  : [productImageUploader.single('image')]),
   validate(productIdParamSchema, 'params'),
-  upload.single('image'), 
   productController.addProductImage
 );
 
@@ -123,6 +153,41 @@ productRoutes.delete(
 // Categories
 productRoutes.get("/categories", productController.getCategories);
 
+productRoutes.post(
+  "/categories", 
+  authMiddleware, 
+  isAdminMiddleware, 
+  ...(Array.isArray(categoryIconUploader.single('icon')) 
+  ? categoryIconUploader.single('icon') 
+  : [categoryIconUploader.single('icon')]),
+  validate(categorySchema),
+  requireFileUpload('Category icon'),
+  productController.addCategory
+);
+
+productRoutes.put(
+  "/categories/:categoryId",
+  authMiddleware,
+  isAdminMiddleware,
+  ...(Array.isArray(categoryIconUploader.single('icon')) 
+    ? categoryIconUploader.single('icon') 
+    : [categoryIconUploader.single('icon')]),
+  validate({
+    body: categoryUpdateSchema,
+    params: categoryIdParamSchema
+  }),
+  productController.updateCategory
+);
+
+productRoutes.delete(
+  "/categories/:categoryId",
+  authMiddleware,
+  isAdminMiddleware,
+  validate(categoryIdParamSchema, 'params'),
+  productController.deleteCategory
+);
+
+// Subcategories
 productRoutes.get(
   "/categories/:categoryId/subcategories",
   validate(categoryIdParamSchema, 'params'),
@@ -130,22 +195,48 @@ productRoutes.get(
 );
 
 productRoutes.post(
-  "/categories", 
-  authMiddleware, 
-  isAdminMiddleware, 
-  validate(categorySchema),
-  productController.addCategory
-);
-
-productRoutes.post(
   "/categories/:categoryId/subcategories", 
   authMiddleware, 
   isAdminMiddleware,
+  ...(Array.isArray(subCategoryIconUploader.single('icon')) 
+    ? subCategoryIconUploader.single('icon') 
+    : [subCategoryIconUploader.single('icon')]),
   validate({
     body: subCategorySchema,
     params: categoryIdParamSchema
   }),
+  requireFileUpload('Subcategory icon'),
   productController.addSubCategory
+);
+
+productRoutes.put(
+  "/categories/:categoryId/subcategories/:subCategoryId",
+  authMiddleware,
+  isAdminMiddleware,
+  ...(Array.isArray(subCategoryIconUploader.single('icon')) 
+  ? subCategoryIconUploader.single('icon') 
+  : [subCategoryIconUploader.single('icon')]),
+  validate({
+    body: subCategoryUpdateSchema,
+    params: {
+      categoryId: Yup.number().integer().positive().required(),
+      subCategoryId: Yup.number().integer().positive().required()
+    }
+  }),
+  productController.updateSubCategory
+);
+
+productRoutes.delete(
+  "/categories/:categoryId/subcategories/:subCategoryId",
+  authMiddleware,
+  isAdminMiddleware,
+  validate({
+    params: {
+      categoryId: Yup.number().integer().positive().required(),
+      subCategoryId: Yup.number().integer().positive().required()
+    }
+  }),
+  productController.deleteSubCategory
 );
 
 module.exports = productRoutes;

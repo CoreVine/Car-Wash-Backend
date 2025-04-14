@@ -15,6 +15,8 @@ const {
   NotFoundError
 } = require("../utils/errors/types/Api.error");
 
+const multerConfig = require("../config/multer.config");
+
 const productController = {
   addProduct: async (req, res, next) => {
     try {
@@ -398,11 +400,105 @@ const productController = {
         throw new BadRequestError('Category with this name already exists');
       }
       
+      // Make icon mandatory
+      if (!req.file) {
+        throw new BadRequestError('Category icon is required');
+      }
+      
+      // Get icon URL from uploaded file
+      const icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+      
       const category = await CategoryRepository.create({
-        category_name
+        category_name,
+        icon
       });
 
       return res.success('Category added successfully', category);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  updateCategory: async (req, res, next) => {
+    try {
+      const { categoryId } = req.params;
+      const { category_name } = req.body;
+      
+      // Check if category exists
+      const category = await CategoryRepository.findById(categoryId);
+      
+      if (!category) {
+        throw new NotFoundError('Category not found');
+      }
+      
+      // Check if category name already exists for another category
+      if (category_name) {
+        const categoryWithName = await CategoryRepository.findOne({
+          where: { 
+            category_name,
+            category_id: { [Op.ne]: categoryId }
+          }
+        });
+        
+        if (categoryWithName) {
+          throw new BadRequestError('Category with this name already exists');
+        }
+      }
+      
+      const updateData = { ...req.body };
+      
+      // Handle icon upload - icon required for new categories but optional for updates
+      if (req.file) {
+        // Delete the old icon if it exists
+        if (category.icon) {
+          await multerConfig.deleteUploadedFile(category.icon);
+        }
+        
+        // Save the new icon URL
+        updateData.icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+      }
+      
+      // Update the category
+      await CategoryRepository.update(categoryId, updateData);
+      
+      // Get the updated category
+      const updatedCategory = await CategoryRepository.findById(categoryId);
+      
+      return res.success('Category updated successfully', updatedCategory);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  deleteCategory: async (req, res, next) => {
+    try {
+      const { categoryId } = req.params;
+      
+      // Check if category exists
+      const category = await CategoryRepository.findById(categoryId);
+      
+      if (!category) {
+        throw new NotFoundError('Category not found');
+      }
+      
+      // Check if category has subcategories
+      const subcategoriesCount = await SubCategoryRepository.count({
+        where: { category_id: categoryId }
+      });
+      
+      if (subcategoriesCount > 0) {
+        throw new BadRequestError('Cannot delete category with subcategories. Delete subcategories first or move them to another category.');
+      }
+      
+      // Delete icon if exists
+      if (category.icon) {
+        await multerConfig.deleteUploadedFile(category.icon);
+      }
+      
+      // Delete the category
+      await CategoryRepository.delete(categoryId);
+      
+      return res.success('Category deleted successfully');
     } catch (error) {
       next(error);
     }
@@ -414,7 +510,7 @@ const productController = {
       const { name } = req.body;
       
       // Check if category exists
-      const category = await CategoryRepository.findByPk(categoryId);
+      const category = await CategoryRepository.findById(categoryId);
       
       if (!category) {
         throw new NotFoundError('Category not found');
@@ -432,12 +528,117 @@ const productController = {
         throw new BadRequestError('Subcategory with this name already exists in this category');
       }
       
+      // Make icon mandatory
+      if (!req.file) {
+        throw new BadRequestError('Subcategory icon is required');
+      }
+      
+      // Get icon URL from uploaded file
+      const icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+      
       const subCategory = await SubCategoryRepository.create({
         name,
-        category_id: categoryId
+        category_id: categoryId,
+        icon
       });
 
       return res.success('Subcategory added successfully', subCategory);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  updateSubCategory: async (req, res, next) => {
+    try {
+      const { categoryId, subCategoryId } = req.params;
+      const { name } = req.body;
+      
+      // Check if subcategory exists and belongs to the category
+      const subCategory = await SubCategoryRepository.findOne({
+        where: { 
+          sub_category_id: subCategoryId,
+          category_id: categoryId
+        }
+      });
+      
+      if (!subCategory) {
+        throw new NotFoundError('Subcategory not found or does not belong to the specified category');
+      }
+      
+      // Check if subcategory name already exists for another subcategory in the same category
+      if (name) {
+        const subCategoryWithName = await SubCategoryRepository.findOne({
+          where: { 
+            name,
+            category_id: categoryId,
+            sub_category_id: { [Op.ne]: subCategoryId }
+          }
+        });
+        
+        if (subCategoryWithName) {
+          throw new BadRequestError('Subcategory with this name already exists in this category');
+        }
+      }
+      
+      const updateData = { ...req.body };
+      
+      // Handle icon upload - icon required for new subcategories but optional for updates
+      if (req.file) {
+        // Delete the old icon if it exists
+        if (subCategory.icon) {
+          await multerConfig.deleteUploadedFile(subCategory.icon);
+        }
+        
+        // Save the new icon URL
+        updateData.icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+      }
+      
+      // Update the subcategory
+      await SubCategoryRepository.update(subCategoryId, updateData);
+      
+      // Get the updated subcategory
+      const updatedSubCategory = await SubCategoryRepository.findById(subCategoryId);
+      
+      return res.success('Subcategory updated successfully', updatedSubCategory);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  deleteSubCategory: async (req, res, next) => {
+    try {
+      const { categoryId, subCategoryId } = req.params;
+      
+      // Check if subcategory exists and belongs to the category
+      const subCategory = await SubCategoryRepository.findOne({
+        where: { 
+          sub_category_id: subCategoryId,
+          category_id: categoryId
+        }
+      });
+      
+      if (!subCategory) {
+        throw new NotFoundError('Subcategory not found or does not belong to the specified category');
+      }
+      
+      // Check if subcategory is associated with any products
+      const productAssociationsCount = await SubCatProductRepository.count({
+        where: { sub_category_id: subCategoryId }
+      });
+      
+      if (productAssociationsCount > 0) {
+        throw new BadRequestError('Cannot delete subcategory that has associated products. Remove product associations first.');
+      }
+      
+      // Delete icon if exists
+      if (subCategory.icon) {
+        await multerConfig.deleteUploadedFile(subCategory.icon);
+      }
+      
+      // Delete the subcategory
+      await SubCategoryRepository.delete(subCategoryId);
+      
+      return res.success('Subcategory deleted successfully');
     } catch (error) {
       next(error);
     }
