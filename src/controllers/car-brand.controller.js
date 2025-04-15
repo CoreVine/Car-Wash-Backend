@@ -73,13 +73,10 @@ const carBrandController = {
       // Get file extension
       const fileExt = req.file.originalname.split('.').pop();
       
-      // Upload file to AWS S3
-      const uuid = await awsService.uploadFile(req.file, fileExt, 'brand-logos/');
-      
       // Create the brand
       const brand = await CarBrandRepository.create({
         name,
-        logo: `${uuid}.${fileExt}`
+        logo: req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/')
       });
       
       return res.success('Car brand created successfully', brand);
