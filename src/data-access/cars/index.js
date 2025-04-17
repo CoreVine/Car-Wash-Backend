@@ -53,10 +53,16 @@ class CarRepository extends BaseRepository {
         search = null,
         available_from = null,
         available_to = null,
-        only_available = false
+        only_available = false,
+        sale_or_rental = null
     }) {
         try {
             const whereClause = {};
+            
+            // Filter by listing type (sale or rental)
+            if (sale_or_rental) {
+                whereClause.sale_or_rental = sale_or_rental;
+            }
             
             // Filter by company
             if (company_id) {
@@ -75,12 +81,12 @@ class CarRepository extends BaseRepository {
             
             // Filter by price range
             if (min_price !== null || max_price !== null) {
-                whereClause.price_per_day = {};
+                whereClause.price = {};
                 if (min_price !== null) {
-                    whereClause.price_per_day[Op.gte] = parseFloat(min_price);
+                    whereClause.price[Op.gte] = parseFloat(min_price);
                 }
                 if (max_price !== null) {
-                    whereClause.price_per_day[Op.lte] = parseFloat(max_price);
+                    whereClause.price[Op.lte] = parseFloat(max_price);
                 }
             }
             
@@ -95,9 +101,12 @@ class CarRepository extends BaseRepository {
                 }
             }
             
-            // Search by model
+            // Search by model or description
             if (search) {
-                whereClause.model = { [Op.like]: `%${search}%` };
+                whereClause[Op.or] = [
+                    { model: { [Op.like]: `%${search}%` } },
+                    { description: { [Op.like]: `%${search}%` } }
+                ];
             }
             
             // Build include options

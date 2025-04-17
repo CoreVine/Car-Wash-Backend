@@ -16,7 +16,8 @@ module.exports = {
   companyExhibitionFactory: require('./companyExhibitionFactory'),
   carsFactory: require('./carsFactory'),
   rentalCarsImagesFactory: require('./rentalCarsImagesFactory'),
-  ordersFactory: require('./ordersFactory'),
+  cartFactory: require('./cartFactory'), // Updated from ordersFactory
+  orderFactory: require('./orderFactory'), // New factory
   orderItemsFactory: require('./orderItemsFactory'),
   carWashOrdersFactory: require('./carWashOrdersFactory'),
   washOrderOperationFactory: require('./washOrderOperationFactory'),

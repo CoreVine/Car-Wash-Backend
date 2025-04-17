@@ -13,7 +13,7 @@ class RentalOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Orders',
+            model: 'Carts',  // Reference the carts table
             key: 'order_id'
           }
         },
@@ -26,11 +26,11 @@ class RentalOrder extends Model {
           }
         },
         start_date: {
-          type: DataTypes.DATEONLY,
+          type: DataTypes.DATE,
           allowNull: false
         },
         end_date: {
-          type: DataTypes.DATEONLY,
+          type: DataTypes.DATE,
           allowNull: false
         }
       },
@@ -46,10 +46,11 @@ class RentalOrder extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Order, {
+    this.belongsTo(models.Cart, {
       foreignKey: 'order_id',
-      as: 'order'
+      as: 'cart'
     });
+    
     this.belongsTo(models.Car, {
       foreignKey: 'car_id',
       as: 'car'

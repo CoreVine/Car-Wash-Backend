@@ -4,6 +4,8 @@ class BaseRepository {
     }
 
     async findById(id, options = {}) {
+        console.log(id);
+        
         return this.model.findByPk(id, options);
     }
 
@@ -33,6 +35,16 @@ class BaseRepository {
             ...options
         });
     }
+
+    async deleteWhere(whereClause, options = {}) {
+        return this.model.destroy({
+            where: {
+                ...whereClause
+            },
+            ...options
+        });
+    }
+    
     
     // New methods for common operations
     async findAllPaginated(page = 1, limit = 10, options = {}) {

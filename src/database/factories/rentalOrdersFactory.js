@@ -1,21 +1,21 @@
 const { faker } = require('@faker-js/faker');
 const RentalOrders = require('../../models/RentalOrder');
-const ordersFactory = require('./ordersFactory');
+const cartFactory = require('./cartFactory');
 const carsFactory = require('./carsFactory');
 
 const rentalOrdersFactory = {
   async create(count = 1, attrs = {}) {
     const rentalOrders = [];
     
-    // Create order if not provided
+    // Create cart if not provided
     if (!attrs.order_id) {
-      const orders = await ordersFactory.create(1, { order_type: 'rental' });
-      attrs.order_id = orders[0].order_id;
+      const carts = await cartFactory.create(1, { status: 'pending' });
+      attrs.order_id = carts[0].order_id;
     }
     
-    // Create car if not provided
+    // Create car if not provided, make sure it's a rental car
     if (!attrs.car_id) {
-      const cars = await carsFactory.create(1);
+      const cars = await carsFactory.create(1, { sale_or_rental: 'rent' });
       attrs.car_id = cars[0].car_id;
     }
     

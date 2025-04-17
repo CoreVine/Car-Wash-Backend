@@ -68,6 +68,47 @@ class WashOrderWashTypeRepository extends BaseRepository {
             throw new DatabaseError(error);
         }
     }
+    
+    // Method to delete all wash types for a wash order
+    async deleteByWashOrderId(washOrderId) {
+        try {
+            return await this.model.destroy({
+                where: { carwashorders_order_id: washOrderId }
+            });
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
+    
+    // Method to update wash order types
+    async updateWashOrderTypes(washOrderId, washTypeData) {
+        try {
+            // Delete existing associations
+            await this.deleteByWashOrderId(washOrderId);
+            
+            // Create new associations
+            return await this.createWashOrderTypeAssociations(washOrderId, washTypeData);
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
+    
+    // Method to get detailed wash types with price for display
+    async getWashTypesWithDetails(washOrderId) {
+        try {
+            return await this.model.findAll({
+                where: { carwashorders_order_id: washOrderId },
+                include: [{
+                    model: this.model.sequelize.models.WashType,
+                    as: 'washType',
+                    attributes: ['name', 'description']
+                }],
+                attributes: ['paid_price']
+            });
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
 }
 
 module.exports = new WashOrderWashTypeRepository();

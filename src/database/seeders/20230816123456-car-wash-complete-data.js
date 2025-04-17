@@ -228,12 +228,15 @@ module.exports = {
         const randomCompany = companies[Math.floor(Math.random() * companies.length)];
         const randomPayment = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
         
-        // Create order for products
-        const order = await factories.ordersFactory.create(1, {
+        // Create order for products - Fix: use orderFactory instead of ordersFactory
+        const cart = await factories.cartFactory.create(1, {
           user_id: randomUser.user_id,
-          company_id: randomCompany.company_id,
-          payment_method_id: randomPayment.payment_id,
-          order_type: 'product'
+          status: 'pending'
+        });
+        
+        const order = await factories.orderFactory.create(1, {
+          cart_order_id: cart[0].order_id,
+          payment_method_id: randomPayment.payment_id
         });
         
         // Get company's products
@@ -247,17 +250,19 @@ module.exports = {
           
         for (const product of orderProducts) {
           await factories.orderItemsFactory.create(1, {
-            order_id: order[0].order_id,
+            order_id: cart[0].order_id,
             product_id: product.product_id
           });
         }
         
         // Create order status history
         await factories.orderStatusHistoryFactory.create(2, {
-          order_id: order[0].order_id,
+          order_id: order[0].id,
           status: ['pending', 'complete']
         });
       }
+      
+      // Fix other occurrences of ordersFactory to orderFactory
       
       // 17. Create car wash orders
       console.log('Creating car wash orders...');
@@ -272,19 +277,24 @@ module.exports = {
         if (userCars.length === 0) continue;
         const randomCar = userCars[Math.floor(Math.random() * userCars.length)];
         
-        // Create order for car wash
-        const order = await factories.ordersFactory.create(1, {
+        // Create order for car wash - update to use cartFactory and orderFactory
+        const cart = await factories.cartFactory.create(1, {
           user_id: randomUser.user_id,
-          company_id: randomCompany.company_id,
-          payment_method_id: randomPayment.payment_id,
-          order_type: 'wash'
+          status: 'pending'
+        });
+        
+        const order = await factories.orderFactory.create(1, {
+          cart_order_id: cart[0].order_id,
+          payment_method_id: randomPayment.payment_id
         });
         
         // Create wash order
         const washOrder = await factories.carWashOrdersFactory.create(1, {
           order_id: order[0].order_id,
           customer_id: randomUser.user_id,
-          customer_car_id: randomCar.customer_car_id
+          company_id: randomCompany.company_id,
+          // FUTURE FU-001
+          // customer_car_id: randomCar.customer_car_id
         });
         
         // Get wash types for the company
@@ -335,12 +345,15 @@ module.exports = {
         const randomCar = cars[Math.floor(Math.random() * cars.length)];
         const carCompanyId = randomCar.company_id;
         
-        // Create order for car rental
-        const order = await factories.ordersFactory.create(1, {
+        // Create order for car rental - update to use cartFactory and orderFactory
+        const cart = await factories.cartFactory.create(1, {
           user_id: randomUser.user_id,
-          company_id: carCompanyId,
-          payment_method_id: randomPayment.payment_id,
-          order_type: 'rental'
+          status: 'pending'
+        });
+        
+        const order = await factories.orderFactory.create(1, {
+          cart_order_id: cart[0].order_id,
+          payment_method_id: randomPayment.payment_id
         });
         
         // Create rental order

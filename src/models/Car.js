@@ -9,6 +9,10 @@ class Car extends Model {
           primaryKey: true,
           autoIncrement: true
         },
+        sale_or_rental: {
+          type: DataTypes.ENUM('sale', 'rent'),
+          allowNull: false
+        },
         company_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
@@ -25,7 +29,7 @@ class Car extends Model {
           type: DataTypes.INTEGER,
           allowNull: false
         },
-        price_per_day: {
+        price: {
           type: DataTypes.DECIMAL(8, 2),
           allowNull: false
         },
@@ -44,6 +48,10 @@ class Car extends Model {
             model: 'CarBrand',
             key: 'brand_id'
           }
+        },
+        description: {
+          type: DataTypes.STRING(255),
+          allowNull: true
         }
       },
       {

@@ -1,6 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const CarWashOrders = require('../../models/CarWashOrder');
-const ordersFactory = require('./ordersFactory');
+const cartFactory = require('./cartFactory');
 const userFactory = require('./userFactory');
 const customerCarFactory = require('./customerCarFactory');
 
@@ -15,18 +15,19 @@ const carWashOrdersFactory = {
     }
     
     // Create customer car if not provided
-    if (!attrs.customer_car_id) {
-      const cars = await customerCarFactory.create(1, { customer_id: attrs.customer_id });
-      attrs.customer_car_id = cars[0].customer_car_id;
-    }
+    // FUTURE FU-001
+    // if (!attrs.customer_car_id) {
+    //   const cars = await customerCarFactory.create(1, { customer_id: attrs.customer_id });
+    //   attrs.customer_car_id = cars[0].customer_car_id;
+    // }
     
-    // Create order if not provided
+    // Create cart if not provided
     if (!attrs.order_id) {
-      const orders = await ordersFactory.create(1, { 
-        order_type: 'wash',
+      const carts = await cartFactory.create(1, { 
+        status: 'pending',
         user_id: attrs.customer_id
       });
-      attrs.order_id = orders[0].order_id;
+      attrs.order_id = carts[0].order_id;
     }
     
     for (let i = 0; i < count; i++) {

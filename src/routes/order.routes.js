@@ -3,40 +3,54 @@ const orderController = require("../controllers/order.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const isUserMiddleware = require("../middlewares/isUser.middleware");
 const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
+const isEmployeeMiddleware = require("../middlewares/isEmployee.middleware");
 const validate = require("../middlewares/validation.middleware");
 const Yup = require("yup");
 
-// Define validation schemas
+// Define validation schemas for orders
 const createOrderSchema = Yup.object().shape({
-  order_type: Yup.string().oneOf(['product', 'wash', 'rental']).required(),
-  items: Yup.array().of(
-    Yup.object().shape({
-      product_id: Yup.number().integer().positive().required(),
-      quantity: Yup.number().integer().positive().required()
-    })
-  ),
-  car_id: Yup.number().integer().positive(),
-  wash_operations: Yup.array().of(Yup.number().integer().positive()),
-  payment_method_id: Yup.number().integer().positive().required()
+  payment_method_id: Yup.number().integer().positive().required(),
+  payment_gateway_response: Yup.string(),
+  shipping_address: Yup.string()
 });
 
-const orderStatusSchema = Yup.object().shape({
+const updateOrderStatusSchema = Yup.object().shape({
   status: Yup.string().oneOf(['pending', 'processing', 'completed', 'cancelled']).required(),
   notes: Yup.string()
 });
 
-const washOrderSchema = Yup.object().shape({
-  car_id: Yup.number().integer().positive().required(),
-  wash_operations: Yup.array().of(Yup.number().integer().positive()).required()
+// Define validation schemas for wash orders
+const createWashOrderSchema = Yup.object().shape({
+  // FUTURE FU-001
+  // customer_car_id: Yup.number().integer().positive().required('Customer car is required'),
+  within_company: Yup.boolean().default(true),
+  location: Yup.string().default('Company workshop'),
+  wash_types: Yup.array().of(Yup.number().integer().positive())
+    .min(1, 'At least one wash type is required').required('Wash types are required')
 });
 
-const rentalOrderSchema = Yup.object().shape({
-  car_id: Yup.number().integer().positive().required(),
-  start_date: Yup.date().required(),
-  end_date: Yup.date().required().min(
-    Yup.ref('start_date'),
-    'End date must be after start date'
-  )
+const updateWashOrderSchema = Yup.object().shape({
+  within_company: Yup.boolean(),
+  location: Yup.string(),
+  wash_types: Yup.array().of(Yup.number().integer().positive())
+    .min(1, 'At least one wash type is required')
+}).test(
+  'at-least-one-field',
+  'At least one field must be provided',
+  value => typeof value.within_company !== 'undefined' || !!value.location || 
+    (Array.isArray(value.wash_types) && value.wash_types.length > 0)
+);
+
+const assignEmployeeSchema = Yup.object().shape({
+  employeeId: Yup.number().integer().positive().required('Employee ID is required')
+});
+
+// Define validation schemas for rental orders
+const createRentalOrderSchema = Yup.object().shape({
+  car_id: Yup.number().integer().positive().required('Car ID is required'),
+  start_date: Yup.date().required('Start date is required'),
+  end_date: Yup.date().required('End date is required')
+    .min(Yup.ref('start_date'), 'End date must be after start date')
 });
 
 const paginationSchema = Yup.object().shape({
@@ -44,65 +58,108 @@ const paginationSchema = Yup.object().shape({
   limit: Yup.number().integer().min(1).max(100)
 });
 
-const orderIdParamSchema = Yup.object().shape({
-  orderId: Yup.number().integer().positive().required()
-});
-
 const orderRoutes = Router();
 
-// Orders - removing /api prefix since it's added globally
+// Create order from cart
 orderRoutes.post(
-  "/orders", 
-  authMiddleware, 
-  isUserMiddleware, 
+  "/orders",
+  authMiddleware,
+  isUserMiddleware,
   validate(createOrderSchema),
   orderController.createOrder
 );
 
+// Get all orders for user
 orderRoutes.get(
-  "/orders", 
+  "/orders",
   authMiddleware,
+  isUserMiddleware,
   validate(paginationSchema, 'query'),
   orderController.getOrders
 );
 
+// Get specific order
 orderRoutes.get(
-  "/orders/:orderId", 
+  "/orders/:orderId",
   authMiddleware,
-  validate(orderIdParamSchema, 'params'),
   orderController.getOrder
 );
 
+// Update order status
 orderRoutes.put(
-  "/orders/:orderId/status", 
-  authMiddleware, 
-  validate({
-    body: orderStatusSchema,
-    params: orderIdParamSchema
-  }),
+  "/orders/:orderId/status",
+  authMiddleware,
+  validate(updateOrderStatusSchema),
   orderController.updateOrderStatus
 );
 
-// Specialty orders
+// Wash order routes
 orderRoutes.post(
-  "/orders/:orderId/wash", 
-  authMiddleware, 
-  validate({
-    body: washOrderSchema,
-    params: orderIdParamSchema
-  }),
+  "/wash-orders",
+  authMiddleware,
+  isUserMiddleware,
+  validate(createWashOrderSchema),
   orderController.createWashOrder
 );
 
+orderRoutes.put(
+  "/wash-orders",
+  authMiddleware,
+  isUserMiddleware,
+  validate(updateWashOrderSchema),
+  orderController.updateWashOrder
+);
+
+orderRoutes.get(
+  "/wash-orders/:washOrderId",
+  authMiddleware,
+  orderController.getWashOrderDetails
+);
+
+orderRoutes.get(
+  "/company/wash-orders/pending",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate(paginationSchema, 'query'),
+  orderController.getPendingWashOrders
+);
+
 orderRoutes.post(
-  "/orders/:orderId/rental", 
-  authMiddleware, 
-  isUserMiddleware, 
-  validate({
-    body: rentalOrderSchema,
-    params: orderIdParamSchema
-  }),
+  "/wash-orders/:washOrderId/assign",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate(assignEmployeeSchema),
+  orderController.assignEmployeeToWashOrder
+);
+
+orderRoutes.put(
+  "/wash-orders/:washOrderId/complete",
+  authMiddleware,
+  isEmployeeMiddleware,
+  orderController.completeWashOperation
+);
+
+orderRoutes.delete(
+  "/wash-orders",
+  authMiddleware,
+  isUserMiddleware,
+  orderController.removeWashOrder
+);
+
+// Rental order routes
+orderRoutes.post(
+  "/rental-orders",
+  authMiddleware,
+  isUserMiddleware,
+  validate(createRentalOrderSchema),
   orderController.createRentalOrder
+);
+
+orderRoutes.delete(
+  "/rental-orders",
+  authMiddleware,
+  isUserMiddleware,
+  orderController.removeRentalOrder
 );
 
 module.exports = orderRoutes;

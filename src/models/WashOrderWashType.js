@@ -46,7 +46,16 @@ class WashOrderWashType extends Model {
   }
 
   static associate(models) {
-    // This is a junction table, so no additional associations needed
+    // Add proper associations for the junction table
+    this.belongsTo(models.CarWashOrder, {
+      foreignKey: 'order_id',
+      as: 'washOrder'
+    });
+    
+    this.belongsTo(models.WashType, {
+      foreignKey: 'type_id',
+      as: 'washType'
+    });
   }
 }
 

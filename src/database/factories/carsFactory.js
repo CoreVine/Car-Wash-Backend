@@ -67,7 +67,9 @@ const carsFactory = {
       carbrand_id: attrs.carbrand_id || 1,
       model: attrs.model || faker.vehicle.model(),
       year: attrs.year || faker.number.int({ min: 2015, max: currentYear }),
-      price_per_day: attrs.price_per_day || parseFloat(faker.commerce.price({ min: 50, max: 300 }))
+      price: attrs.price || parseFloat(faker.commerce.price({ min: 50, max: 300 })),
+      sale_or_rental: attrs.sale_or_rental || faker.helpers.arrayElement(['sale', 'rent']),
+      description: attrs.description || faker.commerce.productDescription().substring(0, 255)
     };
     
     return { ...defaultAttrs, ...attrs };

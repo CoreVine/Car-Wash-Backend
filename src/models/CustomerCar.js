@@ -42,10 +42,11 @@ class CustomerCar extends Model {
       foreignKey: 'customer_id',
       as: 'customer'
     });
-    this.hasMany(models.CarWashOrder, {
-      foreignKey: 'customer_car_id',
-      as: 'washOrders'
-    });
+    // FUTURE FU-001
+    // this.hasMany(models.CarWashOrder, {
+    //   foreignKey: 'customer_car_id',
+    //   as: 'washOrders'
+    // });
   }
 }
 

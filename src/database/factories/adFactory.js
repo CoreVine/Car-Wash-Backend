@@ -3,42 +3,50 @@ const Ad = require('../../models/Ad');
 
 const adFactory = {
   async create(count = 1, attrs = {}) {
-    const ads = [];
-    
-    // Handle the case where names are provided as an array
-    let names = [];
-    if (attrs.name && Array.isArray(attrs.name)) {
-      names = [...attrs.name];
-      delete attrs.name; // Remove name from attrs to avoid validation error
-    }
-    
-    // Handle the case where link_urls are provided as an array
-    let linkUrls = [];
-    if (attrs.link_url && Array.isArray(attrs.link_url)) {
-      linkUrls = [...attrs.link_url];
-      delete attrs.link_url;
-    }
-    
-    for (let i = 0; i < count; i++) {
-      const adData = this.makeOne({
-        ...attrs,
-        // Use name from the names array if available, otherwise generate one
-        name: names[i] || faker.commerce.productName(),
-        // Use link_url from the linkUrls array if available, otherwise generate one
-        link_url: linkUrls[i] || faker.internet.url()
-      });
+    try {
+      const ads = [];
       
-      ads.push(await Ad.create(adData));
+      for (let i = 0; i < count; i++) {
+        let adData = this.makeOne(attrs);
+        
+        // Handle array attributes for name
+        if (Array.isArray(attrs.name) && i < attrs.name.length) {
+          adData.name = attrs.name[i];
+        }
+        
+        // Handle array attributes for link_url
+        if (Array.isArray(attrs.link_url) && i < attrs.link_url.length) {
+          adData.link_url = attrs.link_url[i];
+        }
+        
+        // Add error handling when creating ad
+        try {
+          const ad = await Ad.create(adData);
+          ads.push(ad);
+          console.log(`Created ad: ${ad.name}`);
+        } catch (error) {
+          console.error(`Error creating ad: ${error.message}`);
+          throw error;
+        }
+      }
+      
+      return ads;
+    } catch (error) {
+      console.error(`Error in adFactory.create: ${error.message}`);
+      throw error;
     }
-    
-    return ads;
   },
   
   makeOne(attrs = {}) {
     const defaultAttrs = {
-      name: faker.commerce.productName(),
-      image_url: faker.image.urlLoremFlickr({ category: 'business' }),
-      link_url: faker.internet.url()
+      name: attrs.name || faker.commerce.productName(),
+      description: attrs.description || faker.commerce.productDescription().substring(0, 255),
+      image_url: attrs.image_url || `${faker.string.uuid()}.jpg`,
+      link_url: attrs.link_url || faker.internet.url(),
+      active: attrs.active || 1,
+      priority: attrs.priority || faker.number.int({ min: 1, max: 10 }),
+      created_at: new Date(),
+      updated_at: new Date()
     };
     
     return { ...defaultAttrs, ...attrs };

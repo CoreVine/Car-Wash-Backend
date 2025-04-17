@@ -13,8 +13,8 @@ class OrderStatusHistory extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Orders',
-            key: 'order_id'
+            model: 'Order',
+            key: 'id'
           }
         },
         status: {

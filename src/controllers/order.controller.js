@@ -8,286 +8,648 @@ import RentalOrderRepository from "../data-access/rental-orders";
 import ProductRepository from "../data-access/products";
 import CustomerCarRepository from "../data-access/customer-cars";
 import CarRepository from "../data-access/cars";
+import WashTypeRepository from "../data-access/wash-types";
+import WashOrderWashTypeRepository from "../data-access/wash-order-wash-types";
 import WashOrderOperationRepository from "../data-access/wash-order-operations";
 import PaymentMethodRepository from "../data-access/payment-methods";
 const { createPagination } = require("../utils/responseHandler");
 const {
   BadRequestError,
-  NotFoundError
+  NotFoundError,
+  ForbiddenError
 } = require("../utils/errors/types/Api.error");
 
+const CartRepository = require('../data-access/carts');
+const CartModel = require('../models/Cart');
+
 const orderController = {
+  // Create order from cart
   createOrder: async (req, res, next) => {
     try {
-      const { order_type, items, car_id, wash_operations, payment_method_id } = req.body;
-
-      // Verify payment method exists
+      const { 
+        payment_method_id, 
+        payment_gateway_response = '{}', 
+        shipping_address 
+      } = req.body;
+      
+      // Find active cart
+      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      
+      if (!cart) {
+        throw new BadRequestError('No active cart found');
+      }
+      
+      // Check if the cart has any content (items, car wash, rental)
+      if (cart.orderItems.length === 0 && !cart.carWashOrder && !cart.rentalOrder) {
+        throw new BadRequestError('Cannot create order with empty cart');
+      }
+      
+      // Verify payment method
       const paymentMethod = await PaymentMethodRepository.findById(payment_method_id);
-
+      
       if (!paymentMethod) {
-        throw new BadRequestError('Payment method not found');
+        throw new BadRequestError('Invalid payment method');
       }
-
-      // Create order
-      const order = await OrderRepository.create({
-        user_id: req.userId,
-        order_type,
-        payment_method_id,
-        total_amount: 0 // Will be updated later
-      });
-
+      
+      // Calculate total amount
       let totalAmount = 0;
-
-      if (order_type === 'product') {
-        // Prepare order items for bulk creation
-        const orderItems = [];
+      
+      // Add product items total
+      if (cart.orderItems.length > 0) {
+        const productTotal = await OrderItemRepository.calculateOrderTotal(cart.order_id);
+        totalAmount += productTotal;
+      }
+      
+      // Add car wash total if exists
+      if (cart.carWashOrder) {
+        // Get wash operations total
+        const washOperations = await WashOrderOperationRepository.findByCarWashOrderId(
+          cart.carWashOrder.car_wash_order_id
+        );
         
-        // Verify items and calculate total amount
-        for (const item of items) {
-          const product = await ProductRepository.findById(item.product_id);
-
-          if (!product) {
-            throw new BadRequestError(`Product with ID ${item.product_id} not found`);
-          }
-
-          const itemTotal = product.price * item.quantity;
-          totalAmount += itemTotal;
-
-          orderItems.push({
-            order_id: order.order_id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            total_price: itemTotal
-          });
-        }
-        
-        // Use the new repository method for bulk creation
-        await OrderItemRepository.createOrderItems(orderItems);
-      } else if (order_type === 'wash') {
-        // Verify car exists
-        const car = await CustomerCarRepository.findById(car_id);
-
-        if (!car) {
-          throw new BadRequestError('Car not found');
-        }
-
-        // Verify wash operations and calculate total amount
-        for (const operationId of wash_operations) {
-          const operation = await WashOrderOperationRepository.findById(operationId);
-
-          if (!operation) {
-            throw new BadRequestError(`Wash operation with ID ${operationId} not found`);
-          }
-
-          totalAmount += operation.price;
-        }
-
-        // Create car wash order
-        await CarWashOrderRepository.create({
-          order_id: order.order_id,
-          car_id
-        });
-
-        // Create wash order operations
-        for (const operationId of wash_operations) {
-          await WashOrderOperationRepository.create({
-            car_wash_order_id: order.order_id,
-            operation_id: operationId
-          });
+        for (const op of washOperations) {
+          totalAmount += op.price;
         }
       }
-
-      // Update order total amount
-      await OrderRepository.update(order.order_id, { total_amount: totalAmount });
-
-      // Create initial order status history
-      await OrderStatusHistoryRepository.addOrderStatusHistory(order.order_id, 'pending');
-
-      // Get complete order with items
-      const completeOrder = await OrderRepository.findWithDetails(order.order_id);
-
-      return res.success('Order created successfully', completeOrder);
+      
+      // Add rental total if exists
+      if (cart.rentalOrder) {
+        const rental = cart.rentalOrder;
+        const car = await CarRepository.findById(rental.car_id);
+        
+        // Calculate rental duration in days
+        const startDateTime = new Date(rental.start_date).getTime();
+        const endDateTime = new Date(rental.end_date).getTime();
+        const durationMs = endDateTime - startDateTime;
+        const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+        
+        // Calculate rental cost
+        const rentalTotal = car.price * durationDays;
+        totalAmount += rentalTotal;
+      }
+      
+      // Create order in orders table
+      const order = await OrderRepository.create({
+        cart_order_id: cart.order_id,
+        payment_method_id,
+        payment_gateway_response,
+        shipping_address,
+        total_amount: totalAmount
+      });
+      
+      // Add initial status history
+      await OrderStatusHistoryRepository.addOrderStatusHistory(
+        order.order_id, 
+        'pending',
+        'Order created'
+      );
+      
+      // Update cart status to 'pending'
+      await CartRepository.update(cart.order_id, { 
+        status: 'pending'
+      });
+      
+      // Get full order details
+      const completedOrder = await OrderRepository.findById(order.order_id, {
+        include: [
+          {
+            association: 'cart',
+            include: [
+              {
+                association: 'orderItems',
+                include: ['product']
+              },
+              {
+                association: 'carWashOrder',
+                include: ['customerCar', 'operation']
+              },
+              {
+                association: 'rentalOrder',
+                include: [{ 
+                    association: 'car',
+                    include: ['images']
+                }]
+              }
+            ]
+          },
+          'statusHistory',
+          'paymentMethod'
+        ]
+      });
+      
+      return res.success('Order created successfully', completedOrder);
     } catch (error) {
       next(error);
     }
   },
-
+  
+  // Get all orders for user
   getOrders: async (req, res, next) => {
     try {
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 10;
-
-      // Use the new repository method
-      const { count, rows } = await OrderRepository.findUserOrdersPaginated(req.userId, page, limit);
-
-      const pagination = createPagination(page, limit, count);
-
-      return res.success('Orders retrieved successfully', rows, pagination);
+      
+      try {
+        // Get all carts with non-cart status (orders) for user
+        const { count, rows } = await CartRepository.findUserOrders(req.user.user_id, page, limit);
+        
+        const pagination = createPagination(page, limit, count);
+        
+        return res.success('Orders retrieved successfully', rows, pagination);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        throw new BadRequestError('Failed to fetch orders. Error: ' + error.message);
+      }
     } catch (error) {
       next(error);
     }
   },
-
+  
+  // Get order details
   getOrder: async (req, res, next) => {
     try {
       const { orderId } = req.params;
-
-      // Use the existing repository method which already abstracts the query
-      const order = await OrderRepository.findWithDetails(orderId);
-
+      
+      // First check in orders table
+      const order = await OrderRepository.findById(orderId, {
+        include: [
+          {
+            association: 'cart',
+            include: [
+              {
+                association: 'orderItems',
+                include: ['product']
+              },
+              {
+                association: 'carWashOrder',
+                include: ['customerCar', 'operation']
+              },
+              {
+                association: 'rentalOrder',
+                include: [{ 
+                    association: 'car',
+                    include: ['images']
+                }]
+              }
+            ]
+          },
+          'statusHistory',
+          'paymentMethod'
+        ]
+      });
+      
       if (!order) {
         throw new NotFoundError('Order not found');
       }
-
+      
+      // Make sure the order belongs to the user or they're an admin
+      if (order.cart.user_id !== req.user.user_id && !req.adminEmployee) {
+        throw new BadRequestError('You do not have permission to view this order');
+      }
+      
       return res.success('Order retrieved successfully', order);
     } catch (error) {
       next(error);
     }
   },
-
+  
+  // Update order status
   updateOrderStatus: async (req, res, next) => {
     try {
       const { orderId } = req.params;
       const { status, notes } = req.body;
-
+      
       const order = await OrderRepository.findById(orderId);
-
+      
       if (!order) {
         throw new NotFoundError('Order not found');
       }
-
-      // Update order status
-      await OrderRepository.update(orderId, { status });
-
-      // Create order status history using the new repository method
+      
+      // Add status history entry
       await OrderStatusHistoryRepository.addOrderStatusHistory(orderId, status, notes);
-
-      return res.success('Order status updated successfully');
+      
+      // If status is 'completed', update the cart status
+      if (status === 'completed') {
+        await CartRepository.update(order.cart_order_id, { status: 'completed' });
+      }
+      // If status is 'cancelled', update the cart status
+      else if (status === 'cancelled') {
+        await CartRepository.update(order.cart_order_id, { status: 'cancelled' });
+      }
+      
+      // Get updated order
+      const updatedOrder = await OrderRepository.findById(orderId, {
+        include: [
+          {
+            association: 'cart',
+            include: [
+              {
+                association: 'orderItems',
+                include: ['product']
+              },
+              {
+                association: 'carWashOrder',
+                include: ['customerCar', 'operation']
+              },
+              {
+                association: 'rentalOrder',
+                include: [{ 
+                    association: 'car',
+                    include: ['images']
+                }]
+              }
+            ]
+          },
+          'statusHistory',
+          'paymentMethod'
+        ]
+      });
+      
+      return res.success('Order status updated successfully', updatedOrder);
     } catch (error) {
       next(error);
     }
   },
-
+  
+  // Create new wash order with wash types
   createWashOrder: async (req, res, next) => {
     try {
-      const { orderId } = req.params;
-      const { car_id, wash_operations } = req.body;
+      const { 
+        // FUTURE FU-001
+        // customer_car_id, 
+        within_company = true,
+        location = 'Company workshop',
+        wash_types 
+      } = req.body;
 
-      const order = await OrderRepository.findById(orderId);
-
-      if (!order) {
-        throw new NotFoundError('Order not found');
+      // Find active cart or create a new one
+      let cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      
+      if (!cart) {
+        cart = await CartRepository.create({
+          user_id: req.user.user_id,
+          status: 'cart'
+        });
+      }
+      
+      // Check if wash order already exists for this cart
+      if (cart.carWashOrder) {
+        throw new BadRequestError('A car wash order already exists in this cart');
       }
 
-      // Verify this is a wash order
-      if (order.order_type !== 'wash') {
-        throw new BadRequestError('Order is not of type wash');
+      // FUTURE FU-001: Verify car exists and belongs to user
+      // const car = await CustomerCarRepository.findById(customer_car_id);
+
+      // if (!car || car.customer_id !== req.user.user_id) {
+      //   throw new BadRequestError('Car not found or does not belong to you');
+      // }
+
+      // Verify wash types exist and prepare data
+      if (!wash_types || !Array.isArray(wash_types) || wash_types.length === 0) {
+        throw new BadRequestError('At least one wash type is required');
+      }
+      
+      const washTypeData = [];
+      let totalAmount = 0;
+      
+      for (const typeId of wash_types) {
+        const washType = await WashTypeRepository.findById(typeId);
+        
+        if (!washType) {
+          throw new BadRequestError(`Wash type with ID ${typeId} not found`);
+        }
+        
+        washTypeData.push({
+          typeId: washType.type_id,
+          price: washType.price
+        });
+        
+        totalAmount += washType.price;
       }
 
-      // Check if wash order already exists for this order
-      const existingWashOrder = await CarWashOrderRepository.findOne({
-        where: { order_id: orderId }
+      // Create car wash order with all details
+      const carWashOrderData = {
+        order_id: cart.order_id,
+        customer_id: req.user.user_id,
+        customer_car_id,
+        within_company,
+        location
+      };
+      
+      // Create wash order with types
+      const carWashOrder = await CarWashOrderRepository.createWithWashTypes(
+        carWashOrderData,
+        washTypeData
+      );
+
+      // Get complete cart with wash order
+      const updatedCart = await CartRepository.findCartWithItems(cart.order_id);
+
+      return res.success('Wash order added to cart successfully', updatedCart);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Update an existing wash order in the cart
+  updateWashOrder: async (req, res, next) => {
+    try {
+      const { 
+        within_company,
+        location,
+        wash_types 
+      } = req.body;
+
+      // Find active cart
+      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      
+      if (!cart || !cart.carWashOrder) {
+        throw new BadRequestError('No car wash order found in active cart');
+      }
+      
+      const washOrderId = cart.carWashOrder.wash_order_id;
+      
+      // Prepare updates
+      const updates = {};
+      if (typeof within_company !== 'undefined') {
+        updates.within_company = within_company;
+      }
+      if (location) {
+        updates.location = location;
+      }
+      
+      // Update wash order basic info if needed
+      if (Object.keys(updates).length > 0) {
+        await CarWashOrderRepository.update(washOrderId, updates);
+      }
+      
+      // Update wash types if provided
+      if (wash_types && Array.isArray(wash_types) && wash_types.length > 0) {
+        // Verify wash types and prepare data
+        const washTypeData = [];
+        
+        for (const typeId of wash_types) {
+          const washType = await WashTypeRepository.findById(typeId);
+          
+          if (!washType) {
+            throw new BadRequestError(`Wash type with ID ${typeId} not found`);
+          }
+          
+          washTypeData.push({
+            typeId: washType.type_id,
+            price: washType.price
+          });
+        }
+        
+        // Update wash types
+        await WashOrderWashTypeRepository.updateWashOrderTypes(washOrderId, washTypeData);
+      }
+      
+      // Get updated cart
+      const updatedCart = await CartRepository.findCartWithItems(cart.order_id);
+      
+      return res.success('Wash order updated successfully', updatedCart);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Get wash order details (for company employees to view)
+  getWashOrderDetails: async (req, res, next) => {
+    try {
+      const { washOrderId } = req.params;
+      
+      const washOrder = await CarWashOrderRepository.findCarWashOrderWithDetails(washOrderId);
+      
+      if (!washOrder) {
+        throw new NotFoundError('Wash order not found');
+      }
+      
+      // Check permissions - either the company employee or the customer can view
+      if (req.company) {
+        // For company employees, check if this order uses their wash types
+        const hasCompanyWashTypes = washOrder.washTypes.some(
+          type => type.company_id === req.company.company_id
+        );
+        
+        if (!hasCompanyWashTypes) {
+          throw new ForbiddenError('You do not have permission to view this wash order');
+        }
+      } else if (req.user && washOrder.customer_id !== req.user.user_id) {
+        throw new ForbiddenError('You do not have permission to view this wash order');
+      }
+      
+      return res.success('Wash order details retrieved successfully', washOrder);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Get pending wash orders for a company
+  getPendingWashOrders: async (req, res, next) => {
+    try {
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
+      
+      // Only company can access this
+      if (!req.company) {
+        throw new ForbiddenError('Only companies can access this endpoint');
+      }
+      
+      // Get pending wash orders
+      const { count, rows } = await CarWashOrderRepository.getPendingWashOrdersForCompany(
+        req.company.company_id,
+        page,
+        limit
+      );
+      
+      const pagination = createPagination(page, limit, count);
+      
+      return res.success('Pending wash orders retrieved successfully', rows, pagination);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Assign employee to wash order operation
+  assignEmployeeToWashOrder: async (req, res, next) => {
+    try {
+      const { washOrderId } = req.params;
+      const { employeeId } = req.body;
+      
+      // Only company can assign employees
+      if (!req.company) {
+        throw new ForbiddenError('Only companies can assign employees');
+      }
+      
+      // Check if wash order exists
+      const washOrder = await CarWashOrderRepository.findWithWashTypes(washOrderId);
+      
+      if (!washOrder) {
+        throw new NotFoundError('Wash order not found');
+      }
+      
+      // Check if this order has wash types from this company
+      const hasCompanyWashTypes = washOrder.washTypes.some(
+        type => type.company_id === req.company.company_id
+      );
+      
+      if (!hasCompanyWashTypes) {
+        throw new ForbiddenError('You do not have permission to assign employee to this wash order');
+      }
+      
+      // Check if employee exists and belongs to company
+      const employee = await EmployeeRepository.findByUserAndCompany(employeeId, req.company.company_id);
+      
+      if (!employee) {
+        throw new BadRequestError('Employee not found or does not belong to your company');
+      }
+      
+      // Check if operation already exists
+      let operation = await WashOrderOperationRepository.findByWashOrderId(washOrderId);
+      
+      if (operation) {
+        // Update existing operation
+        await WashOrderOperationRepository.update(operation.wash_order_id, {
+          employee_assigned_id: employeeId,
+          assignedEmployeeUserId: employeeId
+        });
+      } else {
+        // Create new operation
+        operation = await WashOrderOperationRepository.create({
+          wash_order_id: washOrderId,
+          employee_assigned_id: employeeId,
+          company_id: req.company.company_id,
+          assignedEmployeeUserId: employeeId,
+          operation_start_at: new Date()
+        });
+      }
+      
+      // Get updated operation
+      operation = await WashOrderOperationRepository.findByWashOrderId(washOrderId);
+      
+      return res.success('Employee assigned to wash order successfully', operation);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Mark wash operation as complete
+  completeWashOperation: async (req, res, next) => {
+    try {
+      const { washOrderId } = req.params;
+      
+      // Only company employee can mark operation as complete
+      if (!req.employee) {
+        throw new ForbiddenError('Only employees can mark operations as complete');
+      }
+      
+      // Find operation
+      const operation = await WashOrderOperationRepository.findByWashOrderId(washOrderId);
+      
+      if (!operation) {
+        throw new NotFoundError('Wash operation not found');
+      }
+      
+      // Check if employee is assigned to this operation
+      if (operation.employee_assigned_id !== req.userId) {
+        throw new ForbiddenError('You are not assigned to this operation');
+      }
+      
+      // Update operation
+      await WashOrderOperationRepository.update(operation.wash_order_id, {
+        operation_done_at: new Date()
       });
-
-      if (existingWashOrder) {
-        throw new BadRequestError('Wash order already exists for this order');
+      
+      // Update order status if not already completed
+      const order = await OrderRepository.findByCartOrderId(operation.washOrder.order_id);
+      
+      if (order && order.status !== 'completed') {
+        // Add status history
+        await OrderStatusHistoryRepository.addOrderStatusHistory(
+          order.order_id,
+          'completed',
+          'Wash operation completed'
+        );
+        
+        // Update order
+        await OrderRepository.update(order.order_id, {
+          status: 'completed'
+        });
+        
+        // Update cart
+        await CartRepository.update(operation.washOrder.order_id, {
+          status: 'completed'
+        });
       }
-
-      // Verify car exists
-      const car = await CustomerCarRepository.findById(car_id);
-
+      
+      // Get updated operation
+      const updatedOperation = await WashOrderOperationRepository.findByWashOrderId(washOrderId);
+      
+      return res.success('Wash operation marked as complete', updatedOperation);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Remove wash order from cart
+  removeWashOrder: async (req, res, next) => {
+    try {
+      // Find active cart
+      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      
+      if (!cart || !cart.carWashOrder) {
+        throw new BadRequestError('No car wash order found in active cart');
+      }
+      
+      // Delete the car wash order
+      await CarWashOrderRepository.delete(cart.carWashOrder.car_wash_order_id);
+      
+      // Get updated cart
+      const updatedCart = await CartRepository.findCartWithItems(cart.order_id);
+      
+      // Delete cart if it's empty (no items, no car wash, no rental)
+      if (updatedCart.orderItems.length === 0 && !updatedCart.rentalOrder) {
+        await CartRepository.delete(cart.order_id);
+        return res.success('Cart is now empty and has been removed');
+      }
+      
+      return res.success('Car wash order removed from cart', updatedCart);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Create new rental order
+  createRentalOrder: async (req, res, next) => {
+    try {
+      const { car_id, start_date, end_date } = req.body;
+      
+      // Find active cart or create a new one
+      let cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      
+      if (!cart) {
+        cart = await CartRepository.create({
+          user_id: req.user.user_id,
+          status: 'cart'
+        });
+      }
+      
+      // Check if rental order already exists for this cart
+      if (cart.rentalOrder) {
+        throw new BadRequestError('A rental order already exists in this cart');
+      }
+      
+      // Verify the car exists
+      const car = await CarRepository.findById(car_id);
+      
       if (!car) {
         throw new BadRequestError('Car not found');
       }
-
-      // Verify wash operations and calculate total amount
-      let totalAmount = 0;
-      for (const operationId of wash_operations) {
-        const operation = await WashOrderOperationRepository.findById(operationId);
-
-        if (!operation) {
-          throw new BadRequestError(`Wash operation with ID ${operationId} not found`);
-        }
-
-        totalAmount += operation.price;
-      }
-
-      // Create car wash order
-      const carWashOrder = await CarWashOrderRepository.create({
-        order_id: orderId,
-        car_id
-      });
-
-      // Create wash order operations
-      for (const operationId of wash_operations) {
-        await WashOrderOperationRepository.create({
-          car_wash_order_id: carWashOrder.car_wash_order_id,
-          operation_id: operationId
-        });
-      }
-
-      // Update order total amount
-      await OrderRepository.update(orderId, { total_amount: totalAmount });
-
-      // Get complete wash order
-      const completeWashOrder = await CarWashOrderRepository.findById(carWashOrder.car_wash_order_id, {
-        include: [
-          {
-            model: Order,
-            as: 'order'
-          },
-          {
-            model: CustomerCar,
-            as: 'car'
-          },
-          {
-            model: WashOrderOperation,
-            as: 'operations'
-          }
-        ]
-      });
-
-      return res.success('Wash order created successfully', completeWashOrder);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  createRentalOrder: async (req, res, next) => {
-    try {
-      const { orderId } = req.params;
-      const { car_id, start_date, end_date } = req.body;
       
-      const order = await OrderRepository.findById(orderId);
-      
-      if (!order) {
-        throw new NotFoundError('Order not found');
-      }
-      
-      // Verify this is a rental order
-      if (order.order_type !== 'rental') {
-        throw new BadRequestError('Order is not of type rental');
-      }
-      
-      // Check if rental order already exists for this order
-      const existingRentalOrder = await RentalOrderRepository.findOne({
-        where: { order_id: orderId }
-      });
-      
-      if (existingRentalOrder) {
-        throw new BadRequestError('Rental order already exists for this order');
-      }
-      
-      // Verify the car exists and belongs to the company
-      const car = await CarRepository.findOne({
-        where: {
-          car_id,
-          company_id: order.company_id
-        }
-      });
-      
-      if (!car) {
-        throw new BadRequestError('Car not found or does not belong to the company');
+      // Check if the car is available for rental
+      if (car.sale_or_rental !== 'rent') {
+        throw new BadRequestError('This car is not available for rental');
       }
       
       // Check if car is available for the requested dates
@@ -313,53 +675,60 @@ const orderController = {
                 { end_date: { [Op.lte]: end_date } }
               ]
             }
-          ]
-        }
+          ],
+          '$cart.status$': { [Op.ne]: 'cancelled' } // Exclude cancelled rentals
+        },
+        include: [{
+          model: CartModel,
+          as: 'cart',
+          required: true
+        }]
       });
       
       if (overlappingRentals > 0) {
         throw new BadRequestError('Car is not available for the requested dates');
       }
       
-      // Calculate rental duration in days
-      const startDateTime = new Date(start_date).getTime();
-      const endDateTime = new Date(end_date).getTime();
-      const durationMs = endDateTime - startDateTime;
-      const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
-      
-      // Calculate total price
-      const totalPrice = car.price_per_day * durationDays;
-      
       // Create rental order
       const rentalOrder = await RentalOrderRepository.create({
-        order_id: orderId,
+        order_id: cart.order_id,
         car_id,
         start_date,
         end_date
       });
       
-      // Update order total
-      await OrderRepository.update(orderId, { total_amount: totalPrice });
-      
-      // Get complete rental order
-      const completeRentalOrder = await RentalOrderRepository.findById(rentalOrder.rental_order_id, {
-        include: [
-          {
-            model: Order,
-            as: 'order'
-          },
-          {
-            model: Car,
-            as: 'car',
-            include: [{
-              model: RentalCarImage,
-              as: 'images'
-            }]
-          }
-        ]
-      });
+      // Get updated cart with rental order
+      const updatedCart = await CartRepository.findCartWithItems(cart.order_id);
 
-      return res.success('Rental order created successfully', completeRentalOrder);
+      return res.success('Rental order added to cart successfully', updatedCart);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  // Remove rental order from cart
+  removeRentalOrder: async (req, res, next) => {
+    try {
+      // Find active cart
+      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      
+      if (!cart || !cart.rentalOrder) {
+        throw new BadRequestError('No rental order found in active cart');
+      }
+      
+      // Delete the rental order
+      await RentalOrderRepository.delete(cart.rentalOrder.rental_order_id);
+      
+      // Get updated cart
+      const updatedCart = await CartRepository.findCartWithItems(cart.order_id);
+      
+      // Delete cart if it's empty (no items, no car wash, no rental)
+      if (updatedCart.orderItems.length === 0 && !updatedCart.carWashOrder) {
+        await CartRepository.delete(cart.order_id);
+        return res.success('Cart is now empty and has been removed');
+      }
+      
+      return res.success('Rental order removed from cart', updatedCart);
     } catch (error) {
       next(error);
     }

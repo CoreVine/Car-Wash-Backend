@@ -1,16 +1,16 @@
 const { faker } = require('@faker-js/faker');
 const OrderItems = require('../../models/OrderItem');
-const ordersFactory = require('./ordersFactory');
+const cartFactory = require('./cartFactory');
 const productsFactory = require('./productsFactory');
 
 const orderItemsFactory = {
   async create(count = 1, attrs = {}) {
     const orderItems = [];
     
-    // Create order if not provided
+    // Create cart if not provided
     if (!attrs.order_id) {
-      const orders = await ordersFactory.create(1, { order_type: 'product' });
-      attrs.order_id = orders[0].order_id;
+      const carts = await cartFactory.create(1, { status: 'cart' });
+      attrs.order_id = carts[0].order_id;
     }
     
     // Create product if not provided

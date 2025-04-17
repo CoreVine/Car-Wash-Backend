@@ -135,6 +135,91 @@ class RentalOrderRepository extends BaseRepository {
             throw new DatabaseError(error);
         }
     }
+
+    // Add car rental to cart with availability check in a transaction
+    async addRentalToCart(cartId, carId, startDate, endDate) {
+        try {
+            const t = await this.model.sequelize.transaction();
+            
+            try {
+                // Check car existence
+                const Car = this.model.sequelize.model('Car');
+                const car = await Car.findByPk(carId, { transaction: t });
+                
+                if (!car) {
+                    throw new Error('Car not found');
+                }
+                
+                if (car.sale_or_rental !== 'rent') {
+                    throw new Error('This car is not available for rental');
+                }
+                
+                // Check availability for the requested dates
+                const start_date = new Date(startDate);
+                const end_date = new Date(endDate);
+                
+                // Get all rental orders for this car
+                const rentalOrders = await this.findByCarId(carId, { transaction: t });
+                
+                // Get all cart_ids from rental orders
+                const orderIds = rentalOrders.map(rental => rental.order_id);
+                
+                if (orderIds.length > 0) {
+                    // Get carts that are not cancelled
+                    const Cart = this.model.sequelize.model('Cart');
+                    const activeCarts = await Cart.findAll({
+                        where: { 
+                            order_id: { [Op.in]: orderIds },
+                            status: { [Op.ne]: 'cancelled' }
+                        },
+                        transaction: t
+                    });
+                    
+                    // Get active rental order IDs
+                    const activeOrderIds = activeCarts.map(cart => cart.order_id);
+                    
+                    // Filter rental orders that are active
+                    const activeRentals = rentalOrders.filter(rental => 
+                        activeOrderIds.includes(rental.order_id)
+                    );
+                    
+                    // Check for overlaps
+                    const hasOverlap = activeRentals.some(rental => {
+                        const rentalStart = new Date(rental.start_date);
+                        const rentalEnd = new Date(rental.end_date);
+                        
+                        // Check for overlap
+                        return (
+                            (start_date >= rentalStart && start_date <= rentalEnd) ||
+                            (end_date >= rentalStart && end_date <= rentalEnd) ||
+                            (start_date <= rentalStart && end_date >= rentalEnd)
+                        );
+                    });
+                    
+                    if (hasOverlap) {
+                        throw new Error('Car is not available for the requested dates');
+                    }
+                }
+                
+                // Create the rental order
+                const rentalOrder = await this.create({
+                    order_id: cartId,
+                    car_id: carId,
+                    start_date,
+                    end_date
+                }, { transaction: t });
+                
+                await t.commit();
+                
+                return rentalOrder;
+            } catch (error) {
+                await t.rollback();
+                throw error;
+            }
+        } catch (error) {
+            throw new DatabaseError(error);
+        }
+    }
 }
 
 module.exports = new RentalOrderRepository();

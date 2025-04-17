@@ -1,6 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const OrderStatusHistory = require('../../models/OrderStatusHistory');
-const ordersFactory = require('./ordersFactory');
+const orderFactory = require('./orderFactory');
 
 const orderStatusHistoryFactory = {
   async create(count = 1, attrs = {}) {
@@ -8,8 +8,8 @@ const orderStatusHistoryFactory = {
     
     // Create order if not provided
     if (!attrs.order_id) {
-      const orders = await ordersFactory.create(1);
-      attrs.order_id = orders[0].order_id;
+      const orders = await orderFactory.create(1);
+      attrs.order_id = orders[0].id; // Use id from the new Order model
     }
         
     for (let i = 0; i < count; i++) {
@@ -22,7 +22,7 @@ const orderStatusHistoryFactory = {
   
   makeOne(attrs = {}) {
     const defaultAttrs = {
-      status: faker.helpers.arrayElement(attrs.status || ['pending', 'complete']),
+      status: faker.helpers.arrayElement(['pending', 'complete']),
       timestamp: faker.date.recent()
     };
     

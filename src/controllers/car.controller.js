@@ -19,7 +19,19 @@ const {
 const carController = {
   addCar: async (req, res, next) => {
     try {
-      const { model, year, price_per_day, exhibition_id, carbrand_id } = req.body;
+      const { 
+        model, 
+        year, 
+        price, 
+        exhibition_id, 
+        carbrand_id, 
+        description, 
+        sale_or_rental 
+      } = req.body;
+      
+      if (!['sale', 'rent'].includes(sale_or_rental)) {
+        throw new BadRequestError('Invalid value for sale_or_rental. Must be "sale" or "rent"');
+      }
       
       // Verify exhibition belongs to this company
       const exhibition = await CompanyExhibitionRepository.findOne({
@@ -44,10 +56,12 @@ const carController = {
       const car = await CarRepository.create({
         model,
         year,
-        price_per_day,
+        price,
         exhibition_id,
         carbrand_id,
-        company_id: req.company.company_id
+        company_id: req.company.company_id,
+        description,
+        sale_or_rental
       });
 
       return res.success('Car added successfully', car);
@@ -75,7 +89,8 @@ const carController = {
         search: req.query.search,
         available_from: req.query.available_from,
         available_to: req.query.available_to,
-        only_available: !!req.query.only_available
+        only_available: !!req.query.only_available,
+        sale_or_rental: req.query.type // 'sale' or 'rent'
       });
 
       const pagination = createPagination(page, limit, count);
@@ -106,6 +121,11 @@ const carController = {
   updateCar: async (req, res, next) => {
     try {
       const { carId } = req.params;
+      
+      // Validate sale_or_rental if provided
+      if (req.body.sale_or_rental && !['sale', 'rent'].includes(req.body.sale_or_rental)) {
+        throw new BadRequestError('Invalid value for sale_or_rental. Must be "sale" or "rent"');
+      }
       
       const car = await CarRepository.findByPk(carId);
       
@@ -145,22 +165,7 @@ const carController = {
       await car.update(req.body);
       
       // Get updated car with related data
-      const updatedCar = await CarRepository.findByPk(carId, {
-        include: [
-          {
-            model: CompanyExhibition,
-            as: 'exhibition'
-          },
-          {
-            model: CarBrand,
-            as: 'brand'
-          },
-          {
-            model: RentalCarImage,
-            as: 'images'
-          }
-        ]
-      });
+      const updatedCar = await CarRepository.findWithImages(carId);
 
       return res.success('Car updated successfully', updatedCar);
     } catch (error) {

@@ -10,14 +10,14 @@ const multer = require("multer");
 const carSchema = Yup.object().shape({
   model: Yup.string().required(),
   year: Yup.number().integer().required(),
-  price_per_day: Yup.number().positive().required(),
+  price: Yup.number().positive().required(),
   exhibition_id: Yup.number().integer().required()
 });
 
 const carUpdateSchema = Yup.object().shape({
   model: Yup.string(),
   year: Yup.number().integer(),
-  price_per_day: Yup.number().positive(),
+  price: Yup.number().positive(),
   exhibition_id: Yup.number().integer()
 });
 

@@ -13,7 +13,7 @@ class CarWashOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Orders',
+            model: 'Cart',
             key: 'order_id'
           }
         },
@@ -34,12 +34,12 @@ class CarWashOrder extends Model {
             key: 'user_id'
           }
         },
-        customer_car_id: {
+        company_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'CustomerCar',
-            key: 'customer_car_id'
+            model: 'Company',
+            key: 'company_id'
           }
         }
       },
@@ -47,7 +47,21 @@ class CarWashOrder extends Model {
         sequelize,
         modelName: 'CarWashOrder',
         tableName: 'carwashorders',
-        timestamps: false
+        timestamps: false,
+        indexes: [
+          {
+            name: 'order_id',
+            fields: ['order_id']
+          },
+          {
+            name: 'customer_id',
+            fields: ['customer_id']
+          },
+          {
+            name: 'fk_carwashorders_company1_idx',
+            fields: ['company_id']
+          }
+        ]
       }
     );
     
@@ -55,7 +69,7 @@ class CarWashOrder extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Order, {
+    this.belongsTo(models.Cart, {
       foreignKey: 'order_id',
       as: 'order'
     });
@@ -63,9 +77,9 @@ class CarWashOrder extends Model {
       foreignKey: 'customer_id',
       as: 'customer'
     });
-    this.belongsTo(models.CustomerCar, {
-      foreignKey: 'customer_car_id',
-      as: 'customerCar'
+    this.belongsTo(models.Company, {
+      foreignKey: 'company_id',
+      as: 'company'
     });
     this.hasOne(models.WashOrderOperation, {
       foreignKey: 'wash_order_id',
@@ -73,11 +87,12 @@ class CarWashOrder extends Model {
     });
     this.belongsToMany(models.WashType, {
       through: models.WashOrderWashType,
-      foreignKey: 'order_id',
-      otherKey: 'type_id',
+      foreignKey: 'carwashorders_order_id',
+      otherKey: 'WashTypes_type_id',
       as: 'washTypes'
     });
   }
 }
 
 module.exports = CarWashOrder;
+
