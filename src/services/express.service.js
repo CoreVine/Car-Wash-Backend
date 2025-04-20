@@ -10,7 +10,6 @@ const apiRouter = require("../routes");
 const loggingService = require("./logging.service");
 const rateLimitService = require("./rateLimit.service");
 const corsService = require("./cors.service");
-const VerificationCodeRepository = require('../data-access/verificationCodes');
 
 let server;
 let logger;
@@ -24,7 +23,9 @@ const expressService = {
       logger = winstonLogger;
       
       // Initialize rate limiting service
-      await rateLimitService.init();
+      if (process.env.NODE_ENV === 'production') {
+        await rateLimitService.init();
+      }
       
       // Initialize CORS service
       corsService.init(logger);
