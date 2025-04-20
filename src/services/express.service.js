@@ -44,9 +44,10 @@ const expressService = {
       // Use cookie-parser middleware
       server.use(cookieParser());
       
-      // Apply rate limiting middleware to all requests
-      server.use(rateLimitService.standardLimiter());
-      
+      if (process.env.NODE_ENV === 'production') {
+        // Apply rate limiting middleware to all requests
+        server.use(rateLimitService.standardLimiter());
+      }
       // Apply morgan middleware for HTTP request logging
       server.use(morgan);
       
