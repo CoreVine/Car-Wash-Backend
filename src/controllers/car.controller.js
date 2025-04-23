@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const path = require("path");
 // Import repositories
 import CarRepository from "../data-access/cars";
 import RentalCarImageRepository from "../data-access/rental-car-images";
@@ -6,10 +7,12 @@ import RentalOrderRepository from "../data-access/rental-orders";
 import CompanyExhibitionRepository from "../data-access/company-exhibitions";
 import CompanyRepository from "../data-access/companies";
 import CarBrandRepository from "../data-access/car-brands";
-const awsService = require("../services/aws.service");
+// Remove AWS service import
 const { createPagination } = require("../utils/responseHandler");
+const { getRelativePath } = require("../utils/fileUtils");
 const loggingService = require("../services/logging.service");
 const logger = loggingService.getLogger();
+const multerConfig = require("../config/multer.config");
 const {
   BadRequestError,
   ForbiddenError,
@@ -198,16 +201,12 @@ const carController = {
       // Get all car images
       const images = await RentalCarImageRepository.findByCarId(carId);
       
-      // Delete images from S3
+      // Delete images from storage
       for (const image of images) {
-        const imageUrl = image.image_url;
-        const fileExt = imageUrl.split('.').pop();
-        const fileUUID = imageUrl.split('.')[0];
-        
         try {
-          await awsService.deleteFile(fileUUID, fileExt, 'car-images/');
+          await multerConfig.deleteUploadedFile(image.image_url);
         } catch (err) {
-          console.log(`Error deleting image from S3: ${err.message}`);
+          console.log(`Error deleting image from storage: ${err.message}`);
         }
       }
       
@@ -239,16 +238,13 @@ const carController = {
         throw new ForbiddenError('You do not have permission to update this car');
       }
       
-      // Get file extension
-      const fileExt = req.file.originalname.split('.').pop();
+      // Create a relative path for public access
+      const relativePath = getRelativePath(req.file.path, 'car-images');
       
-      // Upload file to AWS S3
-      const uuid = await awsService.uploadFile(req.file, fileExt, 'car-images/');
-      
-      // Create image record in database
+      // Create image record in database with relative path
       const image = await RentalCarImageRepository.create({
         car_id: carId,
-        image_url: `${uuid}.${fileExt}`
+        image_url: relativePath
       });
 
       return res.success('Image uploaded successfully', image);
@@ -281,15 +277,11 @@ const carController = {
         throw new ForbiddenError('You do not have permission to delete this image');
       }
       
-      // Delete from S3
-      const imageUrl = image.image_url;
-      const fileExt = imageUrl.split('.').pop();
-      const fileUUID = imageUrl.split('.')[0];
-      
+      // Delete file from storage
       try {
-        await awsService.deleteFile(fileUUID, fileExt, 'car-images/');
+        await multerConfig.deleteUploadedFile(image.image_url);
       } catch (err) {
-        console.log(`Error deleting image from S3: ${err.message}`);
+        console.log(`Error deleting image from storage: ${err.message}`);
       }
       
       // Delete from database

@@ -20,15 +20,11 @@ const authController = {
         const companySchema = Yup.object().shape({
           company_name: Yup.string().required(),
           email: Yup.string().email().required(),
-          password: Yup.string().min(8)
-            .matches(
-              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-              'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
-            )
-            .required(),
+          password: Yup.string().min(8).required(),
           phone_number: Yup.string().required(),
           location: Yup.string().required(),
-          logo_url: Yup.string().required()
+          logo_url: Yup.string().required(),
+          about: Yup.string().required()
         });
         const validationErrors = await companySchema.validate(req.body, { abortEarly: false }).catch(err => err.errors);
         

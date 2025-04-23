@@ -1,6 +1,7 @@
 const CarBrandRepository = require("../data-access/car-brands");
 const { createPagination } = require("../utils/responseHandler");
-const awsService = require("../services/aws.service");
+const { getRelativePath } = require("../utils/fileUtils");
+const multerConfig = require("../config/multer.config");
 const {
   BadRequestError,
   NotFoundError
@@ -65,13 +66,13 @@ const carBrandController = {
         throw new BadRequestError(`A brand with name "${name}" already exists`);
       }
       
-      // Get file extension
-      const fileExt = req.file.originalname.split('.').pop();
+      // Create relative path for the logo
+      const logoPath = getRelativePath(req.file.path, 'brand-logos');
       
       // Create the brand
       const brand = await CarBrandRepository.create({
         name,
-        logo: req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/')
+        logo: logoPath
       });
       
       return res.success('Car brand created successfully', brand);
@@ -102,25 +103,22 @@ const carBrandController = {
       
       // If there's a new logo, update it
       if (req.file) {
-        // Delete old logo from S3
-        const oldLogo = brand.logo;
-        const fileExt = oldLogo.split('.').pop();
-        const fileUUID = oldLogo.split('.')[0];
-        
-        try {
-          await awsService.deleteFile(fileUUID, fileExt, 'brand-logos/');
-        } catch (err) {
-          console.log(`Error deleting logo from S3: ${err.message}`);
+        // Delete old logo from storage
+        if (brand.logo) {
+          try {
+            await multerConfig.deleteUploadedFile(brand.logo);
+          } catch (err) {
+            console.log(`Error deleting logo: ${err.message}`);
+          }
         }
         
-        // Upload new logo
-        const newFileExt = req.file.originalname.split('.').pop();
-        const uuid = await awsService.uploadFile(req.file, newFileExt, 'brand-logos/');
+        // Create relative path for the new logo
+        const logoPath = getRelativePath(req.file.path, 'brand-logos');
         
         // Update the brand with new logo
         await brand.update({
           name: name || brand.name,
-          logo: `${uuid}.${newFileExt}`
+          logo: logoPath
         });
       } else {
         // Update just the name
@@ -152,15 +150,13 @@ const carBrandController = {
         throw new BadRequestError('Cannot delete brand that is associated with cars');
       }
       
-      // Delete logo from S3
-      const logo = brand.logo;
-      const fileExt = logo.split('.').pop();
-      const fileUUID = logo.split('.')[0];
-      
-      try {
-        await awsService.deleteFile(fileUUID, fileExt, 'brand-logos/');
-      } catch (err) {
-        console.log(`Error deleting logo from S3: ${err.message}`);
+      // Delete logo from storage
+      if (brand.logo) {
+        try {
+          await multerConfig.deleteUploadedFile(brand.logo);
+        } catch (err) {
+          console.log(`Error deleting logo: ${err.message}`);
+        }
       }
       
       // Delete the brand

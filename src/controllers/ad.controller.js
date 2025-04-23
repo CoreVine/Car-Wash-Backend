@@ -1,5 +1,6 @@
 const AdRepository = require('../data-access/ads');
 const { createPagination } = require('../utils/responseHandler');
+const { getRelativePath } = require("../utils/fileUtils");
 const { deleteUploadedFile } = require('../config/multer.config');
 const loggingService = require('../services/logging.service');
 const logger = loggingService.getLogger();
@@ -30,17 +31,20 @@ const adController = {
         throw new BadRequestError('Image is required');
       }
 
+      // Create relative path for the image
+      const imageUrl = getRelativePath(req.file.path, 'ads');
+
       // Create new ad
       const ad = await AdRepository.create({
         name,
-        image_url: req.file.url || `/uploads/ads/${req.file.filename}`
+        image_url: imageUrl
       });
 
       return res.success('Ad created successfully', ad);
     } catch (error) {
       // Clean up uploaded file if error occurs
-      if (req.file && (req.file.path || req.file.url)) {
-        await deleteUploadedFile(req.file.url || `/uploads/ads/${req.file.filename}`);
+      if (req.file && req.file.path) {
+        await deleteUploadedFile(getRelativePath(req.file.path));
       }
       next(error);
     }
@@ -105,7 +109,7 @@ const adController = {
         if (ad.image_url) {
           await deleteUploadedFile(ad.image_url);
         }
-        updateData.image_url = req.file.url || `/uploads/ads/${req.file.filename}`;
+        updateData.image_url = getRelativePath(req.file.path, 'ads');
       }
 
       await AdRepository.update(adId, updateData);
@@ -114,8 +118,8 @@ const adController = {
       return res.success('Ad updated successfully', updatedAd);
     } catch (error) {
       // Clean up uploaded file if error occurs
-      if (req.file && (req.file.path || req.file.url)) {
-        await deleteUploadedFile(req.file.url || `/uploads/ads/${req.file.filename}`);
+      if (req.file && req.file.path) {
+        await deleteUploadedFile(getRelativePath(req.file.path));
       }
       next(error);
     }

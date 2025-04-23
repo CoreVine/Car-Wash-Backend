@@ -1,11 +1,12 @@
 const Yup = require("yup");
 const { Op } = require("sequelize");
+const path = require("path");
 // Import repositories
 const CompanyRepository = require("../data-access/companies");
 const CompanyDocumentRepository = require("../data-access/company-documents");
-const WashTypeRepository = require("../data-access/wash-types"); // Add this import
-const awsService = require("../services/aws.service");
+const WashTypeRepository = require("../data-access/wash-types");
 const { createPagination } = require("../utils/responseHandler");
+const { getRelativePath } = require("../utils/fileUtils");
 const {
   BadRequestError,
   ForbiddenError,
@@ -163,17 +164,14 @@ const companyController = {
         throw new NotFoundError('Company not found');
       }
       
-      // Get file extension
-      const fileExt = req.file.originalname.split('.').pop();
+      // Create a relative path for public access
+      const relativePath = getRelativePath(req.file.path, 'company-documents');
       
-      // Upload file to AWS S3
-      const uuid = await awsService.uploadFile(req.file, fileExt, 'company-documents/');
-      
-      // Create document record in database
+      // Create document record in database with relative path
       const document = await CompanyDocumentRepository.create({
         company_id: companyId,
         document_type: req.body.document_type,
-        document_url: `${uuid}.${fileExt}`,
+        document_url: relativePath,
         upload_date: new Date()
       });
 

@@ -7,8 +7,9 @@ import CategoryRepository from "../data-access/categories";
 import SubCategoryRepository from "../data-access/sub-categories";
 import SubCatProductRepository from "../data-access/sub-cat-products";
 import CompanyRepository from "../data-access/companies";
-const awsService = require("../services/aws.service");
+// Remove AWS service import
 const { createPagination } = require("../utils/responseHandler");
+const { getRelativePath } = require("../utils/fileUtils");
 const {
   BadRequestError,
   ForbiddenError,
@@ -45,7 +46,21 @@ const productController = {
       // Use the new repository method for creating associations
       await SubCatProductRepository.createSubCategoryProductAssociations(product.product_id, sub_category_ids);
       
-      // Get product with subcategories
+      // Handle image uploads if files are present
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          // Create a relative path for public access
+          const relativePath = getRelativePath(file.path, 'product-images');
+          
+          // Create image record in database with relative path
+          await ProductImageRepository.create({
+            product_id: product.product_id,
+            image_url: relativePath
+          });
+        }
+      }
+      
+      // Get product with subcategories and images
       const createdProduct = await ProductRepository.findWithSubcategories(product.product_id);
 
       return res.success('Product added successfully', createdProduct);
@@ -283,16 +298,13 @@ const productController = {
         }
       }
       
-      // Get file extension
-      const fileExt = req.file.originalname.split('.').pop();
+      // Create a relative path for public access
+      const relativePath = getRelativePath(req.file.path, 'product-images');
       
-      // Upload file to AWS S3
-      const uuid = await awsService.uploadFile(req.file, fileExt, 'product-images/');
-      
-      // Create image record in database
+      // Create image record in database with relative path
       const image = await ProductImage.create({
         product_id: productId,
-        image_url: `${uuid}.${fileExt}`
+        image_url: relativePath
       });
 
       return res.success('Image uploaded successfully', image);
@@ -333,15 +345,11 @@ const productController = {
         }
       }
       
-      // Delete from S3
-      const imageUrl = image.image_url;
-      const fileExt = imageUrl.split('.').pop();
-      const fileUUID = imageUrl.split('.')[0];
-      
+      // Delete file from local storage
       try {
-        await awsService.deleteFile(fileUUID, fileExt, 'product-images/');
+        await multerConfig.deleteUploadedFile(image.image_url);
       } catch (err) {
-        console.log(`Error deleting image from S3: ${err.message}`);
+        console.log(`Error deleting image from storage: ${err.message}`);
       }
       
       // Delete from database
@@ -401,8 +409,8 @@ const productController = {
         throw new BadRequestError('Category icon is required');
       }
       
-      // Get icon URL from uploaded file
-      const icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+      // Get icon URL from uploaded file - store as relative path
+      const icon = req.file.url || getRelativePath(req.file.path, 'category-icons');
       
       const category = await CategoryRepository.create({
         category_name,
@@ -450,8 +458,8 @@ const productController = {
           await multerConfig.deleteUploadedFile(category.icon);
         }
         
-        // Save the new icon URL
-        updateData.icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+        // Save the new icon URL as relative path
+        updateData.icon = req.file.url || getRelativePath(req.file.path, 'category-icons');
       }
       
       // Update the category
@@ -529,8 +537,8 @@ const productController = {
         throw new BadRequestError('Subcategory icon is required');
       }
       
-      // Get icon URL from uploaded file
-      const icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+      // Get icon URL from uploaded file as relative path
+      const icon = req.file.url || getRelativePath(req.file.path, 'subcategory-icons');
       
       const subCategory = await SubCategoryRepository.create({
         name,
@@ -585,8 +593,8 @@ const productController = {
           await multerConfig.deleteUploadedFile(subCategory.icon);
         }
         
-        // Save the new icon URL
-        updateData.icon = req.file.url || req.file.path.replace(/\\/g, '/').replace('public/', '/');
+        // Save the new icon URL as relative path
+        updateData.icon = req.file.url || getRelativePath(req.file.path, 'subcategory-icons');
       }
       
       // Update the subcategory

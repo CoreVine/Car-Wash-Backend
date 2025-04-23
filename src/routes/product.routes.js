@@ -86,6 +86,9 @@ const productRoutes = Router();
 productRoutes.post("/products", 
   authMiddleware, 
   isCompanyMiddleware,
+  ...(Array.isArray(productImageUploader.array('images', 5)) 
+    ? productImageUploader.array('images', 5) 
+    : [productImageUploader.array('images', 5)]),
   validate(productSchema),
   productController.addProduct
 );

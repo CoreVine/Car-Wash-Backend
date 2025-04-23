@@ -1,10 +1,8 @@
 import UserRepository from "../data-access/users";
-const Yup = require("yup");
 const { createPagination } = require("../utils/responseHandler.js");
 const fs = require("fs");
 const { deleteUploadedFile } = require("../config/multer.config");
-const loggingService = require("../services/logging.service");
-const logger = loggingService.getLogger();
+const { getRelativePath } = require("../utils/fileUtils");
 const {
   BadRequestError,
   UnauthorizedError,
@@ -280,9 +278,8 @@ let userController = {
         await deleteUploadedFile(user.profile_picture_url);
       }
       
-      // Create the URL for the uploaded file
-      // If using S3, req.file will have a url property from the middleware
-      const profilePictureUrl = req.file.url || `/uploads/profile-pictures/${req.file.filename}`;
+      // Create the relative path for the uploaded file
+      const profilePictureUrl = getRelativePath(req.file.path, 'profile-pictures');
       
       // Update user with new profile picture URL
       const updatedUser = await user.update({ profile_picture_url: profilePictureUrl });
@@ -328,9 +325,8 @@ let userController = {
         await deleteUploadedFile(user.profile_picture_url);
       }
       
-      // Create the URL for the uploaded file
-      // If using S3, req.file will have a url property from the middleware
-      const profilePictureUrl = req.file.url || `/uploads/profile-pictures/${req.file.filename}`;
+      // Create the relative path for the uploaded file
+      const profilePictureUrl = getRelativePath(req.file.path, 'profile-pictures');
       
       // Update user with new profile picture URL
       const updatedUser = await user.update({ profile_picture_url: profilePictureUrl });
