@@ -87,12 +87,12 @@ class ProductRepository extends BaseRepository {
                 {
                     model: this.model.sequelize.model('SubCategory'),
                     as: 'subCategories',
-                    attributes: ['name'],
+                    attributes: ['name', 'sub_category_id'],
                     through: { attributes: [] },
                     include: [{
                         model: this.model.sequelize.model('Category'),
                         as: 'category',
-                        attributes: ['category_name']
+                        attributes: ['category_name', 'category_id']
                     }]
                 }
             ];
