@@ -148,8 +148,8 @@ let userController = {
     try {
       const { id } = req.params;
       
-      // Only admin should be able to delete users
-      if (!req.adminEmployee) {
+      // Only admin should be able to delete other users
+      if (!req.adminEmployee && req.userId !== parseInt(id)) {
         throw new ForbiddenError('You do not have permission to delete users');
       }
       
@@ -164,7 +164,8 @@ let userController = {
         await deleteUploadedFile(user.profile_picture_url);
       }
 
-      await UserRepository.delete(id);
+      // Use our special repository method that handles the deletion order
+      await UserRepository.deleteUserWithRelations(id);
 
       return res.success('User deleted successfully', { id });
     } catch (error) {

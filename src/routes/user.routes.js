@@ -2,9 +2,11 @@ const { Router } = require("express");
 const userController = require("../controllers/user.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const isAdminMiddleware = require("../middlewares/isAdmin.middleware");
+const isSelfAuthorizedMiddleware = require("../middlewares/isSelfAuthorized.middleware");
 const multerErrorHandler = require("../middlewares/multerErrorHandler.middleware");
 const validate = require("../middlewares/validation.middleware");
 const { createUploader } = require("../config/multer.config");
+const { anyOf } = require("../utils/middleware.utils");
 const Yup = require("yup");
 
 const userRoutes = Router();
@@ -102,7 +104,7 @@ userRoutes.put(
 userRoutes.delete(
   "/user/:id", 
   authMiddleware, 
-  isAdminMiddleware,
+  anyOf(isSelfAuthorizedMiddleware, isAdminMiddleware),
   validate(idParamSchema, 'params'),
   userController.delete
 );
