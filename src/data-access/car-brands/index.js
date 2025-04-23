@@ -45,17 +45,15 @@ class CarBrandRepository extends BaseRepository {
         }
     }
 
-    async findBrandsPaginated(page = 1, limit = 10, search = null) {
+    async findBrands(search = null) {
         try {
             const whereClause = {};
             if (search) {
                 whereClause.name = { [Op.like]: `%${search}%` };
             }
             
-            return await this.findWithPagination(
+            return await this.findFiltered(
                 whereClause, 
-                page, 
-                limit, 
                 [['name', 'ASC']]
             );
         } catch (error) {

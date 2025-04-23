@@ -58,14 +58,6 @@ const categoryIdParamSchema = Yup.object().shape({
   categoryId: Yup.number().integer().positive().required()
 });
 
-const subCategoryIdParamSchema = Yup.object().shape({
-  subCategoryId: Yup.number().integer().positive().required()
-});
-
-const imageIdParamSchema = Yup.object().shape({
-  imageId: Yup.number().integer().positive().required()
-});
-
 // Configure uploaders
 const productImageUploader = createUploader({
   storageType: process.env.STORAGE_TYPE || 'disk',

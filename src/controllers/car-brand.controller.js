@@ -9,15 +9,10 @@ const {
 const carBrandController = {
   getAllBrands: async (req, res, next) => {
     try {
-      const page = parseInt(req.query.page, 10) || 1;
-      const limit = parseInt(req.query.limit, 10) || 10;
       const search = req.query.search || null;
+      const rows = await CarBrandRepository.findBrands(search);
       
-      const { count, rows } = await CarBrandRepository.findBrandsPaginated(page, limit, search);
-      
-      const pagination = createPagination(page, limit, count);
-      
-      return res.success('Car brands retrieved successfully', rows, pagination);
+      return res.success('Car brands retrieved successfully', rows);
     } catch (error) {
       next(error);
     }

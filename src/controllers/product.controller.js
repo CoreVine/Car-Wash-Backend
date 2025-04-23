@@ -367,9 +367,7 @@ const productController = {
   getSubCategories: async (req, res, next) => {
     try {
       const { categoryId } = req.params;
-      const page = parseInt(req.query.page, 10) || 1;
-      const limit = parseInt(req.query.limit, 10) || 10;
-      
+
       const category = await CategoryRepository.findById(categoryId);
       
       if (!category) {
@@ -377,11 +375,9 @@ const productController = {
       }
       
       // Use the new repository method with pagination
-      const { count, rows } = await SubCategoryRepository.findByCategoryIdPaginated(categoryId, page, limit);
-      
-      const pagination = createPagination(page, limit, count);
+      const rows = await SubCategoryRepository.findByCategoryId(categoryId);
 
-      return res.success('Subcategories retrieved successfully', rows, pagination);
+      return res.success('Subcategories retrieved successfully', rows);
     } catch (error) {
       next(error);
     }

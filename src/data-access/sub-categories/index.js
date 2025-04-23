@@ -29,14 +29,14 @@ class SubCategoryRepository extends BaseRepository {
     }
     
     // New methods for common queries
-    async findByCategoryIdPaginated(categoryId, page = 1, limit = 10) {
+    async findByCategoryId(categoryId) {
         try {
             const options = {
                 where: { category_id: categoryId },
                 order: [['sub_category_id', 'ASC']]
             };
             
-            return await this.findAllPaginated(page, limit, options);
+            return await this.findAll(options);
         } catch (error) {
             throw new DatabaseError(error);
         }
