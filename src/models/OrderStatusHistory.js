@@ -41,7 +41,8 @@ class OrderStatusHistory extends Model {
   static associate(models) {
     this.belongsTo(models.Order, {
       foreignKey: 'order_id',
-      as: 'order'
+      as: 'order',
+      onDelete: 'CASCADE'
     });
   }
 }

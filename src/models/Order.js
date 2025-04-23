@@ -48,7 +48,8 @@ class Order extends Model {
   static associate(models) {
     this.belongsTo(models.Cart, {
       foreignKey: 'cart_order_id',
-      as: 'cart'
+      as: 'cart',
+      onDelete: 'CASCADE'
     });
     this.belongsTo(models.PaymentMethod, {
       foreignKey: 'payment_method_id',
@@ -56,7 +57,8 @@ class Order extends Model {
     });
     this.hasMany(models.OrderStatusHistory, {
       foreignKey: 'order_id',
-      as: 'statusHistory'
+      as: 'statusHistory',
+      onDelete: 'CASCADE'
     });
   }
 }

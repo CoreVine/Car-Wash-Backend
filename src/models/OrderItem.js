@@ -13,7 +13,7 @@ class OrderItem extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Orders',
+            model: 'Cart',
             key: 'order_id'
           }
         },
@@ -48,7 +48,8 @@ class OrderItem extends Model {
   static associate(models) {
     this.belongsTo(models.Order, {
       foreignKey: 'order_id',
-      as: 'order'
+      as: 'order',
+      onDelete: 'CASCADE'
     });
     this.belongsTo(models.Product, {
       foreignKey: 'product_id',

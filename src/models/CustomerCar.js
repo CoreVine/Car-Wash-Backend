@@ -40,7 +40,8 @@ class CustomerCar extends Model {
   static associate(models) {
     this.belongsTo(models.User, {
       foreignKey: 'customer_id',
-      as: 'customer'
+      as: 'customer',
+      onDelete: 'CASCADE'
     });
     // FUTURE FU-001
     // this.hasMany(models.CarWashOrder, {

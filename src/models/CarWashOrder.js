@@ -75,7 +75,8 @@ class CarWashOrder extends Model {
     });
     this.belongsTo(models.User, {
       foreignKey: 'customer_id',
-      as: 'customer'
+      as: 'customer',
+      onDelete: 'CASCADE'
     });
     this.belongsTo(models.Company, {
       foreignKey: 'company_id',

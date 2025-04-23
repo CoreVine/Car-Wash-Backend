@@ -52,7 +52,8 @@ class Rating extends Model {
     });
     this.belongsTo(models.User, {
       foreignKey: 'user_id',
-      as: 'user'
+      as: 'user',
+      onDelete: 'CASCADE'
     });
   }
 }

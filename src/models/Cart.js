@@ -49,27 +49,33 @@ class Cart extends Model {
   static associate(models) {
     this.belongsTo(models.User, {
       foreignKey: 'user_id',
-      as: 'user'
+      as: 'user',
+      onDelete: 'CASCADE'
     });
     this.hasMany(models.OrderItem, {
       foreignKey: 'order_id',
-      as: 'orderItems'
+      as: 'orderItems',
+      onDelete: 'CASCADE'
     });
     this.hasOne(models.CarWashOrder, {
       foreignKey: 'order_id',
-      as: 'carWashOrder'
+      as: 'carWashOrder',
+      onDelete: 'CASCADE'
     });
     this.hasOne(models.RentalOrder, {
       foreignKey: 'order_id',
-      as: 'rentalOrder'
+      as: 'rentalOrder',
+      onDelete: 'CASCADE'
     });
     this.hasOne(models.Order, {
       foreignKey: 'cart_order_id',
-      as: 'order'
+      as: 'order',
+      onDelete: 'CASCADE'
     });
     this.hasOne(models.CarOrders, {
       foreignKey: 'orders_order_id',
-      as: 'carOrder'
+      as: 'carOrder',
+      onDelete: 'CASCADE'
     });
   }
 }

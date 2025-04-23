@@ -68,15 +68,18 @@ class User extends Model {
   static associate(models) {
     this.hasMany(models.Order, {
       foreignKey: 'user_id',
-      as: 'orders'
+      as: 'orders',
+      onDelete: 'CASCADE'
     });
     this.hasMany(models.CustomerCar, {
       foreignKey: 'customer_id',
-      as: 'cars'
+      as: 'cars',
+      onDelete: 'CASCADE'
     });
     this.hasMany(models.Rating, {
       foreignKey: 'user_id',
-      as: 'ratings'
+      as: 'ratings',
+      onDelete: 'CASCADE'
     });
     this.belongsToMany(models.Company, {
       through: models.Employee,

@@ -7,7 +7,7 @@ const modelFiles = fs
   .readdirSync(__dirname + "/../models/")
   .filter((file) => file.endsWith(".js"));
 
-const syncOptions = { force: process.env.SYNC_DB_FORCE === "true" };
+const syncOptions = { force: process.env.SYNC_DB_FORCE === "true", alter: process.env.SYNC_DB_ALTER === "true" };
 
 const sequelizeService = {
   connection: null,
