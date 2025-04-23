@@ -4,8 +4,6 @@ class BaseRepository {
     }
 
     async findById(id, options = {}) {
-        console.log(id);
-        
         return this.model.findByPk(id, options);
     }
 
@@ -45,6 +43,13 @@ class BaseRepository {
         });
     }
     
+    async findFiltered(whereClause = {}, sortOrder = [['created_at', 'DESC']], options = {}) {
+        return await this.model.findAll({
+            ...options,
+            where: whereClause,
+            order: sortOrder
+        });
+    }
     
     // New methods for common operations
     async findAllPaginated(page = 1, limit = 10, options = {}) {
