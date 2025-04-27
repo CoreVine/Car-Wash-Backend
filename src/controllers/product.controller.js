@@ -85,10 +85,11 @@ const productController = {
           throw new NotFoundError('Category not found');
         }
         
-        // Use the repository method to get products by category ID
+        // Use the repository method to get products by category ID with images
         const productAssociations = await SubCatProductRepository.findByCategoryId(categoryId, {
           limit,
-          offset: (page - 1) * limit
+          offset: (page - 1) * limit,
+          singleProduct: false // Indicate we want one image per product
         });
         
         // Extract products from associations
@@ -118,10 +119,11 @@ const productController = {
           throw new NotFoundError('Subcategory not found');
         }
         
-        // Use the repository method to get products by subcategory ID
+        // Use the repository method to get products by subcategory ID with images
         const productAssociations = await SubCatProductRepository.findBySubCategoryId(subCategoryId, {
           limit,
-          offset: (page - 1) * limit
+          offset: (page - 1) * limit,
+          singleProduct: false // Indicate we want one image per product
         });
         
         // Extract products from associations
@@ -137,14 +139,16 @@ const productController = {
         return res.success('Products retrieved successfully', products, pagination);
       }
       
-      // For all other cases, use the general filtering approach
+      // For all other cases, modify the general filtering approach to include images
       const { count, rows } = await ProductRepository.findProductsWithFilters({
         page,
         limit,
         company_id: req.query.company_id,
         min_price: req.query.min_price,
         max_price: req.query.max_price,
-        search: req.query.search
+        search: req.query.search,
+        includeImages: true, // Add flag to include images
+        imageLimit: 1 // Limit to one image per product
       });
 
       const pagination = createPagination(page, limit, count);
@@ -159,8 +163,10 @@ const productController = {
     try {
       const { productId } = req.params;
       
-      // Use the new repository method
-      const product = await ProductRepository.findDetailedProduct(productId);
+      // Use the repository method with full image inclusion
+      const product = await ProductRepository.findDetailedProduct(productId, {
+        includeAllImages: true // Ensure all images are included for a single product
+      });
 
       if (!product) {
         throw new NotFoundError('Product not found');

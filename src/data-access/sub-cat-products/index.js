@@ -25,7 +25,14 @@ class SubCatProductRepository extends BaseRepository {
                 include: [
                     {
                         model: this.model.sequelize.model('Product'),
-                        as: 'product'
+                        as: 'product',
+                        include: [
+                            {
+                                model: this.model.sequelize.model('ProductImage'),
+                                as: 'images', // Changed from 'productImages' to match Product model association
+                                limit: options.singleProduct ? null : 1 // If single product, include all images, else just one
+                            }
+                        ]
                     }
                 ],
                 ...options
@@ -44,7 +51,14 @@ class SubCatProductRepository extends BaseRepository {
                     association: 'subCatProducts',
                     include: [{
                         model: this.model.sequelize.model('Product'),
-                        as: 'product'
+                        as: 'product',
+                        include: [
+                            {
+                                model: this.model.sequelize.model('ProductImage'),
+                                as: 'images', // Changed from 'productImages' to match Product model association
+                                limit: options.singleProduct ? null : 1 // If single product, include all images, else just one
+                            }
+                        ]
                     }]
                 }]
             });
