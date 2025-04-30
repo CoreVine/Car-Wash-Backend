@@ -4,7 +4,9 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const isAdminMiddleware = require("../middlewares/isAdmin.middleware");
 const validate = require("../middlewares/validation.middleware");
 const Yup = require("yup");
-const multer = require("multer");
+const { createUploader } = require("../config/multer.config");
+const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
+const multerErrorHandler = require("../middlewares/multerErrorHandler.middleware");
 
 // Define validation schemas
 const companyUpdateSchema = Yup.object().shape({
@@ -20,18 +22,21 @@ const companyIdParamSchema = Yup.object().shape({
 });
 
 const documentUploadSchema = {
-  params: {
+  params: Yup.object().shape({
     companyId: Yup.number().integer().positive().required()
-  },
-  body: {
+  }),
+  body: Yup.object().shape({
     document_type: Yup.string().required()
-  }
+  })
 }
 
-// Configure multer for file uploads
-const upload = multer({ 
-  dest: 'uploads/',
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+// Configure uploader for company documents
+const documentUploader = createUploader({
+  storageType: process.env.STORAGE_TYPE || 'disk',
+  uploadPath: 'uploads/company-documents',
+  fileFilter: 'documents',
+  fileSize: 5 * 1024 * 1024, // 5MB limit
+  fileNamePrefix: 'doc'
 });
 
 const companyRoutes = Router();
@@ -54,7 +59,8 @@ companyRoutes.get(
 
 companyRoutes.put(
   "/companies/:companyId", 
-  authMiddleware, 
+  authMiddleware,
+  isAdminMiddleware,
   validate({
     body: companyUpdateSchema,
     params: companyIdParamSchema
@@ -73,14 +79,19 @@ companyRoutes.put(
 companyRoutes.post(
   "/companies/:companyId/documents", 
   authMiddleware,
+  isCompanyMiddleware,
+  ...(Array.isArray(documentUploader.single('document')) 
+    ? documentUploader.single('document') 
+    : [documentUploader.single('document')]),
+  multerErrorHandler,
   validate(documentUploadSchema),
-  upload.single('document'), 
   companyController.uploadDocument
 );
 
 companyRoutes.get(
   "/companies/:companyId/documents", 
   authMiddleware,
+  isCompanyMiddleware,
   validate(companyIdParamSchema, 'params'),
   companyController.getDocuments
 );

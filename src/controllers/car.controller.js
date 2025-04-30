@@ -1,11 +1,7 @@
-const { Op } = require("sequelize");
-const path = require("path");
 // Import repositories
 import CarRepository from "../data-access/cars";
 import RentalCarImageRepository from "../data-access/rental-car-images";
-import RentalOrderRepository from "../data-access/rental-orders";
 import CompanyExhibitionRepository from "../data-access/company-exhibitions";
-import CompanyRepository from "../data-access/companies";
 import CarBrandRepository from "../data-access/car-brands";
 // Remove AWS service import
 const { createPagination } = require("../utils/responseHandler");
@@ -36,36 +32,19 @@ const carController = {
         throw new BadRequestError('Invalid value for sale_or_rental. Must be "sale" or "rent"');
       }
       
-      // Verify exhibition belongs to this company
-      const exhibition = await CompanyExhibitionRepository.findOne({
-        where: {
-          exhibition_id,
-          company_id: req.company.company_id
-        }
-      });
+      // Prepare image records if any files were uploaded
+      const imageRecords = req.files && req.files.length > 0 
+        ? req.files.map(file => ({
+            image_url: getRelativePath(file.path, 'car-images')
+          }))
+        : [];
       
-      if (!exhibition) {
-        throw new BadRequestError('Exhibition not found or does not belong to your company');
-      }
-      
-      // Verify brand exists
-      const brand = await CarBrandRepository.findById(carbrand_id);
-      
-      if (!brand) {
-        throw new BadRequestError('Car brand not found');
-      }
-
-      // Create the car
-      const car = await CarRepository.create({
-        model,
-        year,
-        price,
-        exhibition_id,
-        carbrand_id,
-        company_id: req.company.company_id,
-        description,
-        sale_or_rental
-      });
+      // Use repository method that handles transaction internally
+      const car = await CarRepository.createWithImagesAndValidation(
+        { model, year, price, exhibition_id, carbrand_id, description, sale_or_rental },
+        imageRecords,
+        req.company.company_id
+      );
 
       return res.success('Car added successfully', car);
     } catch (error) {
@@ -216,8 +195,8 @@ const carController = {
     try {
       const { carId } = req.params;
       
-      if (!req.file) {
-        throw new BadRequestError('No image uploaded');
+      if (!req.files || req.files.length === 0) {
+        throw new BadRequestError('No images uploaded');
       }
       
       const car = await CarRepository.findByPk(carId);
@@ -231,16 +210,15 @@ const carController = {
         throw new ForbiddenError('You do not have permission to update this car');
       }
       
-      // Create a relative path for public access
-      const relativePath = getRelativePath(req.file.path, 'car-images');
+      // Prepare image records
+      const imageRecords = req.files.map(file => ({
+        image_url: getRelativePath(file.path, 'car-images')
+      }));
       
-      // Create image record in database with relative path
-      const image = await RentalCarImageRepository.create({
-        car_id: carId,
-        image_url: relativePath
-      });
+      // Use repository method to handle the transaction
+      const uploadedImages = await RentalCarImageRepository.bulkCreateImagesForCar(carId, imageRecords);
 
-      return res.success('Image uploaded successfully', image);
+      return res.success('Images uploaded successfully', uploadedImages);
     } catch (error) {
       next(error);
     }
@@ -373,7 +351,7 @@ const carController = {
       }
       
       // Check if the exhibition belongs to the company
-      if (exhibition.company_id !== req.company.company_id && !req.isAdmin) {
+      if (exhibition.company_id !== req.company.company_id && !req.adminEmployee) {
         throw new ForbiddenError('You do not have permission to update this exhibition');
       }
       
@@ -403,7 +381,7 @@ const carController = {
       }
       
       // Check if the exhibition belongs to the company
-      if (exhibition.company_id !== req.company.company_id && !req.isAdmin) {
+      if (exhibition.company_id !== req.company.company_id && !req.adminEmployee) {
         throw new ForbiddenError('You do not have permission to delete this exhibition');
       }
       

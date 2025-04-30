@@ -1,6 +1,9 @@
+const { DatabaseError, Op, literal } = require("sequelize");
 const CarModel = require('../../models/Car');
 const BaseRepository = require('../base.repository');
-const { DatabaseError, Op, literal } = require("sequelize");
+const CompanyExhibitionRepository = require('../company-exhibitions');
+const CarBrandRepository = require('../car-brands');
+const RentalCarImageRepository = require('../rental-car-images');
 
 class CarRepository extends BaseRepository {
     constructor() {
@@ -273,6 +276,62 @@ class CarRepository extends BaseRepository {
             if (error.message === 'Cannot delete car with active rentals') {
                 throw error; // Rethrow specific errors
             }
+            throw new DatabaseError(error);
+        }
+    }
+
+    async createWithImagesAndValidation(carData, imageRecords, companyId) {
+        try {
+            const transaction = await this.model.sequelize.transaction();
+            
+            try {
+                // Validate exhibition belongs to company
+                const exhibition = await CompanyExhibitionRepository.findOne({
+                    where: {
+                        exhibition_id: parseInt(carData.exhibition_id),
+                        company_id: companyId
+                    }
+                });
+                
+                if (!exhibition) {
+                    throw new Error('Exhibition not found or does not belong to your company');
+                }
+                
+                // Validate brand exists
+                const brand = await CarBrandRepository.findById(carData.carbrand_id, { transaction });
+                
+                if (!brand) {
+                    throw new Error('Car brand not found');
+                }
+                
+                // Create the car
+                const car = await this.create({
+                    ...carData,
+                    company_id: companyId
+                }, { transaction });
+                
+                // Create images if any
+                let images = [];
+                if (imageRecords && imageRecords.length > 0) {
+                    const imageData = imageRecords.map(image => ({
+                        ...image,
+                        car_id: car.car_id
+                    }));
+                    
+                    images = await RentalCarImageRepository.bulkCreate(imageData, { transaction });
+                }
+                
+                // Commit transaction
+                await transaction.commit();
+                
+                // Return car with images
+                const result = { ...car.toJSON(), images };
+                return result;
+            } catch (error) {
+                await transaction.rollback();
+                throw error;
+            }
+        } catch (error) {
             throw new DatabaseError(error);
         }
     }

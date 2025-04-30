@@ -1,10 +1,13 @@
+const Yup = require("yup");
 const { Router } = require("express");
-const carController = require("../controllers/car.controller");
+const { createUploader } = require("../config/multer.config");
 const authMiddleware = require("../middlewares/auth.middleware");
 const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
 const validate = require("../middlewares/validation.middleware");
-const Yup = require("yup");
-const multer = require("multer");
+const multerErrorHandler = require("../middlewares/multerErrorHandler.middleware");
+const carController = require("../controllers/car.controller");
+const { anyOf } = require("../utils/middleware.utils");
+const isAdminMiddleware = require("../middlewares/isAdmin.middleware");
 
 // Define validation schemas
 const carSchema = Yup.object().shape({
@@ -73,10 +76,13 @@ const exhibitionIdParamSchema = Yup.object().shape({
   exhibitionId: Yup.number().integer().positive().required()
 });
 
-// Configure multer for file uploads
-const upload = multer({ 
-  dest: 'uploads/',
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+// Configure uploaders for car images
+const carImageUploader = createUploader({
+  storageType: process.env.STORAGE_TYPE || 'disk',
+  uploadPath: 'uploads/car-images',
+  fileFilter: 'images',
+  fileSize: 5 * 1024 * 1024, // 5MB limit
+  fileNamePrefix: 'car'
 });
 
 const carRoutes = Router();
@@ -85,7 +91,11 @@ const carRoutes = Router();
 carRoutes.post(
   "/cars", 
   authMiddleware, 
-  isCompanyMiddleware, 
+  anyOf(isCompanyMiddleware, isAdminMiddleware),
+  ...(Array.isArray(carImageUploader.array('images')) 
+    ? carImageUploader.array('images') 
+    : [carImageUploader.array('images')]),
+  multerErrorHandler,
   validate(carSchema),
   carController.addCar
 );
@@ -127,7 +137,10 @@ carRoutes.post(
   authMiddleware, 
   isCompanyMiddleware,
   validate(carIdParamSchema, 'params'),
-  upload.single('image'), 
+  ...(Array.isArray(carImageUploader.array('images')) 
+    ? carImageUploader.array('images') 
+    : [carImageUploader.array('images')]),
+  multerErrorHandler, 
   carController.addCarImage
 );
 
