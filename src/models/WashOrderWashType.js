@@ -6,21 +6,19 @@ class WashOrderWashType extends Model {
       {
         order_id: {
           type: DataTypes.INTEGER.UNSIGNED,
-          primaryKey: true,
+          field: 'carwashorders_order_id',
           references: {
             model: 'CarWashOrders',
             key: 'wash_order_id'
           },
-          field: 'carwashorders_order_id'
         },
         type_id: {
           type: DataTypes.INTEGER,
-          primaryKey: true,
+          field: 'WashTypes_type_id',
           references: {
             model: 'washtypes',
             key: 'type_id'
           },
-          field: 'WashTypes_type_id'
         },
         paid_price: {
           type: DataTypes.MEDIUMINT,
@@ -32,13 +30,12 @@ class WashOrderWashType extends Model {
         modelName: 'WashOrderWashType',
         tableName: 'washorders_washtypes',
         timestamps: false,
-        indexes: [
-          {
-            unique: true,
-            fields: ['carwashorders_order_id', 'WashTypes_type_id'],
-            name: 'wash_order_type_unique'
+        indexes: [],
+        uniqueKeys: {
+          wo_wt_pk: {
+            fields: ['carwashorders_order_id', 'WashTypes_type_id']
           }
-        ]
+        }
       }
     );
     
@@ -46,7 +43,6 @@ class WashOrderWashType extends Model {
   }
 
   static associate(models) {
-    // Add proper associations for the junction table
     this.belongsTo(models.CarWashOrder, {
       foreignKey: 'order_id',
       as: 'washOrder'

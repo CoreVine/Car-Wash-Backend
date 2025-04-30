@@ -8,6 +8,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "nodemon src/index.js",
+    "debug": "nodemon --inspect src/index.js",
     "start": "node src/index.js"
   },
   "dependencies": {
