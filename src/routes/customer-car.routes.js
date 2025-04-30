@@ -27,47 +27,47 @@ const carIdParamSchema = Yup.object().shape({
 
 const customerCarRoutes = Router();
 
-// Removing /api prefix since it's added globally
-customerCarRoutes.post(
-  "/customer-cars", 
-  authMiddleware, 
-  isUserMiddleware, 
-  validate(customerCarSchema),
-  customerCarController.addCustomerCar
-);
+// TODO: If needed in future, uncomment and test
+// customerCarRoutes.post(
+//   "/customer-cars", 
+//   authMiddleware, 
+//   isUserMiddleware, 
+//   validate(customerCarSchema),
+//   customerCarController.addCustomerCar
+// );
 
-customerCarRoutes.get(
-  "/customer-cars", 
-  authMiddleware, 
-  isUserMiddleware,
-  validate(paginationSchema, 'query'),
-  customerCarController.getCustomerCars
-);
+// customerCarRoutes.get(
+//   "/customer-cars", 
+//   authMiddleware, 
+//   isUserMiddleware,
+//   validate(paginationSchema, 'query'),
+//   customerCarController.getCustomerCars
+// );
 
-customerCarRoutes.get(
-  "/customer-cars/:carId", 
-  authMiddleware,
-  validate(carIdParamSchema, 'params'),
-  customerCarController.getCustomerCar
-);
+// customerCarRoutes.get(
+//   "/customer-cars/:carId", 
+//   authMiddleware,
+//   validate(carIdParamSchema, 'params'),
+//   customerCarController.getCustomerCar
+// );
 
-customerCarRoutes.put(
-  "/customer-cars/:carId", 
-  authMiddleware, 
-  isUserMiddleware, 
-  validate({
-    body: customerCarUpdateSchema,
-    params: carIdParamSchema
-  }),
-  customerCarController.updateCustomerCar
-);
+// customerCarRoutes.put(
+//   "/customer-cars/:carId", 
+//   authMiddleware, 
+//   isUserMiddleware, 
+//   validate({
+//     body: customerCarUpdateSchema,
+//     params: carIdParamSchema
+//   }),
+//   customerCarController.updateCustomerCar
+// );
 
-customerCarRoutes.delete(
-  "/customer-cars/:carId", 
-  authMiddleware, 
-  isUserMiddleware,
-  validate(carIdParamSchema, 'params'),
-  customerCarController.deleteCustomerCar
-);
+// customerCarRoutes.delete(
+//   "/customer-cars/:carId", 
+//   authMiddleware, 
+//   isUserMiddleware,
+//   validate(carIdParamSchema, 'params'),
+//   customerCarController.deleteCustomerCar
+// );
 
 module.exports = customerCarRoutes;

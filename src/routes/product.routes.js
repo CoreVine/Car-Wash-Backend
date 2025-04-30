@@ -152,9 +152,7 @@ productRoutes.post(
   "/categories", 
   authMiddleware, 
   isAdminMiddleware, 
-  ...(Array.isArray(categoryIconUploader.single('icon')) 
-  ? categoryIconUploader.single('icon') 
-  : [categoryIconUploader.single('icon')]),
+  categoryIconUploader.single('icon'),
   validate(categorySchema),
   requireFileUpload('Category icon'),
   productController.addCategory
@@ -164,9 +162,7 @@ productRoutes.put(
   "/categories/:categoryId",
   authMiddleware,
   isAdminMiddleware,
-  ...(Array.isArray(categoryIconUploader.single('icon')) 
-    ? categoryIconUploader.single('icon') 
-    : [categoryIconUploader.single('icon')]),
+  categoryIconUploader.single('icon'),
   validate({
     body: categoryUpdateSchema,
     params: categoryIdParamSchema
@@ -193,9 +189,7 @@ productRoutes.post(
   "/categories/:categoryId/subcategories", 
   authMiddleware, 
   isAdminMiddleware,
-  ...(Array.isArray(subCategoryIconUploader.single('icon')) 
-    ? subCategoryIconUploader.single('icon') 
-    : [subCategoryIconUploader.single('icon')]),
+  subCategoryIconUploader.single('icon'),
   validate({
     body: subCategorySchema,
     params: categoryIdParamSchema
@@ -208,9 +202,7 @@ productRoutes.put(
   "/categories/:categoryId/subcategories/:subCategoryId",
   authMiddleware,
   isAdminMiddleware,
-  ...(Array.isArray(subCategoryIconUploader.single('icon')) 
-  ? subCategoryIconUploader.single('icon') 
-  : [subCategoryIconUploader.single('icon')]),
+  subCategoryIconUploader.single('icon'),
   validate({
     body: subCategoryUpdateSchema,
     params: {
