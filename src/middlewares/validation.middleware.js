@@ -27,7 +27,13 @@ const validate = (schema, source = 'body') => {
             try {
               await schemaObj.validate(req[src], { abortEarly: false });
             } catch (error) {
-              errors.push(...error.errors.map(err => `[${src}] ${err}`));
+              // Check if error.errors exists before trying to map over it
+              if (Array.isArray(error.errors)) {
+                errors.push(...error.errors.map(err => `[${src}] ${err}`));
+              } else {
+                // Fallback to using error.message if error.errors is not available
+                errors.push(`[${src}] ${error.message}`);
+              }
             }
           }
         }
