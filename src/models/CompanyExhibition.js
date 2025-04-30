@@ -40,7 +40,9 @@ class CompanyExhibition extends Model {
     });
     this.hasMany(models.Car, {
       foreignKey: 'exhibition_id',
-      as: 'cars'
+      as: 'cars',
+      onDelete: 'CASCADE', // Changed from RESTRICT to CASCADE to delete all associated cars
+      onUpdate: 'CASCADE'
     });
   }
 }

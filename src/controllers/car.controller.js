@@ -191,30 +191,23 @@ const carController = {
         throw new ForbiddenError('You do not have permission to delete this car');
       }
       
-      // Check if car has active rentals using new repository method
-      const hasActiveRentals = await CarRepository.hasActiveRentals(carId);
+      // Use the specialized repository method that handles all the checks
+      const imagesToDelete = await CarRepository.safeDeleteWithImages(carId);
       
-      if (hasActiveRentals) {
-        throw new BadRequestError('Cannot delete car with active rentals');
-      }
-      
-      // Get all car images
-      const images = await RentalCarImageRepository.findByCarId(carId);
-      
-      // Delete images from storage
-      for (const image of images) {
+      // After successful DB deletion, delete the physical files
+      for (const image of imagesToDelete) {
         try {
           await multerConfig.deleteUploadedFile(image.image_url);
         } catch (err) {
-          console.log(`Error deleting image from storage: ${err.message}`);
+          logger.error(`Error deleting image file: ${image.image_url}`, err);
         }
       }
-      
-      // Delete the car (cascades to images)
-      await CarRepository.delete(carId);
 
       return res.success('Car deleted successfully');
     } catch (error) {
+      if (error.message === 'Cannot delete car with active rentals') {
+        return next(new BadRequestError(error.message));
+      }
       next(error);
     }
   },
@@ -312,9 +305,18 @@ const carController = {
     try {
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 10;
+      
+      // Extract search parameters
+      const filters = {
+        page,
+        limit,
+        company_id: req.query.company_id,
+        search: req.query.search,
+        location: req.query.location
+      };
 
-      // Use new repository method
-      const { count, rows } = await CompanyExhibitionRepository.findExhibitionsWithFullDetails(page, limit);
+      // Use enhanced repository method with filters
+      const { count, rows } = await CompanyExhibitionRepository.findExhibitionsWithFilters(filters);
 
       const pagination = createPagination(page, limit, count);
 
@@ -336,6 +338,96 @@ const carController = {
       const pagination = createPagination(page, limit, count);
 
       return res.success('Company exhibitions retrieved successfully', rows, pagination);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getExhibitionDetails: async (req, res, next) => {
+    try {
+      const { exhibitionId } = req.params;
+      
+      // Fetch exhibition with cars and preview images
+      const exhibition = await CompanyExhibitionRepository.findExhibitionWithCarsAndPreviewImages(exhibitionId);
+      
+      if (!exhibition) {
+        throw new NotFoundError('Exhibition not found');
+      }
+
+      return res.success('Exhibition details retrieved successfully', exhibition);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  updateExhibition: async (req, res, next) => {
+    try {
+      const { exhibitionId } = req.params;
+      const { location } = req.body;
+      
+      // Find the exhibition and verify ownership
+      const exhibition = await CompanyExhibitionRepository.findById(exhibitionId);
+      
+      if (!exhibition) {
+        throw new NotFoundError('Exhibition not found');
+      }
+      
+      // Check if the exhibition belongs to the company
+      if (exhibition.company_id !== req.company.company_id && !req.isAdmin) {
+        throw new ForbiddenError('You do not have permission to update this exhibition');
+      }
+      
+      // Update the exhibition
+      await exhibition.update({ location });
+      
+      // Get updated exhibition with related data
+      const updatedExhibition = await CompanyExhibitionRepository.findById(exhibitionId, {
+        include: ['company']
+      });
+
+      return res.success('Exhibition updated successfully', updatedExhibition);
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  deleteExhibition: async (req, res, next) => {
+    try {
+      const { exhibitionId } = req.params;
+      
+      // Find the exhibition and verify ownership
+      const exhibition = await CompanyExhibitionRepository.findById(exhibitionId);
+      
+      if (!exhibition) {
+        throw new NotFoundError('Exhibition not found');
+      }
+      
+      // Check if the exhibition belongs to the company
+      if (exhibition.company_id !== req.company.company_id && !req.isAdmin) {
+        throw new ForbiddenError('You do not have permission to delete this exhibition');
+      }
+      
+      // Use the specialized repository method that performs cascading deletion
+      const affectedCars = await CompanyExhibitionRepository.safeDeleteExhibition(exhibitionId);
+      
+      // Clean up image files for all deleted cars
+      const deletePromises = [];
+      
+      for (const car of affectedCars) {
+        if (car.images && car.images.length > 0) {
+          car.images.forEach(image => {
+            deletePromises.push(
+              multerConfig.deleteUploadedFile(image.image_url)
+                .catch(err => logger.error(`Error deleting image file: ${image.image_url}`, err))
+            );
+          });
+        }
+      }
+      
+      // Wait for all file deletions to complete
+      await Promise.all(deletePromises);
+
+      return res.success(`Exhibition deleted successfully with ${affectedCars.length} associated cars`);
     } catch (error) {
       next(error);
     }

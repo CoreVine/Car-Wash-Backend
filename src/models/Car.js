@@ -84,7 +84,9 @@ class Car extends Model {
     });
     this.hasMany(models.RentalCarImage, {
       foreignKey: 'car_id',
-      as: 'images'
+      as: 'images',
+      onDelete: 'CASCADE', // Auto-delete images when car is deleted
+      onUpdate: 'CASCADE'
     });
   }
 }

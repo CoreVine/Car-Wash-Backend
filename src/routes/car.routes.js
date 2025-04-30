@@ -25,6 +25,10 @@ const exhibitionSchema = Yup.object().shape({
   location: Yup.string().required()
 });
 
+const exhibitionUpdateSchema = Yup.object().shape({
+  location: Yup.string().required()
+});
+
 const carFilterSchema = Yup.object().shape({
   page: Yup.number().integer().min(1),
   limit: Yup.number().integer().min(1).max(100),
@@ -45,6 +49,14 @@ const carFilterSchema = Yup.object().shape({
   // )
 });
 
+const exhibitionFilterSchema = Yup.object().shape({
+  page: Yup.number().integer().min(1),
+  limit: Yup.number().integer().min(1).max(100),
+  company_id: Yup.number().integer().positive(),
+  search: Yup.string(),
+  location: Yup.string()
+});
+
 const carIdParamSchema = Yup.object().shape({
   carId: Yup.number().integer().positive().required()
 });
@@ -55,6 +67,10 @@ const imageIdParamSchema = Yup.object().shape({
 
 const companyIdParamSchema = Yup.object().shape({
   companyId: Yup.number().integer().positive().required()
+});
+
+const exhibitionIdParamSchema = Yup.object().shape({
+  exhibitionId: Yup.number().integer().positive().required()
 });
 
 // Configure multer for file uploads
@@ -139,13 +155,39 @@ carRoutes.post(
 
 carRoutes.get(
   "/exhibitions", 
+  validate(exhibitionFilterSchema, 'query'),
   carController.getExhibitions
+);
+
+carRoutes.get(
+  "/exhibitions/:exhibitionId",
+  validate(exhibitionIdParamSchema, 'params'),
+  carController.getExhibitionDetails
 );
 
 carRoutes.get(
   "/companies/:companyId/exhibitions",
   validate(companyIdParamSchema, 'params'),
   carController.getCompanyExhibitions
+);
+
+carRoutes.put(
+  "/exhibitions/:exhibitionId",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate({
+    body: exhibitionUpdateSchema,
+    params: exhibitionIdParamSchema
+  }),
+  carController.updateExhibition
+);
+
+carRoutes.delete(
+  "/exhibitions/:exhibitionId",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate(exhibitionIdParamSchema, 'params'),
+  carController.deleteExhibition
 );
 
 module.exports = carRoutes;

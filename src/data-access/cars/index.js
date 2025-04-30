@@ -249,6 +249,33 @@ class CarRepository extends BaseRepository {
             throw new DatabaseError(error);
         }
     }
+
+    async safeDeleteWithImages(carId) {
+        try {
+            // Check if car has active rentals
+            const hasActiveRentals = await this.hasActiveRentals(carId);
+            
+            if (hasActiveRentals) {
+                throw new Error('Cannot delete car with active rentals');
+            }
+            
+            // Get images before deletion for file cleanup
+            const images = await this.model.sequelize.models.RentalCarImage.findAll({
+                where: { car_id: carId }
+            });
+            
+            // Delete car (will cascade to images in DB)
+            await this.delete(carId);
+            
+            // Return images for file system cleanup
+            return images;
+        } catch (error) {
+            if (error.message === 'Cannot delete car with active rentals') {
+                throw error; // Rethrow specific errors
+            }
+            throw new DatabaseError(error);
+        }
+    }
 }
 
 module.exports = new CarRepository();
