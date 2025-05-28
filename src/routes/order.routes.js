@@ -11,12 +11,14 @@ const Yup = require("yup");
 const createOrderSchema = Yup.object().shape({
   payment_method_id: Yup.number().integer().positive().required(),
   payment_gateway_response: Yup.string(),
-  shipping_address: Yup.string()
+  shipping_address: Yup.string(),
 });
 
 const updateOrderStatusSchema = Yup.object().shape({
-  status: Yup.string().oneOf(['pending', 'processing', 'completed', 'cancelled']).required(),
-  notes: Yup.string()
+  status: Yup.string()
+    .oneOf(["pending", "processing", "completed", "cancelled"])
+    .required(),
+  notes: Yup.string(),
 });
 
 // Define validation schemas for wash orders
@@ -24,38 +26,49 @@ const createWashOrderSchema = Yup.object().shape({
   // FUTURE FU-001
   // customer_car_id: Yup.number().integer().positive().required('Customer car is required'),
   within_company: Yup.boolean().default(true),
-  location: Yup.string().default('Company workshop'),
-  wash_types: Yup.array().of(Yup.number().integer().positive())
-    .min(1, 'At least one wash type is required').required('Wash types are required')
+  location: Yup.string().default("Company workshop"),
+  wash_types: Yup.array()
+    .of(Yup.number().integer().positive())
+    .min(1, "At least one wash type is required")
+    .required("Wash types are required"),
 });
 
-const updateWashOrderSchema = Yup.object().shape({
-  within_company: Yup.boolean(),
-  location: Yup.string(),
-  wash_types: Yup.array().of(Yup.number().integer().positive())
-    .min(1, 'At least one wash type is required')
-}).test(
-  'at-least-one-field',
-  'At least one field must be provided',
-  value => typeof value.within_company !== 'undefined' || !!value.location || 
-    (Array.isArray(value.wash_types) && value.wash_types.length > 0)
-);
+const updateWashOrderSchema = Yup.object()
+  .shape({
+    within_company: Yup.boolean(),
+    location: Yup.string(),
+    wash_types: Yup.array()
+      .of(Yup.number().integer().positive())
+      .min(1, "At least one wash type is required"),
+  })
+  .test(
+    "at-least-one-field",
+    "At least one field must be provided",
+    (value) =>
+      typeof value.within_company !== "undefined" ||
+      !!value.location ||
+      (Array.isArray(value.wash_types) && value.wash_types.length > 0)
+  );
 
 const assignEmployeeSchema = Yup.object().shape({
-  employeeId: Yup.number().integer().positive().required('Employee ID is required')
+  employeeId: Yup.number()
+    .integer()
+    .positive()
+    .required("Employee ID is required"),
 });
 
 // Define validation schemas for rental orders
 const createRentalOrderSchema = Yup.object().shape({
-  car_id: Yup.number().integer().positive().required('Car ID is required'),
-  start_date: Yup.date().required('Start date is required'),
-  end_date: Yup.date().required('End date is required')
-    .min(Yup.ref('start_date'), 'End date must be after start date')
+  car_id: Yup.number().integer().positive().required("Car ID is required"),
+  start_date: Yup.date().required("Start date is required"),
+  end_date: Yup.date()
+    .required("End date is required")
+    .min(Yup.ref("start_date"), "End date must be after start date"),
 });
 
 const paginationSchema = Yup.object().shape({
   page: Yup.number().integer().min(1),
-  limit: Yup.number().integer().min(1).max(100)
+  limit: Yup.number().integer().min(1).max(100),
 });
 
 const orderRoutes = Router();
@@ -74,16 +87,12 @@ orderRoutes.get(
   "/orders",
   authMiddleware,
   isUserMiddleware,
-  validate(paginationSchema, 'query'),
+  validate(paginationSchema, "query"),
   orderController.getOrders
 );
 
 // Get specific order
-orderRoutes.get(
-  "/orders/:orderId",
-  authMiddleware,
-  orderController.getOrder
-);
+orderRoutes.get("/orders/:orderId", authMiddleware, orderController.getOrder);
 
 // Update order status
 orderRoutes.put(
@@ -120,7 +129,7 @@ orderRoutes.get(
   "/company/wash-orders/pending",
   authMiddleware,
   isCompanyMiddleware,
-  validate(paginationSchema, 'query'),
+  validate(paginationSchema, "query"),
   orderController.getPendingWashOrders
 );
 
@@ -161,5 +170,21 @@ orderRoutes.delete(
   isUserMiddleware,
   orderController.removeRentalOrder
 );
+// orderRoutes.post(
+//   "/create-payment-intent",
+//   authMiddleware,
+//   isUserMiddleware,
+//   orderController.createPaymentIntent
+// );
+
+// // Route for creating a Stripe Subscription (for manual Payment Element integration)
+// orderRoutes.post(
+//   "/create-subscription",
+//   authMiddleware,
+//   isUserMiddleware,
+//   orderController.createSubscription
+// );
+
+// // --- NEW: Route for creating a Stripe Checkout Session ---
 
 module.exports = orderRoutes;

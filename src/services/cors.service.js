@@ -9,13 +9,13 @@ const corsService = {
     logger = loggerInstance;
     return corsService;
   },
-  
+
   getCorsMiddleware: () => {
     const corsOptions = {
       origin: function (origin, callback) {
         // Allow requests with no origin (like native mobile apps, curl, etc)
         if (!origin) return callback(null, true);
-        
+
         if (corsConfig.allowedOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
@@ -27,11 +27,11 @@ const corsService = {
       },
       credentials: corsConfig.credentials,
       methods: corsConfig.methods,
-      optionsSuccessStatus: corsConfig.optionsSuccessStatus
+      optionsSuccessStatus: corsConfig.optionsSuccessStatus,
     };
-    
-    return cors(corsOptions);
-  }
+
+    return cors();
+  },
 };
 
 module.exports = corsService;
