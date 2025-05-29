@@ -11,7 +11,7 @@ const Yup = require("yup");
 const createOrderSchema = Yup.object().shape({
   payment_method_id: Yup.number().integer().positive().required(),
   payment_gateway_response: Yup.string(),
-  shipping_address: Yup.string(),
+  shipping_address: Yup.string().required("Shipping address is required"),
 });
 
 const updateOrderStatusSchema = Yup.object().shape({

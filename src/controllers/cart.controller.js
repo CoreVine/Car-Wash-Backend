@@ -568,8 +568,8 @@ const cartController = {
           };
         }),
         mode: "payment",
-        success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin}/canceled`,
+        success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin}/payment-cancel`,
       });
       res.json({ id: session.id });
     } catch (err) {

@@ -110,10 +110,12 @@ const orderController = {
         shipping_address,
         total_amount: totalAmount,
       });
-
+      if (!order) {
+        throw new NotFoundError("order not found");
+      }
       // Add initial status history
       await OrderStatusHistoryRepository.addOrderStatusHistory(
-        order.order_id,
+        order.id,
         "pending",
         "Order created"
       );
@@ -124,7 +126,7 @@ const orderController = {
       });
 
       // Get full order details
-      const completedOrder = await OrderRepository.findById(order.order_id, {
+      const completedOrder = await OrderRepository.findById(order.id, {
         include: [
           {
             association: "cart",
@@ -135,7 +137,7 @@ const orderController = {
               },
               {
                 association: "carWashOrder",
-                include: ["customerCar", "operation"],
+                include: ["operation"],
               },
               {
                 association: "rentalOrder",
