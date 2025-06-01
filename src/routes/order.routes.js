@@ -6,6 +6,9 @@ const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
 const isEmployeeMiddleware = require("../middlewares/isEmployee.middleware");
 const validate = require("../middlewares/validation.middleware");
 const Yup = require("yup");
+const {
+  isUserCheckRoleMiddleware,
+} = require("../middlewares/roleCheck.middleware");
 
 // Define validation schemas for orders
 const createOrderSchema = Yup.object().shape({
@@ -78,6 +81,7 @@ orderRoutes.post(
   "/orders",
   authMiddleware,
   isUserMiddleware,
+  isUserCheckRoleMiddleware,
   validate(createOrderSchema),
   orderController.createOrder
 );
@@ -92,13 +96,27 @@ orderRoutes.get(
 );
 
 // Get specific order
-orderRoutes.get("/orders/:orderId", authMiddleware, orderController.getOrder);
+orderRoutes.get(
+  "/orders/:orderId",
+  authMiddleware,
+  isUserMiddleware,
+  isUserCheckRoleMiddleware,
+  orderController.getOrder
+);
+orderRoutes.get(
+  "/orders/status/:status",
+  authMiddleware,
+  isUserMiddleware,
+  isUserCheckRoleMiddleware,
+  orderController.getOrdersByStatus
+);
 
 // Update order status
 orderRoutes.put(
   "/orders/:orderId/status",
   authMiddleware,
   validate(updateOrderStatusSchema),
+  isUserCheckRoleMiddleware,
   orderController.updateOrderStatus
 );
 

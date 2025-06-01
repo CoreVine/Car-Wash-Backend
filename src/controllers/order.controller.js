@@ -108,7 +108,7 @@ const orderController = {
         payment_method_id,
         payment_gateway_response,
         shipping_address,
-        total_amount: totalAmount,
+        // total_amount: totalAmount,
       });
       if (!order) {
         throw new NotFoundError("order not found");
@@ -188,6 +188,34 @@ const orderController = {
       next(error);
     }
   },
+  // Get all orders for user
+  getOrdersByStatus: async (req, res, next) => {
+    try {
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
+
+      try {
+        // Get all carts with non-cart status (orders) for user
+        const { count, rows } = await CartRepository.findUserOrdersByStatus(
+          req.user.user_id,
+          req.eqary.status,
+          page,
+          limit
+        );
+
+        const pagination = createPagination(page, limit, count);
+
+        return res.success("Orders retrieved successfully", rows, pagination);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        throw new BadRequestError(
+          "Failed to fetch orders. Error: " + error.message
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
 
   // Get order details
   getOrder: async (req, res, next) => {
@@ -206,7 +234,8 @@ const orderController = {
               },
               {
                 association: "carWashOrder",
-                include: ["customerCar", "operation"],
+                //customerCar
+                include: ["operation"],
               },
               {
                 association: "rentalOrder",
@@ -227,9 +256,8 @@ const orderController = {
       if (!order) {
         throw new NotFoundError("Order not found");
       }
-
       // Make sure the order belongs to the user or they're an admin
-      if (order.cart.user_id !== req.user.user_id && !req.adminEmployee) {
+      if (order.cart.user_id !== req.userId && !req.employee) {
         throw new BadRequestError(
           "You do not have permission to view this order"
         );

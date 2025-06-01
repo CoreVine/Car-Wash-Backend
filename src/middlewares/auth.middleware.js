@@ -1,6 +1,6 @@
-const loggingService = require('../services/logging.service');
+const loggingService = require("../services/logging.service");
 const JwtService = require("../services/jwt.service");
-const {BadTokenError} = require("../utils/errors/types/Api.error");
+const { BadTokenError } = require("../utils/errors/types/Api.error");
 
 const logger = loggingService.getLogger();
 
@@ -17,7 +17,7 @@ const authMiddleware = async (req, res, next) => {
     return next();
   } catch (error) {
     logger.error(error);
-    next(new BadTokenError())
+    next(new BadTokenError());
   }
 };
 
