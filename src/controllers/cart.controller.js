@@ -40,9 +40,9 @@ const cartController = {
 
         return total + item.price * item.quantity;
       }, 0);
-      cart.titlePrice = titlePrice;
+      // cart.titlePrice = titlePrice;
       cart = {
-        cart: cart.toJSON(),
+        ...cart.toJSON(),
         titlePrice,
       };
       return res.success("Cart retrieved successfully", cart);
