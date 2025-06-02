@@ -7,50 +7,50 @@ class Product extends Model {
         product_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
-          autoIncrement: true
+          autoIncrement: true,
         },
         company_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Company',
-            key: 'company_id'
-          }
+            model: "Company",
+            key: "company_id",
+          },
         },
         product_name: {
           type: DataTypes.STRING(255),
-          allowNull: false
+          allowNull: false,
         },
         description: {
           type: DataTypes.TEXT,
-          allowNull: false
+          allowNull: false,
         },
         price: {
           type: DataTypes.DECIMAL(8, 2),
-          allowNull: false
+          allowNull: false,
         },
         stock: {
           type: DataTypes.INTEGER,
-          allowNull: false
+          allowNull: false,
         },
         created_at: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: DataTypes.NOW
+          defaultValue: DataTypes.NOW,
         },
         updated_at: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: DataTypes.NOW
-        }
+          defaultValue: DataTypes.NOW,
+        },
       },
       {
         sequelize,
-        modelName: 'Product',
-        tableName: 'products',
+        modelName: "Product",
+        tableName: "products",
         timestamps: true,
-        createdAt: 'created_at',
-        updatedAt: 'updated_at'
+        createdAt: "created_at",
+        updatedAt: "updated_at",
       }
     );
 
@@ -59,25 +59,24 @@ class Product extends Model {
 
   static associate(models) {
     this.belongsTo(models.Company, {
-      foreignKey: 'company_id',
-      as: 'company'
+      foreignKey: "company_id",
+      as: "company",
     });
     this.hasMany(models.OrderItem, {
-      foreignKey: 'product_id',
-      as: 'orderItems'
+      foreignKey: "product_id",
+      as: "orderItems",
     });
     this.hasMany(models.ProductImage, {
-      foreignKey: 'product_id',
-      as: 'images'
+      foreignKey: "product_id",
+      as: "images",
     });
     this.belongsToMany(models.SubCategory, {
       through: models.SubCatProduct,
-      foreignKey: 'product_id',
-      otherKey: 'sub_category_id',
-      as: 'subCategories'
+      foreignKey: "product_id",
+      otherKey: "sub_category_id",
+      as: "subCategories",
     });
   }
 }
 
 module.exports = Product;
-

@@ -1,139 +1,121 @@
 {
   "info": {
-    "_postman_id": "a1b2c3d4-e5f6-7890-f1g2-h3i4j5k6l7m8",
-    "name": "Cart API",
+    "_postman_id": "c3d4e5f6-g7h8-9012-i3j4-k5l6m7n8o9p0",
+    "name": "Product API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Cart",
+      "name": "Products",
       "item": [
         {
-          "name": "Get Active Cart",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/cart",
-              "host": ["{{base_url}}"],
-              "path": ["cart"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Carts",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/carts?page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["carts"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User Orders",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/user-orders?page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["user-orders"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Order Details",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/user-orders/123",
-              "host": ["{{base_url}}"],
-              "path": ["user-orders", "123"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Add to Cart",
+          "name": "Add Product (Company)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
+                "value": "Bearer {{company_access_token}}",
                 "type": "text"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"item_type\": \"product\",\n  \"product_id\": 1,\n  \"quantity\": 2\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "product_name",
+                  "value": "Premium Product",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "High quality product description",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "99.99",
+                  "type": "text"
+                },
+                {
+                  "key": "stock",
+                  "value": "100",
+                  "type": "text"
+                },
+                {
+                  "key": "sub_category_ids",
+                  "value": "[1, 2]",
+                  "type": "text"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "/path/to/product_image.jpg"
+                }
+              ]
             },
             "url": {
-              "raw": "{{base_url}}/cart/items",
+              "raw": "{{base_url}}/products",
               "host": ["{{base_url}}"],
-              "path": ["cart", "items"]
+              "path": ["products"]
             }
           },
           "response": []
         },
         {
-          "name": "Update Cart Item",
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products?page=1&limit=10&category_id=1&min_price=10&max_price=100&search=premium",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "category_id",
+                  "value": "1"
+                },
+                {
+                  "key": "min_price",
+                  "value": "10"
+                },
+                {
+                  "key": "max_price",
+                  "value": "100"
+                },
+                {
+                  "key": "search",
+                  "value": "premium"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/123",
+              "host": ["{{base_url}}"],
+              "path": ["products", "123"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product",
           "request": {
             "method": "PUT",
             "header": [
@@ -150,18 +132,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"order_item_id\": 1,\n  \"quantity\": 3\n}"
+              "raw": "{\n  \"product_name\": \"Updated Product Name\",\n  \"price\": 89.99,\n  \"stock\": 50\n}"
             },
             "url": {
-              "raw": "{{base_url}}/cart/items",
+              "raw": "{{base_url}}/products/123",
               "host": ["{{base_url}}"],
-              "path": ["cart", "items"]
+              "path": ["products", "123"]
             }
           },
           "response": []
         },
         {
-          "name": "Remove Cart Item (by ID)",
+          "name": "Delete Product",
           "request": {
             "method": "DELETE",
             "header": [
@@ -172,97 +154,275 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/cart/items/1",
+              "raw": "{{base_url}}/products/123",
               "host": ["{{base_url}}"],
-              "path": ["cart", "items", "1"]
+              "path": ["products", "123"]
             }
           },
           "response": []
         },
         {
-          "name": "Remove Car Order",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/cart/car",
-              "host": ["{{base_url}}"],
-              "path": ["cart", "car"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Remove Item (Unified)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
+          "name": "Product Images",
+          "item": [
+            {
+              "name": "Add Product Image",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "image",
+                      "type": "file",
+                      "src": "/path/to/new_product_image.jpg"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/products/123/images",
+                  "host": ["{{base_url}}"],
+                  "path": ["products", "123", "images"]
+                }
               },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"item_type\": \"product\",\n  \"item_id\": 1\n}"
+              "response": []
             },
-            "url": {
-              "raw": "{{base_url}}/cart/items",
-              "host": ["{{base_url}}"],
-              "path": ["cart", "items"]
+            {
+              "name": "Delete Product Image",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/products/123/images/456",
+                  "host": ["{{base_url}}"],
+                  "path": ["products", "123", "images", "456"]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "Clear Cart",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/cart",
-              "host": ["{{base_url}}"],
-              "path": ["cart"]
+          "name": "Categories",
+          "item": [
+            {
+              "name": "Get Categories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/categories",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Category (Admin)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "category_name",
+                      "value": "New Category",
+                      "type": "text"
+                    },
+                    {
+                      "key": "icon",
+                      "type": "file",
+                      "src": "/path/to/category_icon.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/categories",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Category (Admin)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "category_name",
+                      "value": "Updated Category Name",
+                      "type": "text"
+                    },
+                    {
+                      "key": "icon",
+                      "type": "file",
+                      "src": "/path/to/updated_icon.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/categories/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories", "1"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Category (Admin)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/categories/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories", "1"]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "Create Checkout Session",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-checkout-session",
-              "host": ["{{base_url}}"],
-              "path": ["create-checkout-session"]
+          "name": "Subcategories",
+          "item": [
+            {
+              "name": "Get Subcategories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/categories/1/subcategories",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories", "1", "subcategories"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Subcategory (Admin)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "New Subcategory",
+                      "type": "text"
+                    },
+                    {
+                      "key": "icon",
+                      "type": "file",
+                      "src": "/path/to/subcategory_icon.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/categories/1/subcategories",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories", "1", "subcategories"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Subcategory (Admin)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "Updated Subcategory Name",
+                      "type": "text"
+                    },
+                    {
+                      "key": "icon",
+                      "type": "file",
+                      "src": "/path/to/updated_subcategory_icon.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/categories/1/subcategories/2",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories", "1", "subcategories", "2"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Subcategory (Admin)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/categories/1/subcategories/2",
+                  "host": ["{{base_url}}"],
+                  "path": ["categories", "1", "subcategories", "2"]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         }
       ]
     }
@@ -275,6 +435,14 @@
     {
       "key": "access_token",
       "value": "your_access_token_here"
+    },
+    {
+      "key": "company_access_token",
+      "value": "your_company_access_token_here"
+    },
+    {
+      "key": "admin_access_token",
+      "value": "your_admin_access_token_here"
     }
   ]
 }
