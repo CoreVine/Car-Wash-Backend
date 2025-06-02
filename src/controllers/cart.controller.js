@@ -34,16 +34,16 @@ const cartController = {
 
       // Get cart with items, car wash orders, rental orders, and car orders
       cart = await CartRepository.findCartWithItems(cart.order_id);
-      const titlePrice = cart.orderItems.reduce((total, item) => {
+      const totalPice = cart.orderItems.reduce((total, item) => {
         // const priceInFils = parseFloat(item.price) * 1000;
         // const roundedPrice = Math.round(priceInFils / 10) * 10; //
 
         return total + item.price * item.quantity;
       }, 0);
-      // cart.titlePrice = titlePrice;
+      // cart.totalPice = totalPice;
       cart = {
         ...cart.toJSON(),
-        titlePrice,
+        totalPice,
       };
       return res.success("Cart retrieved successfully", cart);
     } catch (error) {
