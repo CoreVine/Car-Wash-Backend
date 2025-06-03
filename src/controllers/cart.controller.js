@@ -7,8 +7,11 @@ const RentalOrderRepository = require("../data-access/rental-orders");
 const WashTypeRepository = require("../data-access/wash-types");
 const WashOrderWashTypeRepository = require("../data-access/wash-order-wash-types");
 const CarOrderRepository = require("../data-access/car-orders");
+import PaymentMethodRepository from "../data-access/payment-methods";
 import { logger } from "sequelize/lib/utils/logger";
 import stripe from "../config/stripeConfig";
+require("dotenv").config();
+
 // FUTURE FU-001
 // const CustomerCarRepository = require('../data-access/customer-cars');
 const { Op } = require("sequelize");
@@ -581,6 +584,18 @@ const cartController = {
         success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.headers.origin}/payment-cancel`,
       });
+
+      if (!session || !session.id) {
+        throw new BadRequestError("Failed to create checkout session");
+      }
+      const paymentMethod = await PaymentMethodRepository.create({
+        name: session.id,
+        public_key: session.id,
+        secret_key: session.id,
+      });
+      if (!paymentMethod) {
+        throw new BadRequestError("Failed to create payment method");
+      }
       res.json({ id: session.id });
     } catch (err) {
       next(err);

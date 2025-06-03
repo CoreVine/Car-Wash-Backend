@@ -1,448 +1,215 @@
 {
   "info": {
-    "_postman_id": "c3d4e5f6-g7h8-9012-i3j4-k5l6m7n8o9p0",
-    "name": "Product API",
+    "_postman_id": "YOUR_COLLECTION_ID_HERE",
+    "name": "Car Wash Backend API - Car Brands",
+    "description": "Postman collection for the Car Wash Backend API endpoints related to Car Brands.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Products",
+      "name": "GET Brands",
+      "description": "Public endpoints for retrieving car brand information.",
       "item": [
         {
-          "name": "Add Product (Company)",
+          "name": "Get All Brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/brands/",
+              "host": ["{{baseURL}}"],
+              "path": ["brands", ""]
+            },
+            "description": "Retrieves a list of all car brands."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Brand by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/brands/:brandId",
+              "host": ["{{baseURL}}"],
+              "path": ["brands", ":brandId"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "1",
+                  "description": "Replace with an actual brand ID from your database."
+                }
+              ]
+            },
+            "description": "Retrieves a single car brand by its ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Brand with Cars",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/brands/:brandId/cars",
+              "host": ["{{baseURL}}"],
+              "path": ["brands", ":brandId", "cars"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "1",
+                  "description": "Replace with an actual brand ID from your database."
+                }
+              ]
+            },
+            "description": "Retrieves a car brand along with all cars associated with it."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Protected Routes (Admin Only)",
+      "description": "Endpoints requiring admin authentication.",
+      "item": [
+        {
+          "name": "Create Brand",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{company_access_token}}",
-                "type": "text"
+                "value": "Bearer {{adminToken}}",
+                "type": "text",
+                "description": "JWT for an authenticated admin user. Obtain this from your login endpoint."
               }
             ],
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
+                  "key": "logo",
+                  "type": "file",
+                  "src": "/path/to/your/image.jpg",
+                  "description": "Select an image file for the brand logo. In Postman, click 'Select Files'."
+                },
+                {
                   "key": "product_name",
-                  "value": "Premium Product",
-                  "type": "text"
+                  "value": "Honda",
+                  "type": "text",
+                  "description": "The name of the car brand."
                 },
                 {
                   "key": "description",
-                  "value": "High quality product description",
-                  "type": "text"
-                },
-                {
-                  "key": "price",
-                  "value": "99.99",
-                  "type": "text"
-                },
-                {
-                  "key": "stock",
-                  "value": "100",
-                  "type": "text"
-                },
-                {
-                  "key": "sub_category_ids",
-                  "value": "[1, 2]",
-                  "type": "text"
-                },
-                {
-                  "key": "images",
-                  "type": "file",
-                  "src": "/path/to/product_image.jpg"
+                  "value": "A Japanese multinational conglomerate manufacturer of automobiles, motorcycles, and power equipment.",
+                  "type": "text",
+                  "description": "A brief description of the brand."
                 }
               ]
             },
             "url": {
-              "raw": "{{base_url}}/products",
-              "host": ["{{base_url}}"],
-              "path": ["products"]
-            }
+              "raw": "{{baseURL}}/brands/",
+              "host": ["{{baseURL}}"],
+              "path": ["brands", ""]
+            },
+            "description": "Creates a new car brand, requiring admin authentication and an uploaded logo."
           },
           "response": []
         },
         {
-          "name": "Get Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?page=1&limit=10&category_id=1&min_price=10&max_price=100&search=premium",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                },
-                {
-                  "key": "category_id",
-                  "value": "1"
-                },
-                {
-                  "key": "min_price",
-                  "value": "10"
-                },
-                {
-                  "key": "max_price",
-                  "value": "100"
-                },
-                {
-                  "key": "search",
-                  "value": "premium"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Product Details",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/123",
-              "host": ["{{base_url}}"],
-              "path": ["products", "123"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Product",
+          "name": "Update Brand",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
+                "value": "Bearer {{adminToken}}",
+                "type": "text",
+                "description": "JWT for an authenticated admin user."
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product_name\": \"Updated Product Name\",\n  \"price\": 89.99,\n  \"stock\": 50\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": "/path/to/your/new_image.jpg",
+                  "description": "(Optional) Select a new image file if you want to update the logo. In Postman, click 'Select Files'."
+                },
+                {
+                  "key": "product_name",
+                  "value": "Honda Motor Co. Ltd.",
+                  "type": "text",
+                  "description": "(Optional) The updated name of the car brand."
+                },
+                {
+                  "key": "description",
+                  "value": "Updated description for Honda.",
+                  "type": "text",
+                  "description": "(Optional) An updated description of the brand."
+                }
+              ]
             },
             "url": {
-              "raw": "{{base_url}}/products/123",
-              "host": ["{{base_url}}"],
-              "path": ["products", "123"]
-            }
+              "raw": "{{baseURL}}/brands/:brandId",
+              "host": ["{{baseURL}}"],
+              "path": ["brands", ":brandId"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "1",
+                  "description": "Replace with the ID of the brand to update."
+                }
+              ]
+            },
+            "description": "Updates an existing car brand by ID, requiring admin authentication. Uses multipart/form-data if logo is included."
           },
           "response": []
         },
         {
-          "name": "Delete Product",
+          "name": "Delete Brand",
           "request": {
             "method": "DELETE",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
+                "value": "Bearer {{adminToken}}",
+                "type": "text",
+                "description": "JWT for an authenticated admin user."
               }
             ],
             "url": {
-              "raw": "{{base_url}}/products/123",
-              "host": ["{{base_url}}"],
-              "path": ["products", "123"]
-            }
+              "raw": "{{baseURL}}/brands/:brandId",
+              "host": ["{{baseURL}}"],
+              "path": ["brands", ":brandId"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "1",
+                  "description": "Replace with the ID of the brand to delete."
+                }
+              ]
+            },
+            "description": "Deletes a car brand by its ID, requiring admin authentication."
           },
           "response": []
-        },
-        {
-          "name": "Product Images",
-          "item": [
-            {
-              "name": "Add Product Image",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "formdata",
-                  "formdata": [
-                    {
-                      "key": "image",
-                      "type": "file",
-                      "src": "/path/to/new_product_image.jpg"
-                    }
-                  ]
-                },
-                "url": {
-                  "raw": "{{base_url}}/products/123/images",
-                  "host": ["{{base_url}}"],
-                  "path": ["products", "123", "images"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Product Image",
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/products/123/images/456",
-                  "host": ["{{base_url}}"],
-                  "path": ["products", "123", "images", "456"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Categories",
-          "item": [
-            {
-              "name": "Get Categories",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/categories",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Add Category (Admin)",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{admin_access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "formdata",
-                  "formdata": [
-                    {
-                      "key": "category_name",
-                      "value": "New Category",
-                      "type": "text"
-                    },
-                    {
-                      "key": "icon",
-                      "type": "file",
-                      "src": "/path/to/category_icon.png"
-                    }
-                  ]
-                },
-                "url": {
-                  "raw": "{{base_url}}/categories",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update Category (Admin)",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{admin_access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "formdata",
-                  "formdata": [
-                    {
-                      "key": "category_name",
-                      "value": "Updated Category Name",
-                      "type": "text"
-                    },
-                    {
-                      "key": "icon",
-                      "type": "file",
-                      "src": "/path/to/updated_icon.png"
-                    }
-                  ]
-                },
-                "url": {
-                  "raw": "{{base_url}}/categories/1",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories", "1"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Category (Admin)",
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{admin_access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/categories/1",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories", "1"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Subcategories",
-          "item": [
-            {
-              "name": "Get Subcategories",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/categories/1/subcategories",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories", "1", "subcategories"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Add Subcategory (Admin)",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{admin_access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "formdata",
-                  "formdata": [
-                    {
-                      "key": "name",
-                      "value": "New Subcategory",
-                      "type": "text"
-                    },
-                    {
-                      "key": "icon",
-                      "type": "file",
-                      "src": "/path/to/subcategory_icon.png"
-                    }
-                  ]
-                },
-                "url": {
-                  "raw": "{{base_url}}/categories/1/subcategories",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories", "1", "subcategories"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update Subcategory (Admin)",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{admin_access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "formdata",
-                  "formdata": [
-                    {
-                      "key": "name",
-                      "value": "Updated Subcategory Name",
-                      "type": "text"
-                    },
-                    {
-                      "key": "icon",
-                      "type": "file",
-                      "src": "/path/to/updated_subcategory_icon.png"
-                    }
-                  ]
-                },
-                "url": {
-                  "raw": "{{base_url}}/categories/1/subcategories/2",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories", "1", "subcategories", "2"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Subcategory (Admin)",
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{admin_access_token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/categories/1/subcategories/2",
-                  "host": ["{{base_url}}"],
-                  "path": ["categories", "1", "subcategories", "2"]
-                }
-              },
-              "response": []
-            }
-          ]
         }
       ]
     }
   ],
   "variable": [
     {
-      "key": "base_url",
-      "value": "http://localhost:3000/api"
+      "key": "baseURL",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "The base URL of your API (e.g., http://localhost:3000)."
     },
     {
-      "key": "access_token",
-      "value": "your_access_token_here"
-    },
-    {
-      "key": "company_access_token",
-      "value": "your_company_access_token_here"
-    },
-    {
-      "key": "admin_access_token",
-      "value": "your_admin_access_token_here"
+      "key": "adminToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT token for an authenticated admin user. Obtain this from your login endpoint."
     }
   ]
 }
