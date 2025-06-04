@@ -557,29 +557,32 @@ const cartController = {
         return res.status(400).json({ error: "No items in cart" });
       }
 
+      const yourDomain = process.env.FRONTEND_URL;
+
+      const line_items = cart.orderItems.map((item) => {
+        // Convert price to fils (1 KWD = 1000 fils) and ensure it's divisible by 10
+        const priceInFils = parseFloat(item.price) * 1000;
+        const roundedPrice = Math.round(priceInFils / 10) * 10; // Ensure divisible by 10
+
+        return {
+          price_data: {
+            currency: "KWD",
+            product_data: {
+              name: item.product.product_name,
+              description: item.product.description,
+              images:
+                item.product.images && item.product.images.length > 0
+                  ? item.product.images
+                  : ["https://example.com/placeholder-image.jpg"],
+            },
+            unit_amount: roundedPrice, // Price in fils, divisible by 10
+          },
+          quantity: item.quantity,
+        };
+      });
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
-        line_items: cart.orderItems.map((item) => {
-          // Convert price to fils (1 KWD = 1000 fils) and ensure it's divisible by 10
-          const priceInFils = parseFloat(item.price) * 1000;
-          const roundedPrice = Math.round(priceInFils / 10) * 10; // Ensure divisible by 10
-
-          return {
-            price_data: {
-              currency: "KWD",
-              product_data: {
-                name: item.product.product_name,
-                description: item.product.description,
-                images:
-                  item.product.images && item.product.images.length > 0
-                    ? item.product.images
-                    : ["https://example.com/placeholder-image.jpg"],
-              },
-              unit_amount: roundedPrice, // Price in fils, divisible by 10
-            },
-            quantity: item.quantity,
-          };
-        }),
+        line_items: line_items,
         mode: "payment",
         success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.headers.origin}/payment-cancel`,
@@ -596,7 +599,7 @@ const cartController = {
       if (!paymentMethod) {
         throw new BadRequestError("Failed to create payment method");
       }
-      res.json({ id: session.id });
+      res.json({ id: session.id, url: session.url });
     } catch (err) {
       next(err);
     }
