@@ -575,13 +575,13 @@ const cartController = {
       });
   
       // Use your domain for redirect URLs
-      const YOUR_DOMAIN = process.env.FRONTEND_URL || "https://yourfrontend.com";
+      const YOUR_DOMAIN = process.env.FRONTEND_URL;
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items,
         mode: "payment",
-        success_url: `https://www.youtube.com/`,
-        cancel_url: `https://www.google.com/`,
+        success_url: YOUR_DOMAIN.concat('/payment-success?session_id={CHECKOUT_SESSION_ID}'),
+        cancel_url: YOUR_DOMAIN.concat('/payment-cancel'),
         customer_email: req.user.email, // Optional, but recommended
       });
   
