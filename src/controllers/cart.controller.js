@@ -566,7 +566,7 @@ const cartController = {
 
         return {
           price_data: {
-            currency: "KWD",
+            currency: "usd",
             product_data: {
               name: item.product.product_name,
               description: item.product.description,
