@@ -570,9 +570,11 @@ const cartController = {
             product_data: {
               name: item.product.product_name,
               description: item.product.description,
-              image_url:
-                item.product.images && item.product.images.length > 0
-                  ? item.product.images[0]
+              images:
+                item.product.images &&
+                item.product.images.length > 0 &&
+                item.product.images[0].image_url // <--- Access the 'image_url' property
+                  ? [item.product.images[0].image_url] // <--- Wrap it in an array
                   : ["https://example.com/placeholder-image.jpg"],
             },
             unit_amount: roundedPrice, // Price in fils, divisible by 10
