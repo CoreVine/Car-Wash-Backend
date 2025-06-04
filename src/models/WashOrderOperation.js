@@ -66,4 +66,3 @@ class WashOrderOperation extends Model {
 }
 
 module.exports = WashOrderOperation;
-
