@@ -570,10 +570,10 @@ const cartController = {
             product_data: {
               name: item.product.product_name,
               description: item.product.description,
-              // images:
-              //   item.product.images && item.product.images.length > 0
-              //     ? item.product.images
-              //     : ["https://example.com/placeholder-image.jpg"],
+              image_url:
+                item.product.images && item.product.images.length > 0
+                  ? item.product.images[0]
+                  : ["https://example.com/placeholder-image.jpg"],
             },
             unit_amount: roundedPrice, // Price in fils, divisible by 10
           },
