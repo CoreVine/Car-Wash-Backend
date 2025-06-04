@@ -584,8 +584,10 @@ const cartController = {
         payment_method_types: ["card"],
         line_items: line_items,
         mode: "payment",
-        success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin}/payment-cancel`,
+        // success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        // cancel_url: `${req.headers.origin}/payment-cancel`,
+        success_url: `${yourDomain}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${yourDomain}/payment-cancel`,
       });
 
       if (!session || !session.id) {
