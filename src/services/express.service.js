@@ -10,6 +10,7 @@ const apiRouter = require("../routes");
 const loggingService = require("./logging.service");
 const rateLimitService = require("./rateLimit.service");
 const corsService = require("./cors.service");
+const paymentViewsRouter = require("../routes/payment-views.routes");
 
 let server;
 let logger;
@@ -38,6 +39,9 @@ const expressService = {
       // Apply CORS middleware (before other middleware)
       server.use(corsService.getCorsMiddleware());
       
+      // Handle Stripe webhooks before body parsing
+      server.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
+      
       // Apply middleware
       server.use(bodyParser.json());
 
@@ -54,8 +58,12 @@ const expressService = {
       // Apply routes
       // Static file serving for uploads
       server.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+      // Serve payment views
+      server.use('/views', express.static(path.join(__dirname, '../views')));
       // API routes under /api
       server.use('/api', apiRouter);
+      // Payment view routes
+      server.use('/', paymentViewsRouter);
 
       
       // Handle 404 routes
@@ -68,8 +76,10 @@ const expressService = {
       // Apply global error handler
       server.use(globalErrorHandler);
       
-      server.listen(process.env.SERVER_PORT);
-      logger.info(`[EXPRESS] Express initialized on port ${process.env.SERVER_PORT}`);
+      // Listen on all network interfaces
+      server.listen(process.env.SERVER_PORT, '0.0.0.0', () => {
+        logger.info(`[EXPRESS] Express initialized on port ${process.env.SERVER_PORT}`);
+      });
     } catch (error) {
       logger.error("[EXPRESS] Error during express service initialization", error);
       throw error;

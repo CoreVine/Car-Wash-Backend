@@ -10,6 +10,7 @@ const CarOrderRepository = require("../data-access/car-orders");
 import PaymentMethodRepository from "../data-access/payment-methods";
 import { logger } from "sequelize/lib/utils/logger";
 import stripe from "../config/stripeConfig";
+const orderController = require("./order.controller");
 require("dotenv").config();
 
 // FUTURE FU-001
@@ -555,8 +556,6 @@ const cartController = {
   
       // Map cart items to Stripe line_items
       const line_items = fullCart.orderItems.map(item => {
-        // Stripe expects amount in the smallest currency unit (cents for USD)
-        // Make sure your price is multiplied by 100 for USD (or 1000 for KWD etc.)
         const unit_amount = Math.round(parseFloat(item.price) * 100); // USD
         return {
           price_data: {
@@ -564,7 +563,7 @@ const cartController = {
             product_data: {
               name: item.product.product_name,
               description: item.product.description,
-              images: item.product.images?.length > 0
+              images: item.product.images.length > 0
                 ? item.product.images
                 : ["https://example.com/placeholder-image.jpg"]
             },
@@ -574,87 +573,43 @@ const cartController = {
         }
       });
   
-      // Use your domain for redirect URLs
-      const YOUR_DOMAIN = process.env.FRONTEND_URL;
+      const YOUR_DOMAIN = "http://192.168.1.39:4000";
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items,
         mode: "payment",
-        success_url: YOUR_DOMAIN.concat('/payment-success?session_id={CHECKOUT_SESSION_ID}'),
-        cancel_url: YOUR_DOMAIN.concat('/payment-cancel'),
-        customer_email: req.user.email, // Optional, but recommended
+        // success_url: YOUR_DOMAIN.concat('/payment-success?session_id={CHECKOUT_SESSION_ID}'),
+        // cancel_url: YOUR_DOMAIN.concat('/payment-cancel'),
+        success_url: `${YOUR_DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${YOUR_DOMAIN}/payment-cancel`,
+        customer_email: req.user.email,
+        client_reference_id: cart.order_id.toString(),
+        metadata: {
+          cart_id: cart.order_id.toString(),
+          user_id: req.user.user_id.toString(),
+          user_email: req.user.email,
+          total_items: fullCart.orderItems.length.toString()
+        }
       });
   
       if (!session || !session.id) throw new BadRequestError("Failed to create checkout session");
-      
-      res.json({ id: session.id, url: session.url }); // Return both for flexibility
+      req.body.payment_method_id = "stripe";
+      req.body.payment_gateway_response = JSON.stringify(session);
+      req.body.shipping_address = {
+        address: "123 Main St",
+        city: "Anytown",
+        state: "CA",
+        zip: "12345",
+        country: "US"
+      }
+      orderController.createOrder(req, res, next);
+      res.json({ id: session.id, url: session.url });
     } catch (err) {
       console.error(err);
       next(err);
     }
   }
-  // createCheckoutSession: async (req, res, next) => {
-  //   // Find active cart or create a new one
-  //   try {
-  //     let cart = await CartRepository.findUserActiveCart(req.user.user_id);
 
-  //     if (!cart) {
-  //       throw new NotFoundError("No active cart found");
-  //     }
-
-  //     // Get cart with items, car wash orders, rental orders, and car orders
-  //     cart = await CartRepository.findCartWithItems(cart.order_id);
-  //     if (!cart || cart.orderItems.length === 0) {
-  //       return res.status(400).json({ error: "No items in cart" });
-  //     }
-
-      // const session = await stripe.checkout.sessions.create({
-      //   payment_method_types: ["card"],
-      //   line_items: cart.orderItems.map((item) => {
-      //     // Convert price to fils (1 KWD = 1000 fils) and ensure it's divisible by 10
-      //     const priceInFils = parseFloat(item.price) * 1000;
-      //     const roundedPrice = Math.round(priceInFils / 10) * 10; // Ensure divisible by 10
-
-      //     return {
-      //       price_data: {
-      //         currency: "usd",
-      //         product_data: {
-      //           name: item.product.product_name,
-      //           description: item.product.description,
-      //           images:
-      //             item.product.images && item.product.images.length > 0
-      //               ? item.product.images
-      //               : ["https://example.com/placeholder-image.jpg"],
-      //         },
-      //         unit_amount: roundedPrice, // Price in fils, divisible by 10
-      //       },
-      //       quantity: item.quantity,
-      //     };
-      //   }),
-      //   mode: "payment",
-      //   // success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      //   // cancel_url: `${req.headers.origin}/payment-cancel`,
-      //   success_url: `https://www.youtube.com/`,
-      //   cancel_url: `https://www.google.com/`,
-      // });
-     
-      // if (!session || !session.id) {
-      //   throw new BadRequestError("Failed to create checkout session");
-      // }
-      // const paymentMethod = await PaymentMethodRepository.create({
-      //   name: session.id,
-      //   public_key: session.id,
-      //   secret_key: session.id,
-      // });
-      // if (!paymentMethod) {
-      //   throw new BadRequestError("Failed to create payment method");
-      // }
-      // res.json({ id: session.id });
-  //   } catch (err) {
-  //     console.log(err);
-  //     next(err);
-  //   }
-  // },
 };
 
 module.exports = cartController;

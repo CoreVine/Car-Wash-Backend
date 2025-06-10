@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Cancelled</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+        }
+        .cancel-container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+        .cancel-icon {
+            color: #dc3545;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        .btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #c82333;
+        }
+        .retry-btn {
+            background-color: #007bff;
+            margin-left: 10px;
+        }
+        .retry-btn:hover {
+            background-color: #0056b3;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="cancel-container">
+        <div class="cancel-icon">✕</div>
+        <h1>Payment Cancelled</h1>
+        <p>Your payment was cancelled. No charges have been made to your account.</p>
+        <div class="button-group">
+            <button class="btn" id="returnButton" onclick="handleReturn()">Return to Cart</button>
+            <button class="btn retry-btn" id="retryButton" onclick="handleRetry()">Retry Payment</button>
+        </div>
+    </div>
+
+    <script>
+        function handleReturn() {
+            // This function will be implemented by you to handle the return to cart
+            // You can add your custom logic here
+            console.log('Return to cart clicked');
+        }
+
+        function handleRetry() {
+            // This function will be implemented by you to handle payment retry
+            // You can add your custom logic here
+            console.log('Retry payment clicked');
+        }
+    </script>
+</body>
+</html> 
