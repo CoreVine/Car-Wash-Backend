@@ -1,215 +1,132 @@
 {
   "info": {
-    "_postman_id": "YOUR_COLLECTION_ID_HERE",
-    "name": "Car Wash Backend API - Car Brands",
-    "description": "Postman collection for the Car Wash Backend API endpoints related to Car Brands.",
+    "name": "Wash Type API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "GET Brands",
-      "description": "Public endpoints for retrieving car brand information.",
+      "name": "Public Routes",
       "item": [
         {
-          "name": "Get All Brands",
+          "name": "Get All Wash Types",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{baseURL}}/brands/",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", ""]
+              "raw": "{{base_url}}/wash-types",
+              "host": ["{{base_url}}"],
+              "path": ["wash-types"]
             },
-            "description": "Retrieves a list of all car brands."
-          },
-          "response": []
+            "query": [
+              { "key": "page", "value": "1" },
+              { "key": "limit", "value": "10" },
+              { "key": "min_price", "value": "0" },
+              { "key": "max_price", "value": "100" }
+            ]
+          }
         },
         {
-          "name": "Get Brand by ID",
+          "name": "Get Company Wash Types",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{baseURL}}/brands/:brandId",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", ":brandId"],
-              "variable": [
-                {
-                  "key": "brandId",
-                  "value": "1",
-                  "description": "Replace with an actual brand ID from your database."
-                }
-              ]
+              "raw": "{{base_url}}/companies/{{companyId}}/wash-types",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "{{companyId}}", "wash-types"]
             },
-            "description": "Retrieves a single car brand by its ID."
-          },
-          "response": []
+            "query": [
+              { "key": "page", "value": "1" },
+              { "key": "limit", "value": "10" },
+              { "key": "min_price", "value": "0" },
+              { "key": "max_price", "value": "100" }
+            ]
+          }
         },
         {
-          "name": "Get Brand with Cars",
+          "name": "Get Popular Wash Types",
           "request": {
             "method": "GET",
-            "header": [],
             "url": {
-              "raw": "{{baseURL}}/brands/:brandId/cars",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", ":brandId", "cars"],
-              "variable": [
-                {
-                  "key": "brandId",
-                  "value": "1",
-                  "description": "Replace with an actual brand ID from your database."
-                }
-              ]
-            },
-            "description": "Retrieves a car brand along with all cars associated with it."
-          },
-          "response": []
+              "raw": "{{base_url}}/wash-types/popular",
+              "host": ["{{base_url}}"],
+              "path": ["wash-types", "popular"]
+            }
+          }
         }
       ]
     },
     {
-      "name": "Protected Routes (Admin Only)",
-      "description": "Endpoints requiring admin authentication.",
+      "name": "Company Only Routes",
       "item": [
         {
-          "name": "Create Brand",
+          "name": "Add Wash Type",
           "request": {
             "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/wash-types",
+              "host": ["{{base_url}}"],
+              "path": ["wash-types"]
+            },
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{adminToken}}",
-                "type": "text",
-                "description": "JWT for an authenticated admin user. Obtain this from your login endpoint."
+                "value": "Bearer {{auth_token}}"
               }
             ],
             "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "logo",
-                  "type": "file",
-                  "src": "/path/to/your/image.jpg",
-                  "description": "Select an image file for the brand logo. In Postman, click 'Select Files'."
-                },
-                {
-                  "key": "product_name",
-                  "value": "Honda",
-                  "type": "text",
-                  "description": "The name of the car brand."
-                },
-                {
-                  "key": "description",
-                  "value": "A Japanese multinational conglomerate manufacturer of automobiles, motorcycles, and power equipment.",
-                  "type": "text",
-                  "description": "A brief description of the brand."
-                }
-              ]
+              "mode": "raw",
+              "raw": {
+                "name": "Deluxe Wash",
+                "price": 25,
+                "description": "Premium car wash service"
+              }
             },
-            "url": {
-              "raw": "{{baseURL}}/brands/",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", ""]
-            },
-            "description": "Creates a new car brand, requiring admin authentication and an uploaded logo."
-          },
-          "response": []
+            "description": "Requires valid JWT token of a company user"
+          }
         },
         {
-          "name": "Update Brand",
+          "name": "Update Wash Type",
           "request": {
             "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/wash-types/{{typeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["wash-types", "{{typeId}}"]
+            },
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{adminToken}}",
-                "type": "text",
-                "description": "JWT for an authenticated admin user."
+                "value": "Bearer {{auth_token}}"
               }
             ],
             "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "logo",
-                  "type": "file",
-                  "src": "/path/to/your/new_image.jpg",
-                  "description": "(Optional) Select a new image file if you want to update the logo. In Postman, click 'Select Files'."
-                },
-                {
-                  "key": "product_name",
-                  "value": "Honda Motor Co. Ltd.",
-                  "type": "text",
-                  "description": "(Optional) The updated name of the car brand."
-                },
-                {
-                  "key": "description",
-                  "value": "Updated description for Honda.",
-                  "type": "text",
-                  "description": "(Optional) An updated description of the brand."
-                }
-              ]
+              "mode": "raw",
+              "raw": {
+                "name": "Updated Name",
+                "price": 30,
+                "description": "Updated description"
+              }
             },
-            "url": {
-              "raw": "{{baseURL}}/brands/:brandId",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", ":brandId"],
-              "variable": [
-                {
-                  "key": "brandId",
-                  "value": "1",
-                  "description": "Replace with the ID of the brand to update."
-                }
-              ]
-            },
-            "description": "Updates an existing car brand by ID, requiring admin authentication. Uses multipart/form-data if logo is included."
-          },
-          "response": []
+            "description": "At least one field must be provided."
+          }
         },
         {
-          "name": "Delete Brand",
+          "name": "Delete Wash Type",
           "request": {
             "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/wash-types/{{typeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["wash-types", "{{typeId}}"]
+            },
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{adminToken}}",
-                "type": "text",
-                "description": "JWT for an authenticated admin user."
+                "value": "Bearer {{auth_token}}"
               }
-            ],
-            "url": {
-              "raw": "{{baseURL}}/brands/:brandId",
-              "host": ["{{baseURL}}"],
-              "path": ["brands", ":brandId"],
-              "variable": [
-                {
-                  "key": "brandId",
-                  "value": "1",
-                  "description": "Replace with the ID of the brand to delete."
-                }
-              ]
-            },
-            "description": "Deletes a car brand by its ID, requiring admin authentication."
-          },
-          "response": []
+            ]
+          }
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseURL",
-      "value": "http://localhost:3000",
-      "type": "string",
-      "description": "The base URL of your API (e.g., http://localhost:3000)."
-    },
-    {
-      "key": "adminToken",
-      "value": "",
-      "type": "string",
-      "description": "JWT token for an authenticated admin user. Obtain this from your login endpoint."
     }
   ]
 }

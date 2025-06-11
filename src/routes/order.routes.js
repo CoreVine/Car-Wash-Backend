@@ -94,6 +94,13 @@ orderRoutes.get(
   validate(paginationSchema, "query"),
   orderController.getOrders
 );
+orderRoutes.get(
+  "/orders-company",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate(paginationSchema, "query"),
+  orderController.getOrdersCompany
+);
 
 // Get specific order
 orderRoutes.get(
@@ -127,6 +134,12 @@ orderRoutes.post(
   isUserMiddleware,
   validate(createWashOrderSchema),
   orderController.createWashOrder
+);
+orderRoutes.get(
+  "/all-wash-orders",
+  authMiddleware,
+  isCompanyMiddleware,
+  orderController.getAllWashOrder
 );
 
 orderRoutes.put(
@@ -180,6 +193,12 @@ orderRoutes.post(
   isUserMiddleware,
   validate(createRentalOrderSchema),
   orderController.createRentalOrder
+);
+orderRoutes.get(
+  "/all-rental-orders",
+  authMiddleware,
+  isCompanyMiddleware,
+  orderController.getAllRentalOrder
 );
 
 orderRoutes.delete(
