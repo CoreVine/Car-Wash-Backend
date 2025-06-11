@@ -38,6 +38,16 @@ employeeRoutes.post(
   }),
   employeeController.addEmployee
 );
+employeeRoutes.put(
+  "/companies/:companyId/employees", 
+  authMiddleware, 
+  isCompanyMiddleware, 
+  validate({
+    body: employeeSchema,
+    params: companyIdParamSchema
+  }),
+  employeeController.updateEmployee
+);
 
 employeeRoutes.get(
   "/companies/:companyId/employees", 

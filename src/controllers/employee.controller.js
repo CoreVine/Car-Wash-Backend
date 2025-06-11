@@ -118,6 +118,27 @@ const employeeController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  updateEmployee: async (req, res, next) => {
+    try {
+      const { companyId, employeeId } = req.params;
+
+      const employee = await EmployeeRepository.findByUserAndCompany(employeeId, companyId);
+
+      if (!employee) {
+        throw new NotFoundError('Employee not found');
+      }
+
+      await EmployeeRepository.update(employeeId, req.body);
+
+      const updatedEmployee = await EmployeeRepository.findByUserAndCompany(employeeId, companyId);
+
+      return res.success('Employee updated successfully', updatedEmployee);
+      
+    }catch(error){
+      next(error);
+    }
   }
 };
 
