@@ -74,6 +74,12 @@ const paginationSchema = Yup.object().shape({
   limit: Yup.number().integer().min(1).max(100),
 });
 
+const updateRentalOrderStatusSchema = Yup.object().shape({
+  status: Yup.string()
+    .oneOf(["cancelled", "progress", "delivered", "pending"])
+    .required(),
+});
+
 const orderRoutes = Router();
 
 // Create order from cart
@@ -206,6 +212,14 @@ orderRoutes.delete(
   authMiddleware,
   isUserMiddleware,
   orderController.removeRentalOrder
+);
+
+orderRoutes.patch(
+  "/rental-orders",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate(updateRentalOrderStatusSchema)
+  // orderController.updateStatus
 );
 // orderRoutes.post(
 //   "/create-payment-intent",

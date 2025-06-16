@@ -479,6 +479,24 @@ const orderController = {
             association: "company", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
             attributes: ["company_name"], // fetch only company_name from related Company
           },
+          {
+            association: "order", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+            // attributes: [""], // fetch only company_name from related Company
+          },
+          {
+            association: "washTypes", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+            attributes: ["description", "name"], // fetch only company_name from related Company
+            // include: [
+            //   {
+            //     association: "washorders_washtypes", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+            //     // attributes: ["paid_price"], // fetch only company_name from related Company
+            //   },
+            // ],
+          },
+          {
+            association: "customer", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+            attributes: ["name"], // fetch only company_name from related Company
+          },
         ],
       });
 
@@ -956,6 +974,27 @@ const orderController = {
       }
 
       return res.success("Rental order removed from cart", updatedCart);
+    } catch (error) {
+      next(error);
+    }
+  },
+  updateStatus: async (req, res, next) => {
+    try {
+      const { status } = req.body;
+      // Find active cart
+      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+
+      if (!cart || !cart.rentalOrder) {
+        throw new BadRequestError("No rental order found in active cart");
+      }
+
+      // Delete the rental order
+      await RentalOrderRepository.update(cart.rentalOrder.rental_order_id, {
+        status: status,
+      });
+
+      // Delete cart if it's empty (no items, no car wash, no rental)
+      return res.success("Rental order Status has changed ", updatedCart);
     } catch (error) {
       next(error);
     }

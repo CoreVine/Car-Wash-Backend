@@ -8,45 +8,50 @@ class WashOrderOperation extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
-            model: 'CarWashOrders',
-            key: 'wash_order_id'
-          }
+            model: "CarWashOrders",
+            key: "wash_order_id",
+          },
         },
         employee_assigned_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Employee',
-            key: 'user_id'
-          }
+            model: "Employee",
+            key: "user_id",
+          },
         },
         operation_start_at: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: DataTypes.NOW
+          defaultValue: DataTypes.NOW,
         },
         operation_done_at: {
           type: DataTypes.DATE,
-          allowNull: true
+          allowNull: true,
         },
         company_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Employee',
-            key: 'company_id'
-          }
+            model: "Employee",
+            key: "company_id",
+          },
         },
         assignedEmployeeUserId: {
           type: DataTypes.INTEGER.UNSIGNED,
-          allowNull: true
-        }
+          allowNull: true,
+        },
+        status: {
+          type: DataTypes.ENUM("cancelled", "progress", "delivered", "pending"),
+          defaultValue: "pending",
+        },
       },
+
       {
         sequelize,
-        modelName: 'WashOrderOperation',
-        tableName: 'washorderoperation',
-        timestamps: false
+        modelName: "WashOrderOperation",
+        tableName: "washorderoperation",
+        timestamps: false,
       }
     );
 
@@ -55,15 +60,14 @@ class WashOrderOperation extends Model {
 
   static associate(models) {
     this.belongsTo(models.CarWashOrder, {
-      foreignKey: 'wash_order_id',
-      as: 'washOrder'
+      foreignKey: "wash_order_id",
+      as: "washOrder",
     });
     this.belongsTo(models.Employee, {
-      foreignKey: ['employee_assigned_id', 'company_id'],
-      as: 'assignedEmployee'
+      foreignKey: ["employee_assigned_id", "company_id"],
+      as: "assignedEmployee",
     });
   }
 }
 
 module.exports = WashOrderOperation;
-
