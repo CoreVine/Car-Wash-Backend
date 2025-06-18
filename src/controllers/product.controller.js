@@ -522,14 +522,16 @@ const productController = {
 
       // Check if category exists
       const category = await CategoryRepository.findById(categoryId);
-
       if (!category) {
         throw new NotFoundError("Category not found");
       }
 
       // Check if category has subcategories
+      // const subcategoriesCount = await SubCategoryRepository.count({
+      //   where: { category_id: categoryId },
+      // });
       const subcategoriesCount = await SubCategoryRepository.count({
-        where: { category_id: categoryId },
+        category_id: categoryId,
       });
 
       if (subcategoriesCount > 0) {
@@ -686,7 +688,7 @@ const productController = {
 
       // Check if subcategory is associated with any products
       const productAssociationsCount = await SubCatProductRepository.count({
-        where: { sub_category_id: subCategoryId },
+        sub_category_id: subCategoryId,
       });
 
       if (productAssociationsCount > 0) {
