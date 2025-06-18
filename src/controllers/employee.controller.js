@@ -145,6 +145,57 @@ const employeeController = {
       next(error);
     }
   },
+
+  updateEmployee: async (req, res, next) => {
+    try {
+      const { companyId, employeeId } = req.params;
+
+      const employee = await EmployeeRepository.findByUserAndCompany(employeeId, companyId);
+
+      if (!employee) {
+        throw new NotFoundError('Employee not found');
+      }
+
+      // Add authorization check: Only the company owner (super-admin) should update employees
+      // or an admin should be able to update other non-super-admin employees.
+      // Assuming req.company.company_id is the authenticated user's company
+      // and req.employee.role gives the role of the authenticated employee.
+
+      if (req.company.company_id !== parseInt(companyId)) {
+        throw new ForbiddenError("You do not have permission to update employees in this company.");
+      }
+
+      // If the authenticated user is an admin, they can update any employee within their company,
+      // but a regular employee cannot update another employee.
+      // A super-admin can update anyone, but if they are trying to change another super-admin's role
+      // make sure there's at least one super-admin left if they are changing it from super-admin.
+
+      const authenticatedEmployee = await EmployeeRepository.findByUserId(req.user.user_id);
+
+      if (!authenticatedEmployee || authenticatedEmployee.company_id !== parseInt(companyId)) {
+        throw new ForbiddenError("You do not have permission to perform this action.");
+      }
+
+      // Prevent non-super-admin from changing roles to super-admin or from changing another super-admin's role
+      if (req.body.role === 'super-admin' && authenticatedEmployee.role !== 'super-admin') {
+        throw new ForbiddenError("Only a super-admin can assign the 'super-admin' role.");
+      }
+
+      if (employee.role === 'super-admin' && authenticatedEmployee.role !== 'super-admin' && employeeId !== req.user.user_id) {
+          throw new ForbiddenError("Only a super-admin can update another super-admin's details.");
+      }
+
+
+      await EmployeeRepository.update(employee.employee_id, req.body); // Use employee.employee_id for update
+
+      const updatedEmployee = await EmployeeRepository.findByUserAndCompany(employeeId, companyId);
+
+      return res.success('Employee updated successfully', updatedEmployee);
+
+    }catch(error){
+      next(error);
+    }
+  }
 };
 
 module.exports = employeeController;
