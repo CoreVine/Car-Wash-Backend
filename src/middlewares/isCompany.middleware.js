@@ -1,19 +1,19 @@
-const CompanyRepository = require('../data-access/companies');
-const UserRepository = require('../data-access/users');
-const EmployeeRepository = require('../data-access/employees');
-const { ForbiddenError } = require('../utils/errors/types/Api.error');
+const CompanyRepository = require("../data-access/companies");
+const UserRepository = require("../data-access/users");
+const EmployeeRepository = require("../data-access/employees");
+const { ForbiddenError } = require("../utils/errors/types/Api.error");
 
 const isCompanyMiddleware = async (req, res, next) => {
   try {
     const company = await CompanyRepository.findById(req.userId);
-    
+
     if (!company) {
-      throw new ForbiddenError('Access denied. Company privileges required');
+      throw new ForbiddenError("Access denied. Company privileges required");
     }
-    
+
     // Add company info to request for later use
     req.company = company;
-    
+
     next();
   } catch (error) {
     next(error);
@@ -21,4 +21,3 @@ const isCompanyMiddleware = async (req, res, next) => {
 };
 
 module.exports = isCompanyMiddleware;
-
