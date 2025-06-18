@@ -14,22 +14,22 @@ const carSchema = Yup.object().shape({
   model: Yup.string().required(),
   year: Yup.number().integer().required(),
   price: Yup.number().positive().required(),
-  exhibition_id: Yup.number().integer().required()
+  exhibition_id: Yup.number().integer().required(),
 });
 
 const carUpdateSchema = Yup.object().shape({
   model: Yup.string(),
   year: Yup.number().integer(),
   price: Yup.number().positive(),
-  exhibition_id: Yup.number().integer()
+  exhibition_id: Yup.number().integer(),
 });
 
 const exhibitionSchema = Yup.object().shape({
-  location: Yup.string().required()
+  location: Yup.string().required(),
 });
 
 const exhibitionUpdateSchema = Yup.object().shape({
-  location: Yup.string().required()
+  location: Yup.string().required(),
 });
 
 const carFilterSchema = Yup.object().shape({
@@ -38,16 +38,20 @@ const carFilterSchema = Yup.object().shape({
   company_id: Yup.number().integer().positive(),
   exhibition_id: Yup.number().integer().positive(),
   min_price: Yup.number().positive(),
-  max_price: Yup.number().positive().when('min_price', (min_price, schema) => 
-    min_price ? schema.min(min_price) : schema
-  ),
+  max_price: Yup.number()
+    .positive()
+    .when("min_price", (min_price, schema) =>
+      min_price ? schema.min(min_price) : schema
+    ),
   min_year: Yup.number().integer(),
-  max_year: Yup.number().integer().when('min_year', (min_year, schema) => 
-    min_year ? schema.min(min_year) : schema
-  ),
+  max_year: Yup.number()
+    .integer()
+    .when("min_year", (min_year, schema) =>
+      min_year ? schema.min(min_year) : schema
+    ),
   search: Yup.string(),
   available_from: Yup.date(),
-  // available_to: Yup.date().when('available_from', (available_from, schema) => 
+  // available_to: Yup.date().when('available_from', (available_from, schema) =>
   //   available_from ? schema.min(available_from) : schema
   // )
 });
@@ -57,44 +61,44 @@ const exhibitionFilterSchema = Yup.object().shape({
   limit: Yup.number().integer().min(1).max(100),
   company_id: Yup.number().integer().positive(),
   search: Yup.string(),
-  location: Yup.string()
+  location: Yup.string(),
 });
 
 const carIdParamSchema = Yup.object().shape({
-  carId: Yup.number().integer().positive().required()
+  carId: Yup.number().integer().positive().required(),
 });
 
 const imageIdParamSchema = Yup.object().shape({
-  imageId: Yup.number().integer().positive().required()
+  imageId: Yup.number().integer().positive().required(),
 });
 
 const companyIdParamSchema = Yup.object().shape({
-  companyId: Yup.number().integer().positive().required()
+  companyId: Yup.number().integer().positive().required(),
 });
 
 const exhibitionIdParamSchema = Yup.object().shape({
-  exhibitionId: Yup.number().integer().positive().required()
+  exhibitionId: Yup.number().integer().positive().required(),
 });
 
 // Configure uploaders for car images
 const carImageUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || 'disk',
-  uploadPath: 'uploads/car-images',
-  fileFilter: 'images',
+  storageType: process.env.STORAGE_TYPE || "disk",
+  uploadPath: "uploads/car-images",
+  fileFilter: "images",
   fileSize: 5 * 1024 * 1024, // 5MB limit
-  fileNamePrefix: 'car'
+  fileNamePrefix: "car",
 });
 
 const carRoutes = Router();
 
 // Cars - removing /api prefix since it's added globally
 carRoutes.post(
-  "/cars", 
-  authMiddleware, 
+  "/cars",
+  authMiddleware,
   anyOf(isCompanyMiddleware, isAdminMiddleware),
-  ...(Array.isArray(carImageUploader.array('images')) 
-    ? carImageUploader.array('images') 
-    : [carImageUploader.array('images')]),
+  ...(Array.isArray(carImageUploader.array("images"))
+    ? carImageUploader.array("images")
+    : [carImageUploader.array("images")]),
   multerErrorHandler,
   validate(carSchema),
   carController.addCar
@@ -102,85 +106,90 @@ carRoutes.post(
 
 carRoutes.get(
   "/cars",
-  validate(carFilterSchema, 'query'),
+  validate(carFilterSchema, "query"),
+  carController.getCars
+);
+carRoutes.get(
+  "/sale-cars",
+  validate(carFilterSchema, "query"),
   carController.getCars
 );
 
 carRoutes.get(
   "/cars/:carId",
-  validate(carIdParamSchema, 'params'),
+  validate(carIdParamSchema, "params"),
   carController.getCar
 );
 
 carRoutes.put(
-  "/cars/:carId", 
-  authMiddleware, 
-  isCompanyMiddleware, 
+  "/cars/:carId",
+  authMiddleware,
+  isCompanyMiddleware,
   validate({
     body: carUpdateSchema,
-    params: carIdParamSchema
+    params: carIdParamSchema,
   }),
   carController.updateCar
 );
 
 carRoutes.delete(
-  "/cars/:carId", 
-  authMiddleware, 
+  "/cars/:carId",
+  authMiddleware,
   isCompanyMiddleware,
-  validate(carIdParamSchema, 'params'),
+  validate(carIdParamSchema, "params"),
   carController.deleteCar
 );
 
 // Car images
 carRoutes.post(
-  "/cars/:carId/images", 
-  authMiddleware, 
+  "/cars/:carId/images",
+  authMiddleware,
   isCompanyMiddleware,
-  validate(carIdParamSchema, 'params'),
-  ...(Array.isArray(carImageUploader.array('images')) 
-    ? carImageUploader.array('images') 
-    : [carImageUploader.array('images')]),
-  multerErrorHandler, 
+  validate(carIdParamSchema, "params"),
+  ...(Array.isArray(carImageUploader.array("images"))
+    ? carImageUploader.array("images")
+    : [carImageUploader.array("images")]),
+  multerErrorHandler,
   carController.addCarImage
 );
 
 carRoutes.delete(
-  "/cars/:carId/images/:imageId", 
-  authMiddleware, 
+  "/cars/:carId/images/:imageId",
+  authMiddleware,
   isCompanyMiddleware,
   validate({
     params: {
       ...carIdParamSchema.fields,
-      ...imageIdParamSchema.fields
-    }
+      ...imageIdParamSchema.fields,
+    },
   }),
   carController.deleteCarImage
 );
 
 // Exhibitions
 carRoutes.post(
-  "/exhibitions", 
-  authMiddleware, 
-  isCompanyMiddleware, 
+  "/exhibitions",
+  authMiddleware,
+  isCompanyMiddleware,
   validate(exhibitionSchema),
   carController.addExhibition
 );
 
 carRoutes.get(
-  "/exhibitions", 
-  validate(exhibitionFilterSchema, 'query'),
+  "/exhibitions",
+  validate(exhibitionFilterSchema, "query"),
   carController.getExhibitions
 );
 
 carRoutes.get(
   "/exhibitions/:exhibitionId",
-  validate(exhibitionIdParamSchema, 'params'),
+  validate(exhibitionIdParamSchema, "params"),
   carController.getExhibitionDetails
 );
 
 carRoutes.get(
   "/companies/:companyId/exhibitions",
-  validate(companyIdParamSchema, 'params'),
+  validate(companyIdParamSchema, "params"),
   carController.getCompanyExhibitions
 );
 
@@ -190,7 +199,7 @@ carRoutes.put(
   isCompanyMiddleware,
   validate({
     body: exhibitionUpdateSchema,
-    params: exhibitionIdParamSchema
+    params: exhibitionIdParamSchema,
   }),
   carController.updateExhibition
 );
@@ -199,7 +208,7 @@ carRoutes.delete(
   "/exhibitions/:exhibitionId",
   authMiddleware,
   isCompanyMiddleware,
-  validate(exhibitionIdParamSchema, 'params'),
+  validate(exhibitionIdParamSchema, "params"),
   carController.deleteExhibition
 );
 

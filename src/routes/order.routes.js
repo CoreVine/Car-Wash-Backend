@@ -19,7 +19,7 @@ const createOrderSchema = Yup.object().shape({
 
 const updateOrderStatusSchema = Yup.object().shape({
   status: Yup.string()
-    .oneOf(["pending", "processing", "completed", "cancelled"])
+    .oneOf(["cancelled", "progress", "delivered", "pending"])
     .required(),
   notes: Yup.string(),
 });
@@ -74,6 +74,17 @@ const paginationSchema = Yup.object().shape({
   limit: Yup.number().integer().min(1).max(100),
 });
 
+const updateRentalOrderStatusSchema = Yup.object().shape({
+  status: Yup.string()
+    .oneOf(["cancelled", "progress", "delivered", "pending"])
+    .required(),
+});
+const updateWashOrderStatusSchema = Yup.object().shape({
+  status: Yup.string()
+    .oneOf(["cancelled", "progress", "delivered", "pending"])
+    .required(),
+});
+
 const orderRoutes = Router();
 
 // Create order from cart
@@ -93,6 +104,13 @@ orderRoutes.get(
   isUserMiddleware,
   validate(paginationSchema, "query"),
   orderController.getOrders
+);
+orderRoutes.get(
+  "/orders-company",
+  authMiddleware,
+  isCompanyMiddleware,
+  validate(paginationSchema, "query"),
+  orderController.getOrdersCompany
 );
 
 // Get specific order
@@ -127,6 +145,12 @@ orderRoutes.post(
   isUserMiddleware,
   validate(createWashOrderSchema),
   orderController.createWashOrder
+);
+orderRoutes.get(
+  "/all-wash-orders",
+  authMiddleware,
+  isCompanyMiddleware,
+  orderController.getAllWashOrder
 );
 
 orderRoutes.put(
@@ -165,6 +189,13 @@ orderRoutes.put(
   isEmployeeMiddleware,
   orderController.completeWashOperation
 );
+orderRoutes.patch(
+  "/wash-orders/:washOrderId/status-toggle",
+  authMiddleware,
+  isEmployeeMiddleware,
+  validate(updateWashOrderStatusSchema),
+  orderController.toggleWashOperationStatus
+);
 
 orderRoutes.delete(
   "/wash-orders",
@@ -181,6 +212,12 @@ orderRoutes.post(
   validate(createRentalOrderSchema),
   orderController.createRentalOrder
 );
+orderRoutes.get(
+  "/all-rental-orders",
+  authMiddleware,
+  isCompanyMiddleware,
+  orderController.getAllRentalOrder
+);
 
 orderRoutes.delete(
   "/rental-orders",
@@ -188,6 +225,21 @@ orderRoutes.delete(
   isUserMiddleware,
   orderController.removeRentalOrder
 );
+orderRoutes.patch(
+  "/rental-orders/:rentalOrderId/status-toggle",
+  authMiddleware,
+  isEmployeeMiddleware,
+  validate(updateRentalOrderStatusSchema),
+  orderController.toggleRentalStatus
+);
+
+// orderRoutes.patch(
+//   "/rental-orders",
+//   authMiddleware,
+//   isCompanyMiddleware,
+//   validate(updateRentalOrderStatusSchema),
+//   orderController.updateStatus
+// );
 // orderRoutes.post(
 //   "/create-payment-intent",
 //   authMiddleware,

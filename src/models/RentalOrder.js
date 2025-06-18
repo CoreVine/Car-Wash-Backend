@@ -7,56 +7,59 @@ class RentalOrder extends Model {
         rental_order_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
-          autoIncrement: true
+          autoIncrement: true,
         },
         order_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Cart',
-            key: 'order_id'
-          }
+            model: "Cart",
+            key: "order_id",
+          },
         },
         car_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Cars',
-            key: 'car_id'
-          }
+            model: "Cars",
+            key: "car_id",
+          },
         },
         start_date: {
           type: DataTypes.DATE,
-          allowNull: false
+          allowNull: false,
         },
         end_date: {
           type: DataTypes.DATE,
-          allowNull: false
-        }
+          allowNull: false,
+        },
+        status: {
+          type: DataTypes.ENUM("cancelled", "progress", "delivered", "pending"),
+          defaultValue: "pending",
+        },
       },
       {
         sequelize,
-        modelName: 'RentalOrder',
-        tableName: 'rentalorders',
-        timestamps: false
+        modelName: "RentalOrder",
+        tableName: "rentalorders",
+        timestamps: false,
       }
     );
-    
+
     return this;
   }
 
   static associate(models) {
     this.belongsTo(models.Cart, {
-      foreignKey: 'order_id',
-      as: 'cart'
+      foreignKey: "order_id",
+      as: "cart",
     });
-    
+
     this.belongsTo(models.Car, {
-      foreignKey: 'car_id',
-      as: 'car'
+      foreignKey: "car_id",
+      as: "car",
     });
   }
 }
 
 module.exports = RentalOrder;
-
