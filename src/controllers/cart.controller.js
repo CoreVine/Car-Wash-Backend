@@ -1,8 +1,3 @@
-To resolve the conflict in the `createCheckoutSession` function, I'll merge the two conflicting blocks. The goal is to create `line_items` for Stripe, prioritizing the more robust image handling from `features/fix-product-route` while keeping the `unit_amount` calculation from `add-put-request-for-employee` (multiplying by 100 for USD as Stripe expects the smallest currency unit). I'll also ensure `YOUR_DOMAIN` is used consistently for the success and cancel URLs.
-
-Here's the merged and corrected `createCheckoutSession` function:
-
-```javascript
 const CartRepository = require("../data-access/carts");
 const CarRepository = require("../data-access/cars");
 const OrderItemRepository = require("../data-access/order-items");
@@ -15,6 +10,7 @@ const CarOrderRepository = require("../data-access/car-orders");
 import PaymentMethodRepository from "../data-access/payment-methods";
 import { logger } from "sequelize/lib/utils/logger";
 import stripe from "../config/stripeConfig";
+const orderController = require("./order.controller");
 require("dotenv").config();
 
 // FUTURE FU-001
@@ -550,61 +546,70 @@ const cartController = {
   createCheckoutSession: async (req, res, next) => {
     try {
       const cart = await CartRepository.findUserActiveCart(req.user.user_id);
-
+  
       if (!cart) throw new NotFoundError("No active cart found");
-
+  
       const fullCart = await CartRepository.findCartWithItems(cart.order_id);
       if (!fullCart || fullCart.orderItems.length === 0) {
         return res.status(400).json({ error: "No items in cart" });
       }
-
-      // Use your domain for redirect URLs
-      const YOUR_DOMAIN = process.env.FRONTEND_URL;
-
+  
       // Map cart items to Stripe line_items
-      const line_items = fullCart.orderItems.map((item) => {
-        // Stripe expects amount in the smallest currency unit (e.g., cents for USD)
-        // Make sure your price is multiplied by 100 for USD
-        const unit_amount = Math.round(parseFloat(item.price) * 100);
-
+      const line_items = fullCart.orderItems.map(item => {
+        const unit_amount = Math.round(parseFloat(item.price) * 100); // USD
         return {
           price_data: {
             currency: "usd",
             product_data: {
               name: item.product.product_name,
               description: item.product.description,
-              images:
-                item.product.images && item.product.images.length > 0 && item.product.images[0].image_url
-                  ? [item.product.images[0].image_url]
-                  : ["https://example.com/placeholder-image.jpg"],
+              images: item.product.images.length > 0
+                ? item.product.images
+                : ["https://example.com/placeholder-image.jpg"]
             },
             unit_amount,
           },
           quantity: item.quantity,
-        };
+        }
       });
-
+  
+      const YOUR_DOMAIN = "http://192.168.1.39:4000";
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items,
         mode: "payment",
-        success_url: YOUR_DOMAIN.concat('/payment-success?session_id={CHECKOUT_SESSION_ID}'),
-        cancel_url: YOUR_DOMAIN.concat('/payment-cancel'),
-        customer_email: req.user.email, // Optional, but recommended
+        // success_url: YOUR_DOMAIN.concat('/payment-success?session_id={CHECKOUT_SESSION_ID}'),
+        // cancel_url: YOUR_DOMAIN.concat('/payment-cancel'),
+        success_url: `${YOUR_DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${YOUR_DOMAIN}/payment-cancel`,
+        customer_email: req.user.email,
+        client_reference_id: cart.order_id.toString(),
+        metadata: {
+          cart_id: cart.order_id.toString(),
+          user_id: req.user.user_id.toString(),
+          user_email: req.user.email,
+          total_items: fullCart.orderItems.length.toString()
+        }
       });
-
+  
       if (!session || !session.id) throw new BadRequestError("Failed to create checkout session");
-
-      // No need to create a PaymentMethod record here as per typical Stripe integration,
-      // the session ID is returned to the client to redirect to Stripe's hosted page.
-      // If you need to store payment methods, that's typically done after successful payment via webhooks.
-
-      res.json({ id: session.id, url: session.url }); // Return both for flexibility
+      req.body.payment_method_id = "stripe";
+      req.body.payment_gateway_response = JSON.stringify(session);
+      req.body.shipping_address = {
+        address: "123 Main St",
+        city: "Anytown",
+        state: "CA",
+        zip: "12345",
+        country: "US"
+      }
+      orderController.createOrder(req, res, next);
+      res.json({ id: session.id, url: session.url });
     } catch (err) {
       console.error(err);
       next(err);
     }
-  },
+  }
+
 };
 
 module.exports = cartController;

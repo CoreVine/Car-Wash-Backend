@@ -11,7 +11,15 @@ const corsService = {
   },
 
   getCorsMiddleware: () => {
-    const corsOptions = {
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
+    const corsOptions = isDevelopment ? {
+      // Allow all origins in development
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      optionsSuccessStatus: 200
+    } : {
       origin: function (origin, callback) {
         // Allow requests with no origin (like native mobile apps, curl, etc)
         if (!origin) return callback(null, true);
@@ -30,7 +38,7 @@ const corsService = {
       optionsSuccessStatus: corsConfig.optionsSuccessStatus,
     };
 
-    return cors();
+    return cors(corsOptions);
   },
 };
 
