@@ -497,6 +497,16 @@ const orderController = {
             association: "customer", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
             attributes: ["name"], // fetch only company_name from related Company
           },
+          {
+            association: "operation", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+            // attributes: ["company_name"], // fetch only company_name from related Company
+            include: {
+              association: "assignedEmployee", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+              include: {
+                association: "user", // must match alias in `CarWashOrder.belongsTo(models.Company, { as: 'company' })`
+              },
+            },
+          },
         ],
       });
 
@@ -730,6 +740,35 @@ const orderController = {
     }
   },
 
+  toggleWashOperationStatus: async (req, res, next) => {
+    try {
+      const { washOrderId } = req.params;
+      const { status } = req.body;
+      // Only company employee can mark operation as complete
+      if (!req.employee) {
+        throw new ForbiddenError(
+          "Only employees can mark operations as complete"
+        );
+      }
+
+      // Find operation
+      const operation = await WashOrderOperationRepository.findByWashOrderId(
+        washOrderId
+      );
+
+      if (!operation) {
+        throw new NotFoundError("Wash operation not found");
+      }
+
+      await operation.update({
+        status: status,
+      });
+      return res.success("Toogle Status for Wash order ", operation);
+      // Update operation
+    } catch (error) {
+      next(error);
+    }
+  },
   // Mark wash operation as complete
   completeWashOperation: async (req, res, next) => {
     try {
@@ -978,27 +1017,54 @@ const orderController = {
       next(error);
     }
   },
-  updateStatus: async (req, res, next) => {
+  toggleRentalStatus: async (req, res, next) => {
     try {
+      const { rentalOrderId } = req.params;
       const { status } = req.body;
-      // Find active cart
-      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
-
-      if (!cart || !cart.rentalOrder) {
-        throw new BadRequestError("No rental order found in active cart");
+      // Only company employee can mark operation as complete
+      if (!req.employee) {
+        throw new ForbiddenError(
+          "Only employees can mark operations as complete"
+        );
       }
 
-      // Delete the rental order
-      await RentalOrderRepository.update(cart.rentalOrder.rental_order_id, {
+      // Find operation
+      const order = await RentalOrderRepository.findById(rentalOrderId);
+
+      if (!order) {
+        throw new NotFoundError("Wash operation not found");
+      }
+
+      await order.update({
         status: status,
       });
-
-      // Delete cart if it's empty (no items, no car wash, no rental)
-      return res.success("Rental order Status has changed ", updatedCart);
+      return res.success("Toogle Status for Rental order ", order);
+      // Update operation
     } catch (error) {
       next(error);
     }
   },
+  // updateStatus: async (req, res, next) => {
+  //   try {
+  //     const { status } = req.body;
+  //     // Find active cart
+  //     const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+
+  //     if (!cart || !cart.rentalOrder) {
+  //       throw new BadRequestError("No rental order found in active cart");
+  //     }
+
+  //     // Delete the rental order
+  //     await RentalOrderRepository.update(cart.rentalOrder.rental_order_id, {
+  //       status: status,
+  //     });
+
+  //     // Delete cart if it's empty (no items, no car wash, no rental)
+  //     return res.success("Rental order Status has changed ", updatedCart);
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // },
   authenticateCbk: async () => {
     try {
       const response = await axios.post(

@@ -5,7 +5,10 @@ const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
 const isAdminMiddleware = require("../middlewares/isAdmin.middleware");
 const validate = require("../middlewares/validation.middleware");
 const Yup = require("yup");
-const { createUploader, requireFileUpload } = require("../config/multer.config");
+const {
+  createUploader,
+  requireFileUpload,
+} = require("../config/multer.config");
 
 // Define validation schemas
 const productSchema = Yup.object().shape({
@@ -13,7 +16,10 @@ const productSchema = Yup.object().shape({
   description: Yup.string().required(),
   price: Yup.number().positive().required(),
   stock: Yup.number().integer().min(0).required(),
-  sub_category_ids: Yup.array().of(Yup.number().integer().positive()).min(1).required()
+  sub_category_ids: Yup.array()
+    .of(Yup.number().integer().positive())
+    .min(1)
+    .required(),
 });
 
 const productUpdateSchema = Yup.object().shape({
@@ -21,23 +27,23 @@ const productUpdateSchema = Yup.object().shape({
   description: Yup.string(),
   price: Yup.number().positive(),
   stock: Yup.number().integer().min(0),
-  sub_category_ids: Yup.array().of(Yup.number().integer().positive())
+  sub_category_ids: Yup.array().of(Yup.number().integer().positive()),
 });
 
 const categorySchema = Yup.object().shape({
-  category_name: Yup.string().required()
+  category_name: Yup.string().required(),
 });
 
 const categoryUpdateSchema = Yup.object().shape({
-  category_name: Yup.string()
+  category_name: Yup.string(),
 });
 
 const subCategorySchema = Yup.object().shape({
-  name: Yup.string().required()
+  name: Yup.string().required(),
 });
 
 const subCategoryUpdateSchema = Yup.object().shape({
-  name: Yup.string()
+  name: Yup.string(),
 });
 
 const productFilterSchema = Yup.object().shape({
@@ -47,89 +53,90 @@ const productFilterSchema = Yup.object().shape({
   company_id: Yup.number().integer().positive(),
   min_price: Yup.number().positive(),
   max_price: Yup.number().positive(),
-  search: Yup.string()
+  search: Yup.string(),
 });
 
 const productIdParamSchema = Yup.object().shape({
-  productId: Yup.number().integer().positive().required()
+  productId: Yup.number().integer().positive().required(),
 });
 
 const categoryIdParamSchema = Yup.object().shape({
-  categoryId: Yup.number().integer().positive().required()
+  categoryId: Yup.number().integer().positive().required(),
 });
 
 // Configure uploaders
 const productImageUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || 'disk',
-  uploadPath: 'uploads/product-images',
-  fileFilter: 'images',
-  fileSize: 5 * 1024 * 1024 // 5MB limit
+  storageType: process.env.STORAGE_TYPE || "disk",
+  uploadPath: "uploads/product-images",
+  fileFilter: "images",
+  fileSize: 5 * 1024 * 1024, // 5MB limit
 });
 
 const categoryIconUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || 'disk',
-  uploadPath: 'uploads/category-icons',
-  fileFilter: 'images',
-  fileSize: 2 * 1024 * 1024 // 2MB limit
+  storageType: process.env.STORAGE_TYPE || "disk",
+  uploadPath: "uploads/category-icons",
+  fileFilter: "images",
+  fileSize: 2 * 1024 * 1024, // 2MB limit
 });
 
 const subCategoryIconUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || 'disk',
-  uploadPath: 'uploads/subcategory-icons',
-  fileFilter: 'images',
-  fileSize: 2 * 1024 * 1024 // 2MB limit
+  storageType: process.env.STORAGE_TYPE || "disk",
+  uploadPath: "uploads/subcategory-icons",
+  fileFilter: "images",
+  fileSize: 2 * 1024 * 1024, // 2MB limit
 });
 
 const productRoutes = Router();
 
 // Products - removing /api prefix since it's added globally
-productRoutes.post("/products", 
-  authMiddleware, 
+productRoutes.post(
+  "/products",
+  authMiddleware,
   isCompanyMiddleware,
-  ...(Array.isArray(productImageUploader.array('images', 5)) 
-    ? productImageUploader.array('images', 5) 
-    : [productImageUploader.array('images', 5)]),
+  ...(Array.isArray(productImageUploader.array("images", 5))
+    ? productImageUploader.array("images", 5)
+    : [productImageUploader.array("images", 5)]),
   validate(productSchema),
   productController.addProduct
 );
 
 productRoutes.get(
   "/products",
-  validate(productFilterSchema, 'query'),
+  validate(productFilterSchema, "query"),
   productController.getProducts
 );
 
 productRoutes.get(
   "/products/:productId",
-  validate(productIdParamSchema, 'params'),
+  validate(productIdParamSchema, "params"),
   productController.getProduct
 );
 
 productRoutes.put(
-  "/products/:productId", 
+  "/products/:productId",
   authMiddleware,
   validate({
     body: productUpdateSchema,
-    params: productIdParamSchema
+    params: productIdParamSchema,
   }),
   productController.updateProduct
 );
 
 productRoutes.delete(
-  "/products/:productId", 
+  "/products/:productId",
   authMiddleware,
-  validate(productIdParamSchema, 'params'),
+  validate(productIdParamSchema, "params"),
   productController.deleteProduct
 );
 
 // Product images
 productRoutes.post(
-  "/products/:productId/images", 
+  "/products/:productId/images",
   authMiddleware,
-  ...(Array.isArray(productImageUploader.single('image')) 
-  ? productImageUploader.single('image') 
-  : [productImageUploader.single('image')]),
-  validate(productIdParamSchema, 'params'),
+  ...(Array.isArray(productImageUploader.single("image"))
+    ? productImageUploader.single("image")
+    : [productImageUploader.single("image")]),
+  validate(productIdParamSchema, "params"),
   productController.addProductImage
 );
 
@@ -139,9 +146,10 @@ productRoutes.delete(
   validate({
     params: {
       productId: Yup.number().integer().positive().required(),
-      imageId: Yup.number().integer().positive().required()
-    }
+      imageId: Yup.number().integer().positive().required(),
+    },
   }),
+  isAdminMiddleware,
   productController.deleteProductImage
 );
 
@@ -149,12 +157,12 @@ productRoutes.delete(
 productRoutes.get("/categories", productController.getCategories);
 
 productRoutes.post(
-  "/categories", 
-  authMiddleware, 
-  isAdminMiddleware, 
-  categoryIconUploader.single('icon'),
+  "/categories",
+  authMiddleware,
+  isAdminMiddleware,
+  categoryIconUploader.single("icon"),
   validate(categorySchema),
-  requireFileUpload('Category icon'),
+  // requireFileUpload("Category icon"),
   productController.addCategory
 );
 
@@ -162,10 +170,10 @@ productRoutes.put(
   "/categories/:categoryId",
   authMiddleware,
   isAdminMiddleware,
-  categoryIconUploader.single('icon'),
+  categoryIconUploader.single("icon"),
   validate({
     body: categoryUpdateSchema,
-    params: categoryIdParamSchema
+    params: categoryIdParamSchema,
   }),
   productController.updateCategory
 );
@@ -174,27 +182,27 @@ productRoutes.delete(
   "/categories/:categoryId",
   authMiddleware,
   isAdminMiddleware,
-  validate(categoryIdParamSchema, 'params'),
+  validate(categoryIdParamSchema, "params"),
   productController.deleteCategory
 );
 
 // Subcategories
 productRoutes.get(
   "/categories/:categoryId/subcategories",
-  validate(categoryIdParamSchema, 'params'),
+  validate(categoryIdParamSchema, "params"),
   productController.getSubCategories
 );
 
 productRoutes.post(
-  "/categories/:categoryId/subcategories", 
-  authMiddleware, 
+  "/categories/:categoryId/subcategories",
+  authMiddleware,
   isAdminMiddleware,
-  subCategoryIconUploader.single('icon'),
+  subCategoryIconUploader.single("icon"),
   validate({
     body: subCategorySchema,
-    params: categoryIdParamSchema
+    params: categoryIdParamSchema,
   }),
-  requireFileUpload('Subcategory icon'),
+  requireFileUpload("Subcategory icon"),
   productController.addSubCategory
 );
 
@@ -202,13 +210,13 @@ productRoutes.put(
   "/categories/:categoryId/subcategories/:subCategoryId",
   authMiddleware,
   isAdminMiddleware,
-  subCategoryIconUploader.single('icon'),
+  subCategoryIconUploader.single("icon"),
   validate({
     body: subCategoryUpdateSchema,
     params: {
       categoryId: Yup.number().integer().positive().required(),
-      subCategoryId: Yup.number().integer().positive().required()
-    }
+      subCategoryId: Yup.number().integer().positive().required(),
+    },
   }),
   productController.updateSubCategory
 );
@@ -220,8 +228,8 @@ productRoutes.delete(
   validate({
     params: {
       categoryId: Yup.number().integer().positive().required(),
-      subCategoryId: Yup.number().integer().positive().required()
-    }
+      subCategoryId: Yup.number().integer().positive().required(),
+    },
   }),
   productController.deleteSubCategory
 );

@@ -19,7 +19,7 @@ const createOrderSchema = Yup.object().shape({
 
 const updateOrderStatusSchema = Yup.object().shape({
   status: Yup.string()
-    .oneOf(["pending", "processing", "completed", "cancelled"])
+    .oneOf(["cancelled", "progress", "delivered", "pending"])
     .required(),
   notes: Yup.string(),
 });
@@ -75,6 +75,11 @@ const paginationSchema = Yup.object().shape({
 });
 
 const updateRentalOrderStatusSchema = Yup.object().shape({
+  status: Yup.string()
+    .oneOf(["cancelled", "progress", "delivered", "pending"])
+    .required(),
+});
+const updateWashOrderStatusSchema = Yup.object().shape({
   status: Yup.string()
     .oneOf(["cancelled", "progress", "delivered", "pending"])
     .required(),
@@ -184,6 +189,13 @@ orderRoutes.put(
   isEmployeeMiddleware,
   orderController.completeWashOperation
 );
+orderRoutes.patch(
+  "/wash-orders/:washOrderId/status-toggle",
+  authMiddleware,
+  isEmployeeMiddleware,
+  validate(updateWashOrderStatusSchema),
+  orderController.toggleWashOperationStatus
+);
 
 orderRoutes.delete(
   "/wash-orders",
@@ -213,14 +225,21 @@ orderRoutes.delete(
   isUserMiddleware,
   orderController.removeRentalOrder
 );
-
 orderRoutes.patch(
-  "/rental-orders",
+  "/rental-orders/:rentalOrderId/status-toggle",
   authMiddleware,
-  isCompanyMiddleware,
-  validate(updateRentalOrderStatusSchema)
-  // orderController.updateStatus
+  isEmployeeMiddleware,
+  validate(updateRentalOrderStatusSchema),
+  orderController.toggleRentalStatus
 );
+
+// orderRoutes.patch(
+//   "/rental-orders",
+//   authMiddleware,
+//   isCompanyMiddleware,
+//   validate(updateRentalOrderStatusSchema),
+//   orderController.updateStatus
+// );
 // orderRoutes.post(
 //   "/create-payment-intent",
 //   authMiddleware,
