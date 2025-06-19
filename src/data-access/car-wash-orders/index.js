@@ -209,8 +209,8 @@ class CarWashOrderRepository extends BaseRepository {
       try {
         // Create wash order
         const washOrderDataWithOrder = {
+          order_id: 1,
           ...washOrderData,
-          order_id: cartId,
         };
 
         const washOrder = await this.create(washOrderDataWithOrder, {
@@ -235,11 +235,11 @@ class CarWashOrderRepository extends BaseRepository {
           this.model.sequelize.model("WashOrderWashType");
 
         const washTypeAssociations = washTypes.map((type) => ({
-          carwashorders_order_id: washOrder.wash_order_id,
-          WashTypes_type_id: type.type_id,
+          order_id: washOrder.wash_order_id,
+          type_id: type.type_id,
           paid_price: type.price,
         }));
-
+        console.log(washTypeAssociations);
         await WashOrderWashType.bulkCreate(washTypeAssociations, {
           transaction: t,
         });

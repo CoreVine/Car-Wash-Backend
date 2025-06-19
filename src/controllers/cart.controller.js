@@ -215,6 +215,7 @@ const cartController = {
 
           try {
             // Use transaction-based repository method
+            // return res.success(cart);
             await CarWashOrderRepository.addWashServiceToCart(
               cart.order_id,
               {
@@ -543,19 +544,20 @@ const cartController = {
       next(error);
     }
   },
+
   createCheckoutSession: async (req, res, next) => {
     try {
       const cart = await CartRepository.findUserActiveCart(req.user.user_id);
-  
+
       if (!cart) throw new NotFoundError("No active cart found");
-  
+
       const fullCart = await CartRepository.findCartWithItems(cart.order_id);
       if (!fullCart || fullCart.orderItems.length === 0) {
         return res.status(400).json({ error: "No items in cart" });
       }
-  
+
       // Map cart items to Stripe line_items
-      const line_items = fullCart.orderItems.map(item => {
+      const line_items = fullCart.orderItems.map((item) => {
         const unit_amount = Math.round(parseFloat(item.price) * 100); // USD
         return {
           price_data: {
@@ -563,17 +565,18 @@ const cartController = {
             product_data: {
               name: item.product.product_name,
               description: item.product.description,
-              images: item.product.images.length > 0
-                ? item.product.images
-                : ["https://example.com/placeholder-image.jpg"]
+              images:
+                item.product.images.length > 0
+                  ? item.product.images
+                  : ["https://example.com/placeholder-image.jpg"],
             },
             unit_amount,
           },
           quantity: item.quantity,
-        }
+        };
       });
-  
-      const YOUR_DOMAIN = "http://192.168.1.39:4000";
+
+      const YOUR_DOMAIN = "http://localhost:3000";
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items,
@@ -588,11 +591,12 @@ const cartController = {
           cart_id: cart.order_id.toString(),
           user_id: req.user.user_id.toString(),
           user_email: req.user.email,
-          total_items: fullCart.orderItems.length.toString()
-        }
+          total_items: fullCart.orderItems.length.toString(),
+        },
       });
-  
-      if (!session || !session.id) throw new BadRequestError("Failed to create checkout session");
+
+      if (!session || !session.id)
+        throw new BadRequestError("Failed to create checkout session");
       req.body.payment_method_id = "stripe";
       req.body.payment_gateway_response = JSON.stringify(session);
       req.body.shipping_address = {
@@ -600,16 +604,16 @@ const cartController = {
         city: "Anytown",
         state: "CA",
         zip: "12345",
-        country: "US"
-      }
+        country: "US",
+      };
       orderController.createOrder(req, res, next);
+
       res.json({ id: session.id, url: session.url });
     } catch (err) {
       console.error(err);
       next(err);
     }
-  }
-
+  },
 };
 
 module.exports = cartController;

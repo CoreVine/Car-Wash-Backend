@@ -1,132 +1,128 @@
 {
   "info": {
-    "name": "Wash Type API",
+    "name": "Ads API",
+    "_postman_id": "f6782ac2-c335-4d5f-a2ea-adsapi-example",
+    "description": "Postman collection for Ads endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Public Routes",
-      "item": [
-        {
-          "name": "Get All Wash Types",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/wash-types",
-              "host": ["{{base_url}}"],
-              "path": ["wash-types"]
-            },
-            "query": [
-              { "key": "page", "value": "1" },
-              { "key": "limit", "value": "10" },
-              { "key": "min_price", "value": "0" },
-              { "key": "max_price", "value": "100" }
-            ]
+      "name": "Create Ad",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
           }
-        },
-        {
-          "name": "Get Company Wash Types",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/companies/{{companyId}}/wash-types",
-              "host": ["{{base_url}}"],
-              "path": ["companies", "{{companyId}}", "wash-types"]
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Ad title example",
+              "type": "text"
             },
-            "query": [
-              { "key": "page", "value": "1" },
-              { "key": "limit", "value": "10" },
-              { "key": "min_price", "value": "0" },
-              { "key": "max_price", "value": "100" }
-            ]
-          }
-        },
-        {
-          "name": "Get Popular Wash Types",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/wash-types/popular",
-              "host": ["{{base_url}}"],
-              "path": ["wash-types", "popular"]
+            {
+              "key": "image",
+              "type": "file",
+              "src": ""
             }
-          }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/ads/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "ads", ""]
         }
-      ]
+      }
     },
     {
-      "name": "Company Only Routes",
-      "item": [
-        {
-          "name": "Add Wash Type",
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/wash-types",
-              "host": ["{{base_url}}"],
-              "path": ["wash-types"]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": {
-                "name": "Deluxe Wash",
-                "price": 25,
-                "description": "Premium car wash service"
-              }
-            },
-            "description": "Requires valid JWT token of a company user"
-          }
-        },
-        {
-          "name": "Update Wash Type",
-          "request": {
-            "method": "PUT",
-            "url": {
-              "raw": "{{base_url}}/wash-types/{{typeId}}",
-              "host": ["{{base_url}}"],
-              "path": ["wash-types", "{{typeId}}"]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": {
-                "name": "Updated Name",
-                "price": 30,
-                "description": "Updated description"
-              }
-            },
-            "description": "At least one field must be provided."
-          }
-        },
-        {
-          "name": "Delete Wash Type",
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{base_url}}/wash-types/{{typeId}}",
-              "host": ["{{base_url}}"],
-              "path": ["wash-types", "{{typeId}}"]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ]
-          }
+      "name": "Get All Ads",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/ads/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "ads", ""]
         }
-      ]
+      }
+    },
+    {
+      "name": "Get Ad by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/ads/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "ads", "1"]
+        }
+      }
+    },
+    {
+      "name": "Update Ad",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Updated Ad Title",
+              "type": "text"
+            },
+            {
+              "key": "image",
+              "type": "file",
+              "src": ""
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/ads/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "ads", "1"]
+        }
+      }
+    },
+    {
+      "name": "Delete Ad",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/ads/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "ads", "1"]
+        }
+      }
     }
   ]
 }
