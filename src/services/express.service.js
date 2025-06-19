@@ -1,7 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-// cors will be imported through the corsService
 const {
   globalErrorHandler,
   notFoundHandler,
@@ -47,31 +46,34 @@ const expressService = {
         express.raw({ type: "application/json" })
       );
 
-      // Apply middleware
-      server.use(bodyParser.json());
-
-      // Use cookie-parser middleware
+      // IMPORTANT: Apply body parsers AFTER file upload routes
+      // But first parse cookies
       server.use(cookieParser());
 
       if (process.env.NODE_ENV === "production") {
         // Apply rate limiting middleware to all requests
         server.use(rateLimitService.standardLimiter());
       }
+
       // Apply morgan middleware for HTTP request logging
       server.use(morgan);
 
-      // Apply routes
-      // Static file serving for uploads
+      // Static file serving for uploads - should come before body parsers
       server.use(
         "/uploads",
         express.static(path.join(__dirname, "../../uploads"))
       );
-      // Serve payment views
-      server.use("/views", express.static(path.join(__dirname, "../views")));
-      // API routes under /api
+
+      // API routes under /api - will handle their own body parsing
       server.use("/api", apiRouter);
+
+      // Only now apply body parsers for other routes
+      server.use(bodyParser.json());
+      server.use(bodyParser.urlencoded({ extended: true }));
+
       // Payment view routes
       server.use("/", paymentViewsRouter);
+      server.use("/views", express.static(path.join(__dirname, "../views")));
 
       // Handle 404 routes
       server.use("*", notFoundHandler);
@@ -83,7 +85,6 @@ const expressService = {
       // Apply global error handler
       server.use(globalErrorHandler);
 
-      // Listen on all network interfaces
       server.listen(process.env.SERVER_PORT, () => {
         logger.info(
           `[EXPRESS] Express initialized on port ${process.env.SERVER_PORT}`

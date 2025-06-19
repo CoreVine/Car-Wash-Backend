@@ -587,7 +587,9 @@ const productController = {
 
       // Get icon URL from uploaded file as relative path
       const icon =
-        req.file.url || getRelativePath(req.file.path, "subcategory-icons");
+        req.file.url ||
+        req.file.public_id ||
+        getRelativePath(req.file.path, "subcategory-icons");
 
       // return res.json(icon);
       const subCategory = await SubCategoryRepository.create({

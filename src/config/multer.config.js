@@ -2,10 +2,25 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const awsService = require("../services/aws.service");
+const cloudinary = require("cloudinary").v2;
 const os = require("os");
-const { v4: uuidv4 } = require("uuid"); // Correct import for v4 UUID
+const { v4: uuidv4 } = require("uuid");
 const loggingService = require("../services/logging.service");
 const logger = loggingService.getLogger();
+
+// Configure Cloudinary if environment variables are present
+if (
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true,
+  });
+}
 
 // Create a custom middleware to check for file upload
 const requireFileUpload = (fieldName) => (req, res, next) => {
@@ -136,16 +151,11 @@ const deleteUploadedFile = async (filePath) => {
     }
     // AWS S3
     else if (filePath.includes(".amazonaws.com/")) {
-      // Parse the URL to extract necessary information
       const url = new URL(filePath);
       const pathSegments = url.pathname.split("/").filter(Boolean);
-
-      // Extract the filename and extension
       const filename = pathSegments[pathSegments.length - 1];
       const fileUUID = filename.split(".")[0];
       const extension = path.extname(filename).substring(1);
-
-      // Extract the bucket path (folder structure)
       const bucketPath =
         pathSegments.length > 1
           ? pathSegments.slice(1, -1).join("/") + "/"
@@ -153,6 +163,18 @@ const deleteUploadedFile = async (filePath) => {
 
       await awsService.deleteFile(fileUUID, extension, bucketPath);
       console.log(`File deleted from S3: ${filename}`);
+    }
+    // Cloudinary
+    else if (filePath.includes("res.cloudinary.com")) {
+      const url = new URL(filePath);
+      const pathSegments = url.pathname.split("/").filter(Boolean);
+      const publicId = pathSegments
+        .slice(pathSegments.indexOf("upload") + 1)
+        .join("/")
+        .replace(/\.[^/.]+$/, "");
+
+      await cloudinary.uploader.destroy(publicId);
+      console.log(`File deleted from Cloudinary: ${publicId}`);
     }
   } catch (error) {
     console.error(`Error deleting file: ${error.message}`);
@@ -162,8 +184,8 @@ const deleteUploadedFile = async (filePath) => {
 /**
  * Create multer configuration
  * @param {Object} options - Configuration options
- * @param {string} options.storageType - Storage type ('disk' or 's3')
- * @param {string} options.uploadPath - Upload path for disk storage or bucket path for S3
+ * @param {string} options.storageType - Storage type ('disk', 's3', or 'cloudinary')
+ * @param {string} options.uploadPath - Upload path for disk storage or folder path for cloud
  * @param {string|function} options.fileFilter - Predefined filter name or custom filter function
  * @param {number} options.fileSize - Maximum file size in bytes
  * @param {Object} options.limits - Additional limits for multer
@@ -215,24 +237,150 @@ function createUploader(options = {}) {
     });
   }
 
-  // S3 Storage Configuration
+  // Cloudinary Storage Configuration with Memory Storage
+  else if (storageType === "cloudinary") {
+    const memoryStorage = multer.memoryStorage();
+
+    const multerInstance = multer({
+      storage: memoryStorage,
+      fileFilter: resolvedFilter,
+      limits: uploadLimits,
+    });
+
+    const uploadToCloudinary = async (req, res, next) => {
+      try {
+        // Handle single file upload
+        if (req.file) {
+          const file = req.file;
+          const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              {
+                folder: uploadPath,
+                public_id: fileNamePrefix
+                  ? `${fileNamePrefix}-${uuidv4()}`
+                  : uuidv4(),
+                resource_type: "auto",
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+
+            uploadStream.end(file.buffer);
+          });
+
+          file.url = result.secure_url;
+          file.public_id = result.public_id;
+          file.cloudinary = result;
+        }
+
+        // Handle multiple file uploads
+        if (req.files) {
+          // Handle array of files
+          if (Array.isArray(req.files)) {
+            const uploadPromises = req.files.map(async (file) => {
+              const result = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                  {
+                    folder: uploadPath,
+                    public_id: fileNamePrefix
+                      ? `${fileNamePrefix}-${uuidv4()}`
+                      : uuidv4(),
+                    resource_type: "auto",
+                  },
+                  (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                  }
+                );
+
+                uploadStream.end(file.buffer);
+              });
+
+              file.url = result.secure_url;
+              file.public_id = result.public_id;
+              file.cloudinary = result;
+              return file;
+            });
+
+            req.files = await Promise.all(uploadPromises);
+          }
+          // Handle fields of files
+          else {
+            for (const field in req.files) {
+              const files = req.files[field];
+              const uploadPromises = files.map(async (file) => {
+                const result = await new Promise((resolve, reject) => {
+                  const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                      folder: uploadPath,
+                      public_id: fileNamePrefix
+                        ? `${fileNamePrefix}-${uuidv4()}`
+                        : uuidv4(),
+                      resource_type: "auto",
+                    },
+                    (error, result) => {
+                      if (error) reject(error);
+                      else resolve(result);
+                    }
+                  );
+
+                  uploadStream.end(file.buffer);
+                });
+
+                file.url = result.secure_url;
+                file.public_id = result.public_id;
+                file.cloudinary = result;
+                return file;
+              });
+
+              req.files[field] = await Promise.all(uploadPromises);
+            }
+          }
+        }
+
+        next();
+      } catch (error) {
+        logger.error(
+          `Error during Cloudinary upload process: ${error.message}`,
+          error
+        );
+        next(error);
+      }
+    };
+
+    // Return wrapped methods
+    return {
+      single: (fieldName) => [
+        multerInstance.single(fieldName),
+        uploadToCloudinary,
+      ],
+      array: (fieldName, maxCount) => [
+        multerInstance.array(fieldName, maxCount),
+        uploadToCloudinary,
+      ],
+      fields: (fields) => [multerInstance.fields(fields), uploadToCloudinary],
+      any: () => [multerInstance.any(), uploadToCloudinary],
+      none: () => multerInstance.none(),
+    };
+  }
+
+  // S3 Storage Configuration (unchanged from original)
   else if (storageType === "s3") {
     const bucketPath = uploadPath.endsWith("/") ? uploadPath : `${uploadPath}/`;
     const tempDir = path.join(os.tmpdir(), "express-app-uploads");
     ensureDirectoryExists(tempDir);
 
-    // For AWS S3, we first need to save to disk since aws.service.js expects files on disk
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
         cb(null, tempDir);
       },
       filename: (req, file, cb) => {
-        // Generate a UUID for the file
-        const uuid = uuidv4(); // Use uuidv4() from the import
+        const uuid = uuidv4();
         const ext = path.extname(file.originalname);
-        // Save the UUID to use later for S3 upload
         file.uuid = uuid;
-        cb(null, `${uuid}${ext}`); // Filename in temp directory will be uuid.ext
+        cb(null, `${uuid}${ext}`);
       },
     });
 
@@ -242,33 +390,23 @@ function createUploader(options = {}) {
       limits: uploadLimits,
     });
 
-    // Create wrapper functions that combine multer with S3 upload
     const uploadToS3 = async (req, res, next) => {
       try {
-        // Handle single file uploads
         if (req.file) {
           const file = req.file;
           const ext = path.extname(file.originalname).substring(1);
+          const s3KeyUuid = file.uuid;
+          await awsService.uploadFile(file.path, ext, bucketPath, s3KeyUuid);
 
-          // IMPORTANT: Perform the actual S3 upload using file.path and file.uuid
-          // Assuming awsService.uploadFile expects (filePath, extension, bucketPath, uuid_for_s3_key)
-          // Adjust awsService.uploadFile signature if needed in aws.service.js
-          const s3KeyUuid = file.uuid; // Use the UUID generated during disk storage
-          // await awsService.uploadFile(file.path, ext, bucketPath, s3KeyUuid);
-
-          // Update req.file with S3 info
           file.url = `https://${process.env.AWS_BUCKET}.s3.amazonaws.com/${bucketPath}${s3KeyUuid}.${ext}`;
           file.key = `${bucketPath}${s3KeyUuid}.${ext}`;
-          // file.uuid is already set, no need to re-assign unless you want to confirm
         }
 
-        // Handle multiple file uploads
         if (req.files) {
-          // Handle array of files (e.g., upload.array('photos'))
           if (Array.isArray(req.files)) {
             const uploadPromises = req.files.map(async (file) => {
               const ext = path.extname(file.originalname).substring(1);
-              const s3KeyUuid = file.uuid; // Use the UUID generated during disk storage
+              const s3KeyUuid = file.uuid;
               await awsService.uploadFile(
                 file.path,
                 ext,
@@ -282,14 +420,12 @@ function createUploader(options = {}) {
             });
 
             req.files = await Promise.all(uploadPromises);
-          }
-          // Handle fields of files (e.g., upload.fields([{ name: 'avatar' }, { name: 'gallery' }]))
-          else {
+          } else {
             for (const field in req.files) {
               const files = req.files[field];
               const uploadPromises = files.map(async (file) => {
                 const ext = path.extname(file.originalname).substring(1);
-                const s3KeyUuid = file.uuid; // Use the UUID generated during disk storage
+                const s3KeyUuid = file.uuid;
                 await awsService.uploadFile(
                   file.path,
                   ext,
@@ -309,9 +445,8 @@ function createUploader(options = {}) {
 
         next();
       } catch (error) {
-        logger.error(`Error during S3 upload process: ${error.message}`, error); // Log the error
+        logger.error(`Error during S3 upload process: ${error.message}`, error);
 
-        // Clean up temporary files in case of error
         if (req.file && req.file.path) {
           fs.unlink(req.file.path, (err) => {
             if (err)
@@ -319,7 +454,6 @@ function createUploader(options = {}) {
           });
         }
         if (req.files) {
-          // Clean up array of files
           if (Array.isArray(req.files)) {
             req.files.forEach((file) => {
               if (file.path) {
@@ -331,9 +465,7 @@ function createUploader(options = {}) {
                 });
               }
             });
-          }
-          // Clean up fields of files
-          else {
+          } else {
             Object.values(req.files)
               .flat()
               .forEach((file) => {
@@ -348,11 +480,10 @@ function createUploader(options = {}) {
               });
           }
         }
-        next(error); // Pass the error to the next error handling middleware
+        next(error);
       }
     };
 
-    // Return wrapped methods
     return {
       single: (fieldName) => [multerInstance.single(fieldName), uploadToS3],
       array: (fieldName, maxCount) => [

@@ -17,6 +17,7 @@
     "base64-js": "^1.5.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.0",
+    "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
