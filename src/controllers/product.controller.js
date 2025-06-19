@@ -589,6 +589,7 @@ const productController = {
       const icon =
         req.file.url || getRelativePath(req.file.path, "subcategory-icons");
 
+      // return res.json(icon);
       const subCategory = await SubCategoryRepository.create({
         name,
         category_id: categoryId,

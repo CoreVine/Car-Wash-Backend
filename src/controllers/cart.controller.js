@@ -1,5 +1,7 @@
 const CartRepository = require("../data-access/carts");
 const CarRepository = require("../data-access/cars");
+const CompanyRepository = require("../data-access/companies");
+
 const OrderItemRepository = require("../data-access/order-items");
 const ProductRepository = require("../data-access/products");
 const CarWashOrderRepository = require("../data-access/car-wash-orders");
@@ -216,6 +218,20 @@ const cartController = {
           try {
             // Use transaction-based repository method
             // return res.success(cart);
+
+            const company = await CompanyRepository.findById(company_id);
+
+            if (!company) {
+              throw new NotFoundError("Company not found");
+            }
+            for (const typeId of wash_types) {
+              const washType = await WashTypeRepository.findById(typeId);
+
+              if (!washType) {
+                throw new NotFoundError("Wash type not found");
+              }
+            }
+
             await CarWashOrderRepository.addWashServiceToCart(
               cart.order_id,
               {
