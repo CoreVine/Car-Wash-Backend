@@ -78,6 +78,7 @@ const expressService = {
 
       // DEBUG!!
       server.use(express.raw({ type: "*/*" }));
+      server.use(express.urlencoded({ extended: true }));
 
       // MUST BE AT THE END TO HANDLE ERRORS!
       // Handle multer-specific errors first

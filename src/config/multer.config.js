@@ -256,14 +256,10 @@ function createUploader(options = {}) {
 
     const uploadToCloudinary = async (req, res, next) => {
       try {
-        console.log("Starting Cloudinary upload process...");
-
         // Handle single file upload
         if (req.file) {
           const file = req.file;
           const result = await new Promise((resolve, reject) => {
-            console.log("Uploading file to Cloudinary:", file.originalname);
-
             const uploadStream = cloudinary.uploader.upload_stream(
               {
                 folder: uploadPath,
@@ -284,10 +280,6 @@ function createUploader(options = {}) {
           file.url = result.secure_url;
           file.public_id = result.public_id;
           file.cloudinary = result;
-
-          console.log(
-            `File uploaded to Cloudinary: ${file.url} with public_id: ${file.public_id}`
-          );
         }
 
         // Handle multiple file uploads
@@ -298,8 +290,6 @@ function createUploader(options = {}) {
           if (Array.isArray(req.files)) {
             const uploadPromises = req.files.map(async (file) => {
               const result = await new Promise((resolve, reject) => {
-                console.log("Uploading file to Cloudinary:", file.originalname);
-
                 const uploadStream = cloudinary.uploader.upload_stream(
                   {
                     folder: uploadPath,
@@ -327,19 +317,10 @@ function createUploader(options = {}) {
           }
           // Handle fields of files
           else {
-            console.log("Handling fields of files...");
             for (const field in req.files) {
               const files = req.files[field];
               const uploadPromises = files.map(async (file) => {
-                console.log(
-                  `Uploading file for field ${field}:`,
-                  file.originalname
-                );
                 const result = await new Promise((resolve, reject) => {
-                  console.log(
-                    "Uploading file to Cloudinary:",
-                    file.originalname
-                  );
                   const uploadStream = cloudinary.uploader.upload_stream(
                     {
                       folder: uploadPath,

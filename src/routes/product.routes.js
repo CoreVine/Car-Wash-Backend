@@ -197,13 +197,13 @@ productRoutes.post(
   "/categories/:categoryId/subcategories",
   authMiddleware,
   isAdminMiddleware,
+  ...subCategoryIconUploader.single("icon"),
   requireFileUpload("icon"),
-  subCategoryIconUploader.single("icon"),
-  (req, res) => {
-    console.log(req.file);
+  // (req, res) => {
+  //   console.log(req.file);
 
-    return res.json(req.file);
-  },
+  //   return res.json(req.file);
+  // },
   validate({
     body: subCategorySchema,
     params: categoryIdParamSchema,
