@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+// cors will be imported through the corsService
 const {
   globalErrorHandler,
   notFoundHandler,
@@ -46,37 +47,37 @@ const expressService = {
         express.raw({ type: "application/json" })
       );
 
-      // IMPORTANT: Apply body parsers AFTER file upload routes
-      // But first parse cookies
+      // Apply middleware
+      server.use(bodyParser.json());
+
+      // Use cookie-parser middleware
       server.use(cookieParser());
 
       if (process.env.NODE_ENV === "production") {
         // Apply rate limiting middleware to all requests
         server.use(rateLimitService.standardLimiter());
       }
-
       // Apply morgan middleware for HTTP request logging
       server.use(morgan);
 
-      // Static file serving for uploads - should come before body parsers
+      // Apply routes
+      // Static file serving for uploads
       server.use(
         "/uploads",
         express.static(path.join(__dirname, "../../uploads"))
       );
-
-      // API routes under /api - will handle their own body parsing
+      // Serve payment views
+      server.use("/views", express.static(path.join(__dirname, "../views")));
+      // API routes under /api
       server.use("/api", apiRouter);
-
-      // Only now apply body parsers for other routes
-      server.use(bodyParser.json());
-      server.use(bodyParser.urlencoded({ extended: true }));
-
       // Payment view routes
       server.use("/", paymentViewsRouter);
-      server.use("/views", express.static(path.join(__dirname, "../views")));
 
       // Handle 404 routes
       server.use("*", notFoundHandler);
+
+      // DEBUG!!
+      server.use(express.raw({ type: "*/*" }));
 
       // MUST BE AT THE END TO HANDLE ERRORS!
       // Handle multer-specific errors first
@@ -85,6 +86,7 @@ const expressService = {
       // Apply global error handler
       server.use(globalErrorHandler);
 
+      // Listen on all network interfaces
       server.listen(process.env.SERVER_PORT, () => {
         logger.info(
           `[EXPRESS] Express initialized on port ${process.env.SERVER_PORT}`
