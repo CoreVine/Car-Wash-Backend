@@ -209,7 +209,7 @@ class CarWashOrderRepository extends BaseRepository {
       try {
         // Create wash order
         const washOrderDataWithOrder = {
-          order_id: 1,
+          order_id: cartId,
           ...washOrderData,
         };
 
@@ -239,7 +239,7 @@ class CarWashOrderRepository extends BaseRepository {
           type_id: type.type_id,
           paid_price: type.price,
         }));
-        console.log(washTypeAssociations);
+
         await WashOrderWashType.bulkCreate(washTypeAssociations, {
           transaction: t,
         });

@@ -197,7 +197,7 @@ productRoutes.post(
   "/categories/:categoryId/subcategories",
   authMiddleware,
   isAdminMiddleware,
-  ...subCategoryIconUploader.single("icon"),
+  subCategoryIconUploader.single("icon"),
   requireFileUpload("icon"),
   // (req, res) => {
   //   console.log(req.file);

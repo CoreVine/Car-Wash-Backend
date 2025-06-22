@@ -43,8 +43,7 @@ const washTypeController = {
         };
       } else {
         // Use standard paginated query
-
-        result = await WashTypeRepository.findAll(page, limit, {
+        result = await WashTypeRepository.findAllPaginated(page, limit, {
           order: [["price", "ASC"]],
         });
       }
