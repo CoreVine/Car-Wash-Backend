@@ -17,7 +17,7 @@ class ProductImage extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Products',
+            model: 'products',
             key: 'product_id'
           }
         }

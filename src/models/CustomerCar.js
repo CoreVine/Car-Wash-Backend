@@ -21,7 +21,7 @@ class CustomerCar extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Users',
+            model: 'users',
             key: 'user_id'
           }
         }

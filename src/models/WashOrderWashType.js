@@ -8,7 +8,7 @@ class WashOrderWashType extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           field: 'carwashorders_order_id',
           references: {
-            model: 'CarWashOrders',
+            model: 'carwashorders',
             key: 'wash_order_id'
           },
         },

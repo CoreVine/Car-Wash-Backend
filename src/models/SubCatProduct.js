@@ -13,7 +13,7 @@ class SubCatProduct extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Products',
+            model: 'products',
             key: 'product_id'
           }
         },
@@ -21,7 +21,7 @@ class SubCatProduct extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'SubCategory',
+            model: 'subcategory',
             key: 'sub_category_id'
           }
         }

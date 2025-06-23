@@ -13,7 +13,7 @@ class Order extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Cart',
+            model: 'cart',
             key: 'order_id'
           }
         },
@@ -21,7 +21,7 @@ class Order extends Model {
           type: DataTypes.TINYINT.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'PaymentMethod',
+            model: 'paymentmethod',
             key: 'payment_id'
           }
         },
@@ -37,7 +37,7 @@ class Order extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: true,
           references: {
-            model: 'Company',
+            model: 'company',
             key: 'company_id'
           }
         },
@@ -45,7 +45,7 @@ class Order extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: true,
           references: {
-            model: 'User',
+            model: 'user',
             key: 'user_id'
           }
         }

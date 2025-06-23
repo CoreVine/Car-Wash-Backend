@@ -17,7 +17,7 @@ class CompanyExhibition extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Company',
+            model: 'company',
             key: 'company_id'
           }
         }

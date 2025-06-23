@@ -8,7 +8,7 @@ class Rating extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
-            model: 'Company',
+            model: 'company',
             key: 'company_id'
           }
         },
@@ -16,7 +16,7 @@ class Rating extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
-            model: 'Users',
+            model: 'users',
             key: 'user_id'
           }
         },

@@ -13,7 +13,7 @@ class SubCategory extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Category',
+            model: 'category',
             key: 'category_id'
           }
         },

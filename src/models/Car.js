@@ -17,7 +17,7 @@ class Car extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Company',
+            model: 'company',
             key: 'company_id'
           }
         },
@@ -45,7 +45,7 @@ class Car extends Model {
           type: DataTypes.INTEGER,
           allowNull: false,
           references: {
-            model: 'CarBrand',
+            model: 'carbrand',
             key: 'brand_id'
           }
         },

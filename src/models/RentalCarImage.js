@@ -17,7 +17,7 @@ class RentalCarImage extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: 'Cars',
+            model: 'cars',
             key: 'car_id'
           }
         }
