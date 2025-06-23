@@ -186,10 +186,20 @@ cartRoutes.delete(
   isUserMiddleware,
   cartController.clearCart
 );
+
 cartRoutes.get(
-  "/create-checkout-session",
+  "/cart/create-checkout-session",
   authMiddleware,
   isUserMiddleware,
   cartController.createCheckoutSession
 );
+
+// Add new route for payment status polling
+cartRoutes.get(
+  "/cart/payment-status",
+  authMiddleware,
+  isUserMiddleware,
+  cartController.checkPaymentStatus
+);
+
 module.exports = cartRoutes;

@@ -1,172 +1,168 @@
-const stripe = require("../config/stripeConfig");
 const OrderRepository = require("../data-access/orders");
 const CartRepository = require("../data-access/carts");
 const OrderStatusHistoryRepository = require("../data-access/order-status-histories");
 const ProductRepository = require("../data-access/products");
 const PaymentMethodRepository = require("../data-access/payment-methods");
-const { BadRequestError } = require("../utils/errors/types/Api.error");
+const { BadRequestError, NotFoundError } = require("../utils/errors/types/Api.error");
+const { verifyPayment } = require("../services/myfatoorah.service");
 
 const webhookController = {
-  handleStripeWebhook: async (req, res, next) => {
+  handleMyFatoorahWebhook: async (req, res, next) => {
     try {
-      const sig = req.headers['stripe-signature'];
-      let event;
-
-      // Verify webhook signature
-      try {
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          sig,
-          process.env.STRIPE_WEBHOOK_SECRET
-        );
-      } catch (err) {
-        console.error('Webhook signature verification failed:', err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-      }
-
-      // Handle the event
-      switch (event.type) {
-        case 'checkout.session.completed':
-          await handleCheckoutSessionCompleted(event.data.object);
-          break;
+      console.log('=== MYFATOORAH WEBHOOK RECEIVED ===');
+      console.log('Body:', JSON.stringify(req.body, null, 2));
+      
+      const data = req.body;
+      const status = data.InvoiceStatus;
+      const paymentId = data.InvoiceId;
+      const customerReference = data.CustomerReference; // This is our cart order_id
+      
+      console.log(`Payment status: ${status}, Payment ID: ${paymentId}, Customer Reference: ${customerReference}`);
+      
+      if (status === 'Paid') {
+        if (!customerReference) {
+          console.log('Webhook received without a CustomerReference (cartId). Cannot process.');
+          return res.json({ received: true, message: 'CustomerReference is missing' });
+        }
         
-        case 'payment_intent.succeeded':
-          await handlePaymentIntentSucceeded(event.data.object);
-          break;
+        const paymentData = {
+          paymentId: paymentId,
+          status: status,
+          customerReference: customerReference,
+          rawResponse: data
+        };
+
+        await OrderRepository.createFromPaidCart(customerReference, paymentData);
         
-        case 'payment_intent.payment_failed':
-          await handlePaymentIntentFailed(event.data.object);
-          break;
+        return res.json({ received: true, message: 'Payment processed successfully' });
 
-        default:
-          console.log(`Unhandled event type ${event.type}`);
+      } else {
+        console.log(`Payment not completed. Status: ${status}`);
+        return res.json({ received: true, message: 'Payment not completed' });
       }
-
-      res.json({ received: true });
     } catch (error) {
-      console.error('Webhook error:', error);
+      console.error('Webhook processing error:', error);
+      return next(error);
+    }
+  },
+
+  // Verify payment status endpoint for MyFatoorah
+  verifyPaymentStatus: async (req, res, next) => {
+    try {
+      const { payment_id, order_id } = req.query;
+
+      if (!payment_id && !order_id) {
+        throw new BadRequestError('Either payment_id or order_id is required');
+      }
+
+      let paymentStatus = 'pending';
+      let orderExists = false;
+      let cartStatus = 'cart';
+
+      if (payment_id) {
+        // Verify with MyFatoorah API
+        const paymentData = await verifyPayment(payment_id);
+        
+        // Map MyFatoorah status to our status
+        switch (paymentData.status) {
+          case 'Paid':
+            paymentStatus = 'succeeded';
+            break;
+          case 'Failed':
+          case 'Cancelled':
+            paymentStatus = 'failed';
+            break;
+          case 'Pending':
+          default:
+            paymentStatus = 'pending';
+            break;
+        }
+
+        // Check if order exists for this payment
+        if (paymentData.customerReference) {
+          const order = await OrderRepository.findOne({
+            where: { cart_order_id: paymentData.customerReference }
+          });
+          orderExists = !!order;
+
+          // Get cart status
+          const cart = await CartRepository.findById(paymentData.customerReference);
+          if (cart) {
+            cartStatus = cart.status;
+          }
+        }
+
+        return res.json({
+          payment_id: payment_id,
+          payment_status: paymentStatus,
+          order_exists: orderExists,
+          cart_status: cartStatus,
+          amount: paymentData.amount,
+          customer_reference: paymentData.customerReference
+        });
+      }
+
+      if (order_id) {
+        // Check by order_id (cart order_id)
+        const cart = await CartRepository.findById(order_id);
+        if (cart) {
+          cartStatus = cart.status;
+        }
+
+        const order = await OrderRepository.findOne({
+          where: { cart_order_id: order_id }
+        });
+        orderExists = !!order;
+
+        if (order) {
+          paymentStatus = order.payment_status || 'pending';
+        }
+
+        return res.json({
+          order_id: order_id,
+          payment_status: paymentStatus,
+          order_exists: orderExists,
+          cart_status: cartStatus
+        });
+      }
+
+    } catch (error) {
+      console.error('Payment verification error:', error.message);
       next(error);
     }
   },
 
-  // Verify session endpoint
-  verifySession: async (req, res, next) => {
+  // Manual test endpoint to process a payment
+  manualProcessPayment: async (req, res, next) => {
     try {
-      const { session_id } = req.query;
-
-      if (!session_id) {
-        throw new BadRequestError('Session ID is required');
-      }
-
-      const session = await stripe.checkout.sessions.retrieve(session_id);
+      const { paymentId, cartOrderId } = req.body;
       
-      if (!session) {
-        throw new BadRequestError('Session not found');
+      if (!paymentId || !cartOrderId) {
+        throw new BadRequestError('Payment ID and Cart Order ID are required');
       }
 
-      // Map Stripe payment status to our status
-      let paymentStatus;
-      switch (session.payment_status) {
-        case 'paid':
-          paymentStatus = 'succeeded';
-          break;
-        case 'unpaid':
-          if (session.status === 'complete') {
-            paymentStatus = 'cancelled';
-          } else if (session.status === 'expired') {
-            paymentStatus = 'cancelled';
-          } else {
-            paymentStatus = 'pending';
-          }
-          break;
-        case 'no_payment_required':
-          paymentStatus = 'succeeded';
-          break;
-        default:
-          paymentStatus = 'pending';
-      }
+      console.log(`Manual processing for cart: ${cartOrderId}`);
 
-      // Return session status and details
-      res.json({
-        status: paymentStatus,
-        customer_email: session.customer_email,
-        amount_total: session.amount_total,
-        currency: session.currency,
-        payment_status: session.payment_status,
-        session_status: session.status
+      const paymentData = {
+        paymentId: paymentId,
+        status: 'Paid',
+        customerReference: cartOrderId,
+        rawResponse: { manual: true, paymentId: paymentId, note: 'Manually processed' }
+      };
+
+      const order = await OrderRepository.createFromPaidCart(cartOrderId, paymentData);
+      
+      return res.json({ 
+        message: 'Payment processed successfully', 
+        orderId: order.id,
+        cartId: cartOrderId
       });
+
     } catch (error) {
-      console.error('Session verification error:', error);
+      console.error('Manual payment processing error:', error);
       next(error);
     }
   }
 };
-
-async function handleCheckoutSessionCompleted(session) {
-  try {
-    // Find the cart using metadata
-    const cart = await CartRepository.findById(session.client_reference_id);
-    if (!cart) {
-      throw new BadRequestError("Cart not found");
-    }
-
-    // Create or get Stripe payment method record
-    let paymentMethod = await PaymentMethodRepository.findOne({
-      where: { name: 'Stripe' }
-    });
-
-    if (!paymentMethod) {
-      paymentMethod = await PaymentMethodRepository.create({
-        name: 'Stripe',
-        public_key: process.env.STRIPE_PUBLISHABLE_KEY,
-        secret_key: process.env.STRIPE_SECRET_KEY
-      });
-    }
-
-    // Create order
-    const order = await OrderRepository.create({
-      cart_order_id: cart.order_id,
-      payment_method_id: paymentMethod.payment_id,
-      payment_gateway_response: JSON.stringify(session),
-      shipping_address: session.customer_details.address || 'No address provided'
-    });
-
-    // Update cart status to 'pending'
-    await CartRepository.update(cart.order_id, {
-      status: 'pending'
-    });
-
-    // Add initial status history
-    await OrderStatusHistoryRepository.addOrderStatusHistory(
-      order.id,
-      'pending',
-      'Payment completed via Stripe'
-    );
-
-    // Update product inventory
-    for (const item of cart.orderItems) {
-      const product = await ProductRepository.findById(item.product_id);
-      if (product) {
-        await ProductRepository.update(product.product_id, {
-          stock: product.stock - item.quantity
-        });
-      }
-    }
-
-  } catch (error) {
-    console.error('Error processing checkout.session.completed:', error);
-    throw error;
-  }
-}
-
-async function handlePaymentIntentSucceeded(paymentIntent) {
-  // Additional payment success handling if needed
-  console.log('PaymentIntent succeeded:', paymentIntent.id);
-}
-
-async function handlePaymentIntentFailed(paymentIntent) {
-  // Handle failed payment if needed
-  console.log('PaymentIntent failed:', paymentIntent.id);
-}
 
 module.exports = webhookController; 

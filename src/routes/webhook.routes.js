@@ -1,20 +1,15 @@
-const { Router } = require("express");
 const express = require("express");
 const webhookController = require("../controllers/webhook.controller");
 
-const webhookRoutes = Router();
+const webhookRoutes = express.Router();
 
-// Stripe webhook endpoint - raw body needed for signature verification
-webhookRoutes.post(
-  "/stripe-webhook",
-  express.raw({ type: 'application/json' }),
-  webhookController.handleStripeWebhook
-);
+// MyFatoorah webhook endpoint - receives payment notifications
+webhookRoutes.post("/payments/webhook", webhookController.handleMyFatoorahWebhook);
 
-// Payment verification endpoint
-webhookRoutes.get(
-  "/verify-session",
-  webhookController.verifySession
-);
+// Payment verification endpoint - for checking payment status
+webhookRoutes.get("/payments/verify", webhookController.verifyPaymentStatus);
+
+// Manual payment processing endpoint - for testing
+webhookRoutes.post("/payments/manual-process", webhookController.manualProcessPayment);
 
 module.exports = webhookRoutes; 

@@ -1,7 +1,8 @@
 const CartRepository = require("../data-access/carts");
 const CarRepository = require("../data-access/cars");
 const CompanyRepository = require("../data-access/companies");
-
+const UserRepository = require("../data-access/users");
+const myFatoorahService = require("../services/myfatoorah.service");
 const OrderItemRepository = require("../data-access/order-items");
 const ProductRepository = require("../data-access/products");
 const CarWashOrderRepository = require("../data-access/car-wash-orders");
@@ -9,9 +10,10 @@ const RentalOrderRepository = require("../data-access/rental-orders");
 const WashTypeRepository = require("../data-access/wash-types");
 const WashOrderWashTypeRepository = require("../data-access/wash-order-wash-types");
 const CarOrderRepository = require("../data-access/car-orders");
-import PaymentMethodRepository from "../data-access/payment-methods";
+const OrderRepository = require("../data-access/orders");
+const OrderStatusHistoryRepository = require("../data-access/order-status-histories");
+const PaymentMethodRepository = require("../data-access/payment-methods");
 import { logger } from "sequelize/lib/utils/logger";
-import stripe from "../config/stripeConfig";
 const orderController = require("./order.controller");
 require("dotenv").config();
 
@@ -563,71 +565,157 @@ const cartController = {
 
   createCheckoutSession: async (req, res, next) => {
     try {
-      const cart = await CartRepository.findUserActiveCart(req.user.user_id);
+      const userId = req.user.user_id;
 
-      if (!cart) throw new NotFoundError("No active cart found");
+      // Get the user's active cart with all items
+      const cart = await CartRepository.findCartWithItems(
+        (await CartRepository.findUserActiveCart(userId))?.order_id
+      );
 
-      const fullCart = await CartRepository.findCartWithItems(cart.order_id);
-      if (!fullCart || fullCart.orderItems.length === 0) {
-        return res.status(400).json({ error: "No items in cart" });
+      if (!cart) {
+        throw new BadRequestError("No active cart found");
       }
 
-      // Map cart items to Stripe line_items
-      const line_items = fullCart.orderItems.map((item) => {
-        const unit_amount = Math.round(parseFloat(item.price) * 100); // USD
-        return {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: item.product.product_name,
-              description: item.product.description,
-              images:
-                item.product.images.length > 0
-                  ? item.product.images
-                  : ["https://example.com/placeholder-image.jpg"],
-            },
-            unit_amount,
-          },
-          quantity: item.quantity,
-        };
+      // Calculate total amount from all cart items
+      let totalAmount = 0;
+      
+      // Add product items
+      if (cart.orderItems && cart.orderItems.length > 0) {
+        for (const item of cart.orderItems) {
+          totalAmount += parseFloat(item.price) * item.quantity;
+        }
+      }
+
+      // Add car wash order amount
+      if (cart.carWashOrder && cart.carWashOrder.washOrderWashTypes) {
+        for (const washType of cart.carWashOrder.washOrderWashTypes) {
+          totalAmount += parseFloat(washType.price) * washType.quantity;
+        }
+      }
+
+      // Add rental order amount
+      if (cart.rentalOrder) {
+        totalAmount += parseFloat(cart.rentalOrder.total_price || 0);
+      }
+
+      // Add car order amount
+      if (cart.carOrder && cart.carOrder.car) {
+        totalAmount += parseFloat(cart.carOrder.car.price || 0);
+      }
+
+      if (totalAmount <= 0) {
+        throw new BadRequestError("Cart is empty or has invalid total");
+      }
+
+      // Get user details for payment
+      const user = await UserRepository.findById(userId);
+      if (!user) {
+        throw new BadRequestError("User not found");
+      }
+
+      console.log(`Creating MyFatoorah payment for user ${userId}, cart ${cart.order_id}, amount: ${totalAmount}`);
+
+      // Create payment with MyFatoorah
+      const paymentData = await myFatoorahService.initiatePayment({
+        amount: totalAmount,
+        customerName: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Customer',
+        customerEmail: user.email,
+        customerPhone: user.phone_number || '+96500000000', // Default phone if not provided
+        orderId: cart.order_id, // This will be sent as CustomerReference
       });
 
-      const YOUR_DOMAIN = "http://localhost:3000";
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items,
-        mode: "payment",
-        // success_url: YOUR_DOMAIN.concat('/payment-success?session_id={CHECKOUT_SESSION_ID}'),
-        // cancel_url: YOUR_DOMAIN.concat('/payment-cancel'),
-        success_url: `${YOUR_DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${YOUR_DOMAIN}/payment-cancel`,
-        customer_email: req.user.email,
-        client_reference_id: cart.order_id.toString(),
-        metadata: {
-          cart_id: cart.order_id.toString(),
-          user_id: req.user.user_id.toString(),
-          user_email: req.user.email,
-          total_items: fullCart.orderItems.length.toString(),
-        },
+      console.log('MyFatoorah payment created successfully:', {
+        paymentId: paymentData.paymentId,
+        orderId: cart.order_id
       });
 
-      if (!session || !session.id)
-        throw new BadRequestError("Failed to create checkout session");
-      req.body.payment_method_id = "stripe";
-      req.body.payment_gateway_response = JSON.stringify(session);
-      req.body.shipping_address = {
-        address: "123 Main St",
-        city: "Anytown",
-        state: "CA",
-        zip: "12345",
-        country: "US",
-      };
-      orderController.createOrder(req, res, next);
+      // Return payment URL and details
+      res.json({
+        paymentUrl: paymentData.paymentUrl,
+        paymentId: paymentData.paymentId,
+        amount: totalAmount,
+        orderId: cart.order_id
+      });
 
-      res.json({ id: session.id, url: session.url });
-    } catch (err) {
-      console.error(err);
-      next(err);
+    } catch (error) {
+      console.error("Create checkout session error:", error.message);
+      next(error);
+    }
+  },
+
+  // New method for Flutter app to poll payment status
+  checkPaymentStatus: async (req, res, next) => {
+    try {
+      const userId = req.user.user_id;
+      const { orderId, paymentId } = req.query;
+
+      if (!orderId) {
+        throw new BadRequestError("Order ID is required");
+      }
+
+      // Get the cart/order
+      const cart = await CartRepository.findById(orderId);
+      if (!cart) {
+        throw new NotFoundError("Order not found");
+      }
+
+      // Make sure the order belongs to the user
+      if (cart.user_id !== userId) {
+        throw new BadRequestError("You do not have permission to view this order");
+      }
+
+      // Check if an order record exists (created by webhook)
+      let order = await OrderRepository.findOne({
+        where: { cart_order_id: orderId }
+      });
+
+      let paymentStatus = 'pending';
+      let orderStatus = 'pending';
+      let paymentDetails = null;
+
+      if (order) {
+        // Order exists, payment was successful
+        paymentStatus = 'paid';
+        orderStatus = 'completed'; 
+        const statusHistory = await OrderStatusHistoryRepository.findLatestByOrderId(order.id);
+        if (statusHistory) {
+          orderStatus = statusHistory.status;
+        }
+      } else if (paymentId) {
+        // No order yet, check with MyFatoorah
+        try {
+          const paymentData = await myFatoorahService.verifyPayment(paymentId);
+          paymentDetails = paymentData;
+
+          if (paymentData.status === 'Paid') {
+            paymentStatus = 'paid';
+            // Since payment is confirmed paid and no order exists, create it now.
+            console.log(`Payment confirmed for cart ${orderId}, but no order found. Creating order now.`);
+            order = await OrderRepository.createFromPaidCart(orderId, paymentData);
+            orderStatus = 'pending'; // The initial status upon creation
+          } else {
+            paymentStatus = 'pending';
+          }
+        } catch (error) {
+          console.error('Error verifying payment with MyFatoorah:', error.message);
+          paymentStatus = 'pending';
+        }
+      }
+
+      // Return status information for Flutter app
+      return res.success("Payment status retrieved successfully", {
+        orderId: orderId,
+        paymentId: paymentId,
+        cartStatus: cart.status,
+        paymentStatus: paymentStatus,
+        orderStatus: orderStatus,
+        orderExists: !!order,
+        paymentDetails: paymentDetails,
+        amount: cart.totalPice || 0
+      });
+
+    } catch (error) {
+      next(error);
     }
   },
 };

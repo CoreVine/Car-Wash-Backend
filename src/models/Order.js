@@ -32,6 +32,22 @@ class Order extends Model {
         shipping_address: {
           type: DataTypes.TEXT,
           allowNull: false
+        },
+        company_id: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+          references: {
+            model: 'Company',
+            key: 'company_id'
+          }
+        },
+        user_id: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+          references: {
+            model: 'User',
+            key: 'user_id'
+          }
         }
       },
       {
@@ -54,6 +70,14 @@ class Order extends Model {
     this.belongsTo(models.PaymentMethod, {
       foreignKey: 'payment_method_id',
       as: 'paymentMethod'
+    });
+    this.belongsTo(models.Company, {
+      foreignKey: 'company_id',
+      as: 'company'
+    });
+    this.belongsTo(models.User, {
+      foreignKey: 'user_id',
+      as: 'user'
     });
     this.hasMany(models.OrderStatusHistory, {
       foreignKey: 'order_id',

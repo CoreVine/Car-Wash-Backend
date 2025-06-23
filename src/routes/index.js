@@ -2,6 +2,7 @@ const { Router } = require('express');
 const fs = require('fs');
 const path = require('path');
 const webhookRoutes = require('./webhook.routes');
+const webhookController = require("../controllers/webhook.controller");
 
 const router = Router();
 
