@@ -13,7 +13,7 @@ class OrderItem extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Cart",
+            model: "cart",
             key: "order_id",
           },
         },
@@ -21,7 +21,7 @@ class OrderItem extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Products",
+            model: "products",
             key: "product_id",
           },
         },

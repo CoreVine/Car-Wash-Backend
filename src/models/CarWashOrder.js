@@ -13,7 +13,7 @@ class CarWashOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Cart",
+            model: "cart",
             key: "order_id",
           },
         },
@@ -30,7 +30,7 @@ class CarWashOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Users",
+            model: "users",
             key: "user_id",
           },
         },
@@ -38,7 +38,7 @@ class CarWashOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Company",
+            model: "company",
             key: "company_id",
           },
         },

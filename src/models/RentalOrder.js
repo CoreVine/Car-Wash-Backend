@@ -13,7 +13,7 @@ class RentalOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Cart",
+            model: "cart",
             key: "order_id",
           },
         },
@@ -21,7 +21,7 @@ class RentalOrder extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Cars",
+            model: "cars",
             key: "car_id",
           },
         },

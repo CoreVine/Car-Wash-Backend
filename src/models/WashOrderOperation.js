@@ -8,7 +8,7 @@ class WashOrderOperation extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
           references: {
-            model: "CarWashOrders",
+            model: "carwashorders",
             key: "wash_order_id",
           },
         },
@@ -16,7 +16,7 @@ class WashOrderOperation extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Employee",
+            model: "employee",
             key: "user_id",
           },
         },
@@ -33,7 +33,7 @@ class WashOrderOperation extends Model {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
           references: {
-            model: "Employee",
+            model: "employee",
             key: "company_id",
           },
         },
