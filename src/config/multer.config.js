@@ -185,6 +185,7 @@ const deleteUploadedFile = async (filePath) => {
     }
   } catch (error) {
     console.error(`Error deleting file: ${error.message}`);
+    throw new Error(`Failed to delete file: ${error.message}`);
   }
 };
 

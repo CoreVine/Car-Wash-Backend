@@ -66,21 +66,21 @@ const categoryIdParamSchema = Yup.object().shape({
 
 // Configure uploaders
 const productImageUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || "disk",
+  storageType: process.env.STORAGE_TYPE || "cloudinary",
   uploadPath: "uploads/product-images",
   fileFilter: "images",
   fileSize: 5 * 1024 * 1024, // 5MB limit
 });
 
 const categoryIconUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || "disk",
+  storageType: process.env.STORAGE_TYPE || "cloudinary",
   uploadPath: "uploads/category-icons",
   fileFilter: "images",
   fileSize: 2 * 1024 * 1024, // 2MB limit
 });
 
 const subCategoryIconUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || "disk",
+  storageType: process.env.STORAGE_TYPE || "cloudinary",
   uploadPath: "uploads/subcategory-icons",
   fileFilter: "images",
   fileSize: 2 * 1024 * 1024, // 2MB limit
@@ -92,7 +92,7 @@ const productRoutes = Router();
 productRoutes.post(
   "/products",
   authMiddleware,
-  isCompanyMiddleware,
+  isAdminMiddleware,
   ...(Array.isArray(productImageUploader.array("images", 5))
     ? productImageUploader.array("images", 5)
     : [productImageUploader.array("images", 5)]),
@@ -125,6 +125,7 @@ productRoutes.put(
 productRoutes.delete(
   "/products/:productId",
   authMiddleware,
+  isAdminMiddleware,
   validate(productIdParamSchema, "params"),
   productController.deleteProduct
 );
@@ -133,9 +134,11 @@ productRoutes.delete(
 productRoutes.post(
   "/products/:productId/images",
   authMiddleware,
+  isAdminMiddleware,
   ...(Array.isArray(productImageUploader.single("image"))
-    ? productImageUploader.single("image")
-    : [productImageUploader.single("image")]),
+  ? productImageUploader.single("image")
+  : [productImageUploader.single("image")]),
+  requireFileUpload("image"),
   validate(productIdParamSchema, "params"),
   productController.addProductImage
 );
@@ -160,7 +163,8 @@ productRoutes.post(
   "/categories",
   authMiddleware,
   isAdminMiddleware,
-  categoryIconUploader.single("icon"),
+  ...categoryIconUploader.single("icon"),
+  requireFileUpload("icon"),
   validate(categorySchema),
   // requireFileUpload("Category icon"),
   productController.addCategory

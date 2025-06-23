@@ -61,7 +61,8 @@ async function uploadFile(
 async function deleteFile(publicId, resourceType = "image") {
   try {
     logger.info(`Deleting file from Cloudinary: ${publicId} (${resourceType})`);
-    const result = await cloudinary.uploader.destroy(publicId, {
+    const urlWithoutVersion = extractPublicId(publicId);
+    const result = await cloudinary.uploader.destroy(urlWithoutVersion, {
       resource_type: resourceType,
     });
     logger.info(
@@ -71,6 +72,7 @@ async function deleteFile(publicId, resourceType = "image") {
     );
     return result;
   } catch (error) {
+    console.log(`Error deleting file from Cloudinary: ${error}`);
     logger.error(
       `Error deleting file from Cloudinary: ${error.message}`,
       error
@@ -81,6 +83,18 @@ async function deleteFile(publicId, resourceType = "image") {
 
 function getFileUrl(publicId, options = {}, resourceType = "image") {
   return cloudinary.url(publicId, { ...options, resource_type: resourceType });
+}
+function extractPublicId(url) {
+  try {
+    const parts = url.split("/upload/");
+    const pathWithVersion = parts[1]; // v123456789/folder/image-id.jpg
+    const pathWithoutVersion = pathWithVersion.split("/").slice(1).join("/"); // remove version
+    const withoutExtension = pathWithoutVersion.replace(/\.[^/.]+$/, ""); // remove .jpg, .png etc.
+    return withoutExtension;
+  } catch (err) {
+    console.error("Invalid Cloudinary URL:", url);
+    return null;
+  }
 }
 
 module.exports = {

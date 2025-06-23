@@ -9,14 +9,14 @@ class Product extends Model {
           primaryKey: true,
           autoIncrement: true,
         },
-        company_id: {
-          type: DataTypes.INTEGER.UNSIGNED,
-          allowNull: false,
-          references: {
-            model: "Company",
-            key: "company_id",
-          },
-        },
+        // company_id: {
+        //   type: DataTypes.INTEGER.UNSIGNED,
+        //   allowNull: false,
+        //   references: {
+        //     model: "Company",
+        //     key: "company_id",
+        //   },
+        // },
         product_name: {
           type: DataTypes.STRING(255),
           allowNull: false,
@@ -58,10 +58,10 @@ class Product extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Company, {
-      foreignKey: "company_id",
-      as: "company",
-    });
+    // this.belongsTo(models.Company, {
+    //   foreignKey: "company_id",
+    //   as: "company",
+    // });
     this.hasMany(models.OrderItem, {
       foreignKey: "product_id",
       as: "orderItems",

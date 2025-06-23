@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, or } = require("sequelize");
 // Import repositories
 import OrderRepository from "../data-access/orders";
 import OrderItemRepository from "../data-access/order-items";
@@ -6,6 +6,7 @@ import OrderStatusHistoryRepository from "../data-access/order-status-histories"
 import CarWashOrderRepository from "../data-access/car-wash-orders";
 import RentalOrderRepository from "../data-access/rental-orders";
 import EmployeeRepository from "../data-access/employees";
+import OrderitemsRepository from "../data-access/order-items";
 import ProductRepository from "../data-access/products";
 import CustomerCarRepository from "../data-access/customer-cars";
 import CompanyRepository from "../data-access/companies";
@@ -177,17 +178,34 @@ const orderController = {
           limit
         );
 
+        // Iterate through each order to calculate its individual total price
+        rows.forEach((order) => {
+          let orderIndividualTotalPrice = 0; // Initialize total for *this specific* order
+          order.orderItems.forEach((item) => {
+            orderIndividualTotalPrice += item.quantity * parseFloat(item.price);
+          });
+          // Attach the calculated individual total to the current order object
+          order = {
+            totalPrice: parseFloat(orderIndividualTotalPrice.toFixed(2)),
+            ...order,
+          };
+        });
+        console.log("Rows with totalPrice:", rows);
+
+        // Assuming createPagination is defined elsewhere and returns pagination metadata
         const pagination = createPagination(page, limit, count);
 
+        // Return the modified rows (each with its totalPrice) and pagination info
         return res.success("Orders retrieved successfully", rows, pagination);
       } catch (error) {
         console.error("Error fetching orders:", error);
+        // It's better to throw a more specific error or handle it here
         throw new BadRequestError(
           "Failed to fetch orders. Error: " + error.message
         );
       }
     } catch (error) {
-      next(error);
+      next(error); // Pass the error to the next middleware (error handler)
     }
   },
   // Get all orders for user

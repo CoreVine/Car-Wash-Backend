@@ -7,101 +7,101 @@ class Company extends Model {
         company_id: {
           type: DataTypes.INTEGER.UNSIGNED,
           primaryKey: true,
-          autoIncrement: true
+          autoIncrement: true,
         },
         company_name: {
           type: DataTypes.STRING(255),
           allowNull: false,
-          unique: true
+          unique: true,
         },
         email: {
           type: DataTypes.STRING(255),
           allowNull: false,
-          unique: true
+          unique: true,
         },
         phone_number: {
           type: DataTypes.STRING(255),
-          allowNull: false
+          allowNull: false,
         },
         location: {
           type: DataTypes.TEXT,
-          allowNull: false
+          allowNull: false,
         },
         logo_url: {
           type: DataTypes.STRING(255),
-          allowNull: false
+          allowNull: false,
         },
         password_hash: {
           type: DataTypes.STRING(255),
-          allowNull: false
+          allowNull: false,
         },
         approved: {
           type: DataTypes.BOOLEAN,
-          allowNull: false
+          allowNull: false,
         },
         about: {
           type: DataTypes.TEXT,
-          allowNull: false
+          allowNull: false,
         },
         total_rating: {
           type: DataTypes.TINYINT,
           allowNull: false,
-          defaultValue: 0
+          defaultValue: 0,
         },
         created_at: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: DataTypes.NOW
+          defaultValue: DataTypes.NOW,
         },
         updated_at: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: DataTypes.NOW
-        }
+          defaultValue: DataTypes.NOW,
+        },
       },
       {
         sequelize,
-        modelName: 'Company',
-        tableName: 'company',
+        modelName: "Company",
+        tableName: "company",
         timestamps: true,
-        createdAt: 'created_at',
-        updatedAt: 'updated_at'
+        createdAt: "created_at",
+        updatedAt: "updated_at",
       }
     );
-    
+
     return this;
   }
 
   static associate(models) {
     this.hasMany(models.CompanyDocument, {
-      foreignKey: 'company_id',
-      as: 'documents'
+      foreignKey: "company_id",
+      as: "documents",
     });
-    this.hasMany(models.Product, {
-      foreignKey: 'company_id',
-      as: 'products'
-    });
+    // this.hasMany(models.Product, {
+    //   foreignKey: 'company_id',
+    //   as: 'products'
+    // });
     this.hasMany(models.Order, {
-      foreignKey: 'company_id',
-      as: 'orders'
+      foreignKey: "company_id",
+      as: "orders",
     });
     this.hasMany(models.Car, {
-      foreignKey: 'company_id',
-      as: 'cars'
+      foreignKey: "company_id",
+      as: "cars",
     });
     this.hasMany(models.CompanyExhibition, {
-      foreignKey: 'company_id',
-      as: 'exhibitions'
+      foreignKey: "company_id",
+      as: "exhibitions",
     });
     this.hasMany(models.Rating, {
-      foreignKey: 'company_id',
-      as: 'ratings'
+      foreignKey: "company_id",
+      as: "ratings",
     });
     this.belongsToMany(models.User, {
       through: models.Employee,
-      foreignKey: 'company_id',
-      otherKey: 'user_id',
-      as: 'employees'
+      foreignKey: "company_id",
+      otherKey: "user_id",
+      as: "employees",
     });
   }
 }
