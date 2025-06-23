@@ -1,11 +1,11 @@
-const ProductModel = require('../../models/Product');
-const BaseRepository = require('../base.repository');
+const ProductModel = require("../../models/Product");
+const BaseRepository = require("../base.repository");
 const { DatabaseError, Op } = require("sequelize");
 
 class ProductRepository extends BaseRepository {
-    constructor() {
-        super(ProductModel);
-    }
+  constructor() {
+    super(ProductModel);
+  }
 
     async findWithSubcategories(productId) {
         try {
@@ -121,7 +121,40 @@ class ProductRepository extends BaseRepository {
         } catch (error) {
             throw new DatabaseError(error);
         }
+      }
+
+  async findDetailedProduct(productId) {
+    try {
+      return await this.model.findByPk(productId, {
+        include: [
+          // {
+          //     model: this.model.sequelize.model('Company'),
+          //     as: 'company',
+          //     attributes: ['company_name', 'logo_url']
+          // },
+          {
+            model: this.model.sequelize.model("ProductImage"),
+            as: "images",
+            attributes: ["image_url", "image_id", "product_id"],
+          },
+          {
+            model: this.model.sequelize.model("SubCategory"),
+            as: "subCategories",
+            attributes: ["name"],
+            include: [
+              {
+                model: this.model.sequelize.model("Category"),
+                as: "category",
+                attributes: ["category_name"],
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      throw new DatabaseError(error);
     }
+  }
 }
 
 module.exports = new ProductRepository();

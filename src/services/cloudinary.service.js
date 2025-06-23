@@ -72,6 +72,7 @@ async function deleteFile(publicId, resourceType = "image") {
     );
     return result;
   } catch (error) {
+    console.log(`Error deleting file from Cloudinary: ${error}`);
     logger.error(
       `Error deleting file from Cloudinary: ${error.message}`,
       error

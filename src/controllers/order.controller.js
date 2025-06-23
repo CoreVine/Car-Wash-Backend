@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, or } = require("sequelize");
 // Import repositories
 const OrderRepository = require("../data-access/orders");
 const OrderItemRepository = require("../data-access/order-items");
@@ -11,7 +11,6 @@ const WashTypeRepository = require("../data-access/wash-types");
 const WashOrderWashTypeRepository = require("../data-access/wash-order-wash-types");
 const WashOrderOperationRepository = require("../data-access/wash-order-operations");
 const PaymentMethodRepository = require("../data-access/payment-methods");
-
 const { createPagination } = require("../utils/responseHandler");
 const {
   BadRequestError,
@@ -188,15 +187,17 @@ const orderController = {
 
         const pagination = createPagination(page, limit, count);
 
+        // Return the modified rows (each with its totalPrice) and pagination info
         return res.success("Orders retrieved successfully", rows, pagination);
       } catch (error) {
         console.error("Error fetching orders:", error);
+        // It's better to throw a more specific error or handle it here
         throw new BadRequestError(
           "Failed to fetch orders. Error: " + error.message
         );
       }
     } catch (error) {
-      next(error);
+      next(error); // Pass the error to the next middleware (error handler)
     }
   },
   // Get all orders for user
