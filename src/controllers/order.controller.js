@@ -17,13 +17,11 @@ const {
   BadRequestError,
   NotFoundError,
   ForbiddenError,
-  UnauthorizedError,
 } = require("../utils/errors/types/Api.error");
 
 const CartRepository = require("../data-access/carts");
 const CartModel = require("../models/Cart");
 
-const base64 = require("base64-js");
 const axios = require("axios");
 
 const orderController = {
