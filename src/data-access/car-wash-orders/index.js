@@ -216,6 +216,8 @@ class CarWashOrderRepository extends BaseRepository {
         const washOrder = await this.create(washOrderDataWithOrder, {
           transaction: t,
         });
+        console.log("washOrder :", washOrder);
+        console.log("washTypeIds :", washTypeIds);
 
         // Get wash types with prices
         const WashType = this.model.sequelize.model("WashType");
@@ -247,8 +249,11 @@ class CarWashOrderRepository extends BaseRepository {
         // Commit transaction
         await t.commit();
 
+        const res = await this.findWithWashTypes(washOrder.wash_order_id);
+        console.log("res :", res);
+
         // Return wash order with types
-        return await this.findWithWashTypes(washOrder.wash_order_id);
+        return res;
       } catch (error) {
         console.log(error.message);
 

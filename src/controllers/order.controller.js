@@ -6,10 +6,6 @@ import OrderStatusHistoryRepository from "../data-access/order-status-histories"
 import CarWashOrderRepository from "../data-access/car-wash-orders";
 import RentalOrderRepository from "../data-access/rental-orders";
 import EmployeeRepository from "../data-access/employees";
-import OrderitemsRepository from "../data-access/order-items";
-import ProductRepository from "../data-access/products";
-import CustomerCarRepository from "../data-access/customer-cars";
-import CompanyRepository from "../data-access/companies";
 import CarRepository from "../data-access/cars";
 import WashTypeRepository from "../data-access/wash-types";
 import WashOrderWashTypeRepository from "../data-access/wash-order-wash-types";
@@ -21,13 +17,11 @@ const {
   BadRequestError,
   NotFoundError,
   ForbiddenError,
-  UnauthorizedError,
 } = require("../utils/errors/types/Api.error");
 
 const CartRepository = require("../data-access/carts");
 const CartModel = require("../models/Cart");
 
-const base64 = require("base64-js");
 const axios = require("axios");
 
 const orderController = {
