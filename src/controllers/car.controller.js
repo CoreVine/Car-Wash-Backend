@@ -1,8 +1,8 @@
 // Import repositories
-import CarRepository from "../data-access/cars";
-import RentalCarImageRepository from "../data-access/rental-car-images";
-import CompanyExhibitionRepository from "../data-access/company-exhibitions";
-import CarBrandRepository from "../data-access/car-brands";
+const CarRepository = require("../data-access/cars");
+const RentalCarImageRepository = require("../data-access/rental-car-images");
+const CompanyExhibitionRepository = require("../data-access/company-exhibitions");
+const CarBrandRepository = require("../data-access/car-brands");
 // Remove AWS service import
 const { createPagination } = require("../utils/responseHandler");
 const { getRelativePath } = require("../utils/fileUtils");

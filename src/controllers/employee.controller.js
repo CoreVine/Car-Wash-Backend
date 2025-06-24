@@ -1,8 +1,8 @@
 const bcrypt = require("bcryptjs");
 // Import repositories
-import UserRepository from "../data-access/users";
-import EmployeeRepository from "../data-access/employees";
-import CompanyRepository from "../data-access/companies";
+const UserRepository = require("../data-access/users");
+const EmployeeRepository = require("../data-access/employees");
+const CompanyRepository = require("../data-access/companies");
 const { createPagination } = require("../utils/responseHandler");
 const {
   BadRequestError,

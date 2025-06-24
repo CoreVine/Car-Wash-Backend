@@ -1,15 +1,15 @@
-import {
+const {
   DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
-} from "@aws-sdk/client-s3";
-import fs from "fs";
-
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
+} = require("@aws-sdk/client-s3");
+const fs = require("fs");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
 let s3;
-const root = path.dirname(require.main.filename);
+// Fix: Add fallback for when require.main is undefined
+const root = require.main ? path.dirname(require.main.filename) : process.cwd();
 
 const awsService = {
   init: async () => {
@@ -131,4 +131,5 @@ const awsService = {
   },
 };
 
-export default awsService;
+module.exports = awsService;
+

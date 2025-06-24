@@ -1,5 +1,5 @@
-import UserRepository from "../data-access/users";
-const { createPagination } = require("../utils/responseHandler.js");
+const UserRepository = require("../data-access/users");
+const { createPagination } = require("../utils/responseHandler");
 const fs = require("fs");
 const { deleteUploadedFile } = require("../config/multer.config");
 const { getRelativePath } = require("../utils/fileUtils");

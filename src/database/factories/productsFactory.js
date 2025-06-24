@@ -1,17 +1,10 @@
 const { faker } = require('@faker-js/faker');
 const Products = require('../../models/Product');
-const companyFactory = require('./companyFactory');
 
 const productsFactory = {
   async create(count = 1, attrs = {}) {
     const products = [];
-    
-    // Create company if company_id not provided
-    if (!attrs.company_id) {
-      const companies = await companyFactory.create(1);
-      attrs.company_id = companies[0].company_id;
-    }
-    
+        
     for (let i = 0; i < count; i++) {
       const productData = this.makeOne(attrs);
       products.push(await Products.create(productData));

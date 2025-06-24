@@ -1,10 +1,4 @@
-const Yup = require("yup");
-// Import repositories
-import CustomerCarRepository from "../data-access/customer-cars";
-import CarWashOrderRepository from "../data-access/car-wash-orders";
-import OrderRepository from "../data-access/orders";
-import OrderStatusHistoryRepository from "../data-access/order-status-histories";
-
+const CustomerCarRepository = require("../data-access/customer-cars");
 const { createPagination } = require("../utils/responseHandler");
 const {
   BadRequestError,

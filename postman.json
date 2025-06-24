@@ -1,10 +1,11 @@
 {
 	"info": {
-		"_postman_id": "c4206c08-1654-433d-92ff-199638ac8451",
+		"_postman_id": "3904afee-c67e-458a-a79a-cd5cde89f638",
 		"name": "Car Wash Backend API 2",
 		"description": "Postman collection for Car Wash Backend API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "15043408"
+		"_exporter_id": "15043408",
+		"_collection_link": "https://solar-water-247594.postman.co/workspace/%D8%A7%D9%84%D8%B9%D8%AA%D8%A7%D9%88%D9%84%D8%A9-Workspace~63b8eee3-6d46-442f-857b-7fe526f2ed89/collection/15043408-3904afee-c67e-458a-a79a-cd5cde89f638?action=share&source=collection_link&creator=15043408"
 	},
 	"item": [
 		{
@@ -38,7 +39,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe123\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"accountType\": \"user\",\n  \"phone_number\": \"123-456-7890\",\n  \"address\": \"123 Main St, Anytown\"\n}\n",
+							"raw": "{\n  \"name\": \"kivaw13766@acedby\",\n  \"username\": \"kivaw13766\",\n  \"email\": \"kivaw13766@acedby.com\",\n  \"password\": \"securePassword123\",\n  \"accountType\": \"user\",\n  \"phone_number\": \"123-456-7890\",\n  \"address\": \"123 Main St, Anytown\"\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -86,7 +87,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"company_name\": \"Acme Car Service\",\n  \"email\": \"acme@example.com\",\n  \"password\": \"securePassword123\",\n  \"accountType\": \"company\",\n  \"phone_number\": \"123-456-7890\",\n  \"location\": \"123 Business Ave, Anytown\",\n  \"logo_url\": \"https://example.com/logo.png\"\n}\n",
+							"raw": "{\n  \"company_name\": \"Acme Car Service\",\n  \"email\": \"acme@example.com\",\n  \"password\": \"securePassword123\",\n  \"accountType\": \"company\",\n  \"phone_number\": \"123-456-7890\",\n  \"location\": \"123 Business Ave, Anytown\",\n  \"logo_url\": \"https://example.com/logo.png\",\n  \"about\":\"sdf\"\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -134,7 +135,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"accountType\": \"user\"\n}",
+							"raw": "{\n  \"email\": \"Lorena.Greenholt@hotmail.com\",\n  \"password\": \"password123\",\n  \"accountType\": \"user\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -182,7 +183,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"acme@example.com\",\n  \"password\": \"securePassword123\",\n  \"accountType\": \"company\"\n}",
+							"raw": "{\n  \"email\": \"Kathryne.Corkery1@gmail.com\",\n  \"password\": \"password123\",\n  \"accountType\": \"company\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -336,8 +337,8 @@
 							{
 								"key": "Authorization",
 								"value": "Bearer {{access_token}}",
-								"type": "text",
-								"description": "Requires an existing admin token"
+								"description": "Requires an existing admin token",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -441,8 +442,8 @@
 							{
 								"key": "Authorization",
 								"value": "Bearer {{company_token}}",
-								"type": "text",
-								"description": "Requires an existing company admin token"
+								"description": "Requires an existing company admin token",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -536,7 +537,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"model\": \"Tesla Model S\",\n  \"year\": 2021,\n  \"price_per_day\": 100,\n  \"exhibition_id\": 1\n}",
+							"raw": "{\n  \"model\": \"Tesla Model S\",\n  \"year\": 2021,\n  \"price_per_day\": 100,\n  \"exhibition_id\": 13,\n  \"price\":400,\n  \"sale_or_rental\":\"sale\",\n  \"carbrand_id\":27\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -557,11 +558,14 @@
 				},
 				{
 					"name": "Get Cars",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/cars?page=2&limit=5&company_id=123&exhibition_id=456&min_price=10000&max_price=50000&min_year=2015&max_year=2023&search=Toyota&available_from=2024-01-01&available_to=2024-12-31\n",
+							"raw": "{{base_url}}/cars",
 							"host": [
 								"{{base_url}}"
 							],
@@ -570,48 +574,24 @@
 							],
 							"query": [
 								{
-									"key": "page",
-									"value": "2"
-								},
-								{
-									"key": "limit",
-									"value": "5"
-								},
-								{
-									"key": "company_id",
-									"value": "123"
-								},
-								{
-									"key": "exhibition_id",
-									"value": "456"
-								},
-								{
-									"key": "min_price",
-									"value": "10000"
-								},
-								{
-									"key": "max_price",
-									"value": "50000"
-								},
-								{
-									"key": "min_year",
-									"value": "2015"
-								},
-								{
-									"key": "max_year",
-									"value": "2023"
-								},
-								{
 									"key": "search",
-									"value": "Toyota"
+									"value": "Toyota",
+									"disabled": true
 								},
 								{
 									"key": "available_from",
-									"value": "2024-01-01"
+									"value": "2024-01-01",
+									"disabled": true
 								},
 								{
 									"key": "available_to",
-									"value": "2024-12-31\n"
+									"value": "2024-12-31\n",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "sale",
+									"disabled": true
 								}
 							]
 						}
@@ -819,7 +799,8 @@
 							{
 								"key": "Authorization",
 								"value": "Bearer <your_jwt_token>",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -849,7 +830,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/exhibitions?page=1&limit=10",
+							"raw": "{{base_url}}/exhibitions?page=2&limit=10",
 							"host": [
 								"{{base_url}}"
 							],
@@ -859,7 +840,7 @@
 							"query": [
 								{
 									"key": "page",
-									"value": "1"
+									"value": "2"
 								},
 								{
 									"key": "limit",
@@ -1182,7 +1163,8 @@
 							{
 								"key": "Authorization",
 								"value": "Bearer {{company_token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -1217,7 +1199,7 @@
 								"type": "text"
 							}
 						],
-							"body": {
+						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"location\": \"123 Exhibition Street, Downtown\"\n}",
 							"options": {
@@ -1433,13 +1415,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/companies/:companyId/employees?page=1&limit=10&role=all",
+							"raw": "{{base_url}}/companies/28/employees?page=1&limit=10&role=all",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"companies",
-								":companyId",
+								"28",
 								"employees"
 							],
 							"query": [
@@ -1454,12 +1436,6 @@
 								{
 									"key": "role",
 									"value": "all"
-								}
-							],
-							"variable": [
-								{
-									"key": "companyId",
-									"value": ""
 								}
 							]
 						}
@@ -1487,25 +1463,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/companies/:companyId/employees/:employeeId",
+							"raw": "{{base_url}}/companies/28/employees/22",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"companies",
-								":companyId",
+								"28",
 								"employees",
-								":employeeId"
-							],
-							"variable": [
-								{
-									"key": "companyId",
-									"value": ""
-								},
-								{
-									"key": "employeeId",
-									"value": ""
-								}
+								"22"
 							]
 						}
 					},
@@ -1519,12 +1485,13 @@
 							{
 								"key": "Authorization",
 								"value": "Bearer <your_jwt_token>",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"johndoe@example.com\",\n  \"password\": \"password123\",\n  \"phone_number\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"role\": \"employee\"\n}",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"johndoe@example.com\",\n  \"password\": \"FF656Gpassword123-\",\n  \"phone_number\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"role\": \"employee\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1532,20 +1499,49 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/companies/:companyId/employees",
+							"raw": "{{base_url}}/companies/28/employees",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"companies",
-								":companyId",
+								"28",
 								"employees"
-							],
-							"variable": [
-								{
-									"key": "companyId",
-									"value": ""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Employee Copy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <your_jwt_token>",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"johndoe@example.com\",\n  \"password\": \"FF656Gpassword123-\",\n  \"phone_number\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"role\": \"employee\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/companies/28/employees",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"companies",
+								"28",
+								"employees"
 							]
 						}
 					},
@@ -1572,20 +1568,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/companies/:companyId/employees",
+							"raw": "{{base_url}}/companies/46/employees",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"companies",
-								":companyId",
+								"46",
 								"employees"
-							],
-							"variable": [
-								{
-									"key": "companyId",
-									"value": "1"
-								}
 							]
 						},
 						"description": "Add a super-admin employee with the highest level of privileges within a company"
@@ -1630,230 +1620,6 @@
 							]
 						},
 						"description": "Add a manager employee with intermediate privileges within a company"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Order",
-			"item": [
-				{
-					"name": "Create Order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <your_jwt_token>",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"order_type\": \"product\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2\n    }\n  ],\n  \"payment_method_id\": 1\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/orders",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"orders"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Orders",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/orders?page=1&limit=10&status=all",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"orders"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "all"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Order by ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <your_jwt_token>",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/orders/:orderId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"orders",
-								":orderId"
-							],
-							"variable": [
-								{
-									"key": "orderId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Order Status",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <your_jwt_token>",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"status\": \"completed\",\n  \"notes\": \"Order completed successfully\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/orders/:orderId/status",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"orders",
-								":orderId",
-								"status"
-							],
-							"variable": [
-								{
-									"key": "orderId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Wash Order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <your_jwt_token>",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"car_id\": 1,\n  \"wash_operations\": [1, 2]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/orders/:orderId/wash",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"orders",
-								":orderId",
-								"wash"
-							],
-							"variable": [
-								{
-									"key": "orderId",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Rental Order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer <your_jwt_token>",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"car_id\": 1,\n  \"start_date\": \"2025-03-18\",\n  \"end_date\": \"2025-03-20\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/orders/:orderId/rental",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"orders",
-								":orderId",
-								"rental"
-							],
-							"variable": [
-								{
-									"key": "orderId",
-									"value": ""
-								}
-							]
-						}
 					},
 					"response": []
 				}
@@ -2687,6 +2453,1743 @@
 				}
 			],
 			"description": "Operations that require company admin privileges"
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Get Active Cart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Carts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/carts?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"carts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user-orders?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user-orders"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user-orders/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user-orders",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add to Cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_type\": \"product\",\n  \"product_id\": 2,\n  \"quantity\": 4\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cart/items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cart Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order_item_id\": 140,\n  \"quantity\": 3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cart/items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Cart Item (by ID)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart/items/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"items",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Car Order",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart/car",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"car"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Item (Unified)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_type\": \"product\",\n  \"item_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cart/items",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Checkout Session",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/create-checkout-session",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"create-checkout-session"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Wash Orders",
+					"item": [
+						{
+							"name": "Create Wash Order",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"within_company\": true,\n  \"location\": \"Company workshop\",\n  \"wash_types\": [1, 2]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/wash-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Wash Order",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/all-wash-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"all-wash-orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Wash Order",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"wash_types\": [1, 3],\n  \"location\": \"Customer location\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/wash-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Wash Order Details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/wash-orders/2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-orders",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Pending Wash Orders (Company)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{company_access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/company/wash-orders/pending?page=1&limit=10",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"company",
+										"wash-orders",
+										"pending"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Assign Employee to Wash Order",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{company_access_token}}",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"employeeId\": 23\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/wash-orders/4/assign",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-orders",
+										"4",
+										"assign"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Wash Operation (Employee)",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{employee_access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/wash-orders/456/complete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-orders",
+										"456",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Wash Order",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/wash-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-orders"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Rental Orders",
+					"item": [
+						{
+							"name": "Create Rental Order",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"car_id\": 101,\n  \"start_date\": \"2023-12-01\",\n  \"end_date\": \"2023-12-10\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/rental-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"rental-orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Rental Order",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"car_id\": 101,\n  \"start_date\": \"2023-12-01\",\n  \"end_date\": \"2023-12-10\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/all-rental-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"all-rental-orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Rental Order",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/rental-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"rental-orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Rental Order Copy",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"status\":\"progress\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/rental-orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"rental-orders"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create Order from Cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"payment_method_id\": 1,\n  \"shipping_address\": \"123 Main St, Anytown, USA\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Orders company",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders-company?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders-company"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders/155",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"155"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Orders by Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders/status/completed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"status",
+								"completed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Order Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\",\n  \"notes\": \"Order delivered successfully\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/orders/123/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"123",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Product Images",
+					"item": [
+						{
+							"name": "Add Product Image",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "/path/to/new_product_image.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/products/123/images",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products",
+										"123",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Product Image",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/products/123/images/456",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products",
+										"123",
+										"images",
+										"456"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Categories",
+					"item": [
+						{
+							"name": "Get Categories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/categories",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Category (Admin)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "category_name",
+											"value": "New Category",
+											"type": "text"
+										},
+										{
+											"key": "icon",
+											"type": "file",
+											"src": "/path/to/category_icon.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/categories",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Category (Admin)",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "category_name",
+											"value": "Updated Category Name",
+											"type": "text"
+										},
+										{
+											"key": "icon",
+											"type": "file",
+											"src": "/path/to/updated_icon.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/categories/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Category (Admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/categories/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Subcategories",
+					"item": [
+						{
+							"name": "Get Subcategories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/categories/1/subcategories",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories",
+										"1",
+										"subcategories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Subcategory (Admin)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "New Subcategory",
+											"type": "text"
+										},
+										{
+											"key": "icon",
+											"type": "file",
+											"src": "/path/to/subcategory_icon.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/categories/1/subcategories",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories",
+										"1",
+										"subcategories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Subcategory (Admin)",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "Updated Subcategory Name",
+											"type": "text"
+										},
+										{
+											"key": "icon",
+											"type": "file",
+											"src": "/path/to/updated_subcategory_icon.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/categories/1/subcategories/2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories",
+										"1",
+										"subcategories",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Subcategory (Admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_access_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/categories/1/subcategories/2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"categories",
+										"1",
+										"subcategories",
+										"2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Add Product (Company)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_name",
+									"value": "Premium Product",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "High quality product description",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "99.99",
+									"type": "text"
+								},
+								{
+									"key": "stock",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "sub_category_ids",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "/path/to/product_image.jpg"
+								},
+								{
+									"key": "sub_category_ids",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "category_id",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "min_price",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "max_price",
+									"value": "100",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "premium",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products/123",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"123"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"Updated Product Name\",\n  \"price\": 89.99,\n  \"stock\": 50\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/products/123",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"123"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/products/123",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"123"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Brand",
+			"item": [
+				{
+					"name": "Protected Routes (Admin Only)",
+					"item": [
+						{
+							"name": "Create Brand",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"description": "JWT for an authenticated admin user. Obtain this from your login endpoint.",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "logo",
+											"description": "Select an image file for the brand logo. In Postman, click 'Select Files'.",
+											"type": "file",
+											"src": [
+												"postman-cloud:///1f038b2b-5a18-4140-9282-1b41132996ab",
+												"/path/to/your/image.jpg"
+											]
+										},
+										{
+											"key": "name",
+											"value": "Hondak",
+											"description": "The name of the car brand.",
+											"type": "text"
+										},
+										{
+											"key": "description",
+											"value": "A Japanese multinational conglomerate manufacturer of automobiles, motorcycles, and power equipment.",
+											"description": "A brief description of the brand.",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/brands/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"brands",
+										""
+									]
+								},
+								"description": "Creates a new car brand, requiring admin authentication and an uploaded logo."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Brand",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"description": "JWT for an authenticated admin user.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "logo",
+											"description": "(Optional) Select a new image file if you want to update the logo. In Postman, click 'Select Files'.",
+											"type": "file",
+											"src": "/path/to/your/new_image.jpg"
+										},
+										{
+											"key": "product_name",
+											"value": "Honda Motor Co. Ltd.",
+											"description": "(Optional) The updated name of the car brand.",
+											"type": "text"
+										},
+										{
+											"key": "description",
+											"value": "Updated description for Honda.",
+											"description": "(Optional) An updated description of the brand.",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseURL}}/brands/:brandId",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"brands",
+										":brandId"
+									],
+									"variable": [
+										{
+											"key": "brandId",
+											"value": "1",
+											"description": "Replace with the ID of the brand to update."
+										}
+									]
+								},
+								"description": "Updates an existing car brand by ID, requiring admin authentication. Uses multipart/form-data if logo is included."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Brand",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"description": "JWT for an authenticated admin user.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/brands/:brandId",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"brands",
+										":brandId"
+									],
+									"variable": [
+										{
+											"key": "brandId",
+											"value": "1",
+											"description": "Replace with the ID of the brand to delete."
+										}
+									]
+								},
+								"description": "Deletes a car brand by its ID, requiring admin authentication."
+							},
+							"response": []
+						}
+					],
+					"description": "Endpoints requiring admin authentication."
+				},
+				{
+					"name": "GET Brands",
+					"item": [
+						{
+							"name": "Get All Brands",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/brands/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"brands",
+										""
+									]
+								},
+								"description": "Retrieves a list of all car brands."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Brand by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/brands/2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"brands",
+										"2"
+									]
+								},
+								"description": "Retrieves a single car brand by its ID."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Brand with Cars",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/brands/25/cars",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"brands",
+										"25",
+										"cars"
+									]
+								},
+								"description": "Retrieves a car brand along with all cars associated with it."
+							},
+							"response": []
+						}
+					],
+					"description": "Public endpoints for retrieving car brand information."
+				}
+			]
+		},
+		{
+			"name": "Wash Types",
+			"item": [
+				{
+					"name": "Public Routes",
+					"item": [
+						{
+							"name": "Get All Wash Types",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/wash-types",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-types"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Company Wash Types",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/companies/28/wash-types",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"companies",
+										"28",
+										"wash-types"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Popular Wash Types",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/wash-types/popular",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-types",
+										"popular"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Company Only Routes",
+					"item": [
+						{
+							"name": "Add Wash Type",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\":\"dfggf\",\r\n    \"price\":34\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/wash-types",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-types"
+									]
+								},
+								"description": "Requires valid JWT token of a company user"
+							},
+							"response": []
+						},
+						{
+							"name": "Update Wash Type",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{auth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/wash-types/{{typeId}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"wash-types",
+										"{{typeId}}"
+									]
+								},
+								"description": "At least one field must be provided."
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		}
 	],
 	"event": [

@@ -1,9 +1,6 @@
 const OrderRepository = require("../data-access/orders");
 const CartRepository = require("../data-access/carts");
-const OrderStatusHistoryRepository = require("../data-access/order-status-histories");
-const ProductRepository = require("../data-access/products");
-const PaymentMethodRepository = require("../data-access/payment-methods");
-const { BadRequestError, NotFoundError } = require("../utils/errors/types/Api.error");
+const { BadRequestError } = require("../utils/errors/types/Api.error");
 const { verifyPayment } = require("../services/myfatoorah.service");
 
 const webhookController = {

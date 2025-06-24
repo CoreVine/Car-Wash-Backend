@@ -1,6 +1,4 @@
-const Yup = require("yup");
 const { Op } = require("sequelize");
-const path = require("path");
 // Import repositories
 const CompanyRepository = require("../data-access/companies");
 const CompanyDocumentRepository = require("../data-access/company-documents");

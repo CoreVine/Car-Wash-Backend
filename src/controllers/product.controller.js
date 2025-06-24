@@ -1,12 +1,12 @@
-const Yup = require("yup");
 const { Op } = require("sequelize");
 // Import repositories
-import ProductRepository from "../data-access/products";
-import ProductImageRepository from "../data-access/product-images";
-import CategoryRepository from "../data-access/categories";
-import SubCategoryRepository from "../data-access/sub-categories";
-import SubCatProductRepository from "../data-access/sub-cat-products";
-import CompanyRepository from "../data-access/companies";
+const ProductRepository = require("../data-access/products");
+const ProductImageRepository = require("../data-access/product-images");
+const CategoryRepository = require("../data-access/categories");
+const SubCategoryRepository = require("../data-access/sub-categories");
+const SubCatProductRepository = require("../data-access/sub-cat-products");
+const CompanyRepository = require("../data-access/companies");
+
 // Remove AWS service import
 const { createPagination } = require("../utils/responseHandler");
 const { getRelativePath } = require("../utils/fileUtils");
@@ -40,8 +40,7 @@ const productController = {
         product_name,
         description,
         price,
-        stock,
-        company_id: req.company.company_id,
+        stock
       });
 
       // Use the new repository method for creating associations
@@ -161,11 +160,9 @@ const productController = {
       const { count, rows } = await ProductRepository.findProductsWithFilters({
         page,
         limit,
-        company_id: req.query.company_id,
         min_price: req.query.min_price,
         max_price: req.query.max_price,
         search: req.query.search,
-        includeImages: true, // Add flag to include images
         imageLimit: 1, // Limit to one image per product
       });
 
@@ -264,23 +261,6 @@ const productController = {
         throw new NotFoundError("Product not found");
       }
 
-      // Check if user has permission to delete this product
-      if (!req.adminEmployee) {
-        const company = await CompanyRepository.findById(req.userId);
-
-        if (company) {
-          if (company.company_id !== product.company_id) {
-            throw new ForbiddenError(
-              "You do not have permission to delete this product"
-            );
-          }
-        } else {
-          throw new ForbiddenError(
-            "You do not have permission to delete this product"
-          );
-        }
-      }
-
       // Delete all product images from S3
       const images = await ProductImageRepository.findByProductId(productId);
 
@@ -317,33 +297,18 @@ const productController = {
       }
 
       const product = await ProductRepository.findById(productId);
-      return json.json(product);
+
       if (!product) {
         throw new NotFoundError("Product not found");
       }
 
-      // Check if user has permission to update this product
-      if (!req.adminEmployee) {
-        const company = await Company.findByPk(req.userId);
-
-        if (company) {
-          if (company.company_id !== product.company_id) {
-            throw new ForbiddenError(
-              "You do not have permission to update this product"
-            );
-          }
-        } else {
-          throw new ForbiddenError(
-            "You do not have permission to update this product"
-          );
-        }
-      }
-
       // Create a relative path for public access
-      const relativePath = getRelativePath(req.file.path, "product-images");
+      const relativePath =
+      req.file.url || getRelativePath(req.file.path, "subcategory-icons");
+
 
       // Create image record in database with relative path
-      const image = await ProductImage.create({
+      const image = await ProductImageRepository.create({
         product_id: productId,
         image_url: relativePath,
       });
@@ -451,7 +416,7 @@ const productController = {
 
       // Get icon URL from uploaded file - store as relative path
       const icon =
-        req.file.url || getRelativePath(req.file.path, "category-icons");
+        req.file.url || getRelativePath(req.file.path, "subcategory-icons");
 
       const category = await CategoryRepository.create({
         category_name,
@@ -542,11 +507,11 @@ const productController = {
 
       // Delete icon if exists
       if (category.icon) {
-        await multerConfig.deleteUploadedFile(category.icon);
+        await CategoryRepository.delete(categoryId);
       }
 
       // Delete the category
-      await CategoryRepository.delete(categoryId);
+      await multerConfig.deleteUploadedFile(category.icon);
 
       return res.success("Category deleted successfully");
     } catch (error) {

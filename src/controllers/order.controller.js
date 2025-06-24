@@ -1,19 +1,16 @@
 const { Op } = require("sequelize");
 // Import repositories
-import OrderRepository from "../data-access/orders";
-import OrderItemRepository from "../data-access/order-items";
-import OrderStatusHistoryRepository from "../data-access/order-status-histories";
-import CarWashOrderRepository from "../data-access/car-wash-orders";
-import RentalOrderRepository from "../data-access/rental-orders";
-import EmployeeRepository from "../data-access/employees";
-import ProductRepository from "../data-access/products";
-import CustomerCarRepository from "../data-access/customer-cars";
-import CompanyRepository from "../data-access/companies";
-import CarRepository from "../data-access/cars";
-import WashTypeRepository from "../data-access/wash-types";
-import WashOrderWashTypeRepository from "../data-access/wash-order-wash-types";
-import WashOrderOperationRepository from "../data-access/wash-order-operations";
-import PaymentMethodRepository from "../data-access/payment-methods";
+const OrderRepository = require("../data-access/orders");
+const OrderItemRepository = require("../data-access/order-items");
+const OrderStatusHistoryRepository = require("../data-access/order-status-histories");
+const CarWashOrderRepository = require("../data-access/car-wash-orders");
+const RentalOrderRepository = require("../data-access/rental-orders");
+const EmployeeRepository = require("../data-access/employees");
+const CarRepository = require("../data-access/cars");
+const WashTypeRepository = require("../data-access/wash-types");
+const WashOrderWashTypeRepository = require("../data-access/wash-order-wash-types");
+const WashOrderOperationRepository = require("../data-access/wash-order-operations");
+const PaymentMethodRepository = require("../data-access/payment-methods");
 
 const { createPagination } = require("../utils/responseHandler");
 const {
@@ -176,6 +173,20 @@ const orderController = {
           page,
           limit
         );
+
+        // Iterate through each order to calculate its individual total price
+        rows.forEach((order) => {
+          let orderIndividualTotalPrice = 0; // Initialize total for *this specific* order
+          order.orderItems.forEach((item) => {
+            orderIndividualTotalPrice += item.quantity * parseFloat(item.price);
+          });
+          // Attach the calculated individual total to the current order object
+          order = {
+            totalPrice: parseFloat(orderIndividualTotalPrice.toFixed(2)),
+            ...order,
+          };
+        });
+        console.log("Rows with totalPrice:", rows);
 
         const pagination = createPagination(page, limit, count);
 

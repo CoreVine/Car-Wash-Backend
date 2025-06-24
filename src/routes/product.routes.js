@@ -1,7 +1,6 @@
 const { Router } = require("express");
 const productController = require("../controllers/product.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
-const isCompanyMiddleware = require("../middlewares/isCompany.middleware");
 const isAdminMiddleware = require("../middlewares/isAdmin.middleware");
 const validate = require("../middlewares/validation.middleware");
 const Yup = require("yup");
@@ -92,7 +91,7 @@ const productRoutes = Router();
 productRoutes.post(
   "/products",
   authMiddleware,
-  isCompanyMiddleware,
+  isAdminMiddleware,
   ...(Array.isArray(productImageUploader.array("images", 5))
     ? productImageUploader.array("images", 5)
     : [productImageUploader.array("images", 5)]),
@@ -125,6 +124,7 @@ productRoutes.put(
 productRoutes.delete(
   "/products/:productId",
   authMiddleware,
+  isAdminMiddleware,
   validate(productIdParamSchema, "params"),
   productController.deleteProduct
 );
@@ -133,6 +133,7 @@ productRoutes.delete(
 productRoutes.post(
   "/products/:productId/images",
   authMiddleware,
+  isAdminMiddleware,
   ...(Array.isArray(productImageUploader.single("image"))
     ? productImageUploader.single("image")
     : [productImageUploader.single("image")]),
@@ -161,8 +162,8 @@ productRoutes.post(
   authMiddleware,
   isAdminMiddleware,
   categoryIconUploader.single("icon"),
+  requireFileUpload("icon"),
   validate(categorySchema),
-  // requireFileUpload("Category icon"),
   productController.addCategory
 );
 

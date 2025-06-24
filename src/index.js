@@ -1,8 +1,8 @@
-import dotenv from "dotenv";
-import expressService from "./services/express.service.js";
-import sequelizeService from "./services/sequelize.service.js";
-import awsService from "./services/aws.service.js";
-import emailService from "./services/email.service.js";
+const dotenv = require("dotenv");
+const expressService = require("./services/express.service.js");
+const sequelizeService = require("./services/sequelize.service.js");
+const awsService = require("./services/aws.service.js");
+const emailService = require("./services/email.service.js");
 dotenv.config();
 
 const services = [expressService, awsService, sequelizeService, emailService];
@@ -22,3 +22,4 @@ const services = [expressService, awsService, sequelizeService, emailService];
     process.exit(1);
   }
 })();
+

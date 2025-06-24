@@ -7,17 +7,6 @@ class ProductRepository extends BaseRepository {
         super(ProductModel);
     }
 
-    async findByCompanyId(companyId, options = {}) {
-        try {
-            return await this.model.findAll({
-                where: { company_id: companyId },
-                ...options
-            });
-        } catch (error) {
-            throw new DatabaseError(error);
-        }
-    }
-
     async findWithSubcategories(productId) {
         try {
             return await this.model.findByPk(productId, {
@@ -37,8 +26,7 @@ class ProductRepository extends BaseRepository {
     
     async findProductsWithFilters({
         page = 1, 
-        limit = 10, 
-        company_id = null, 
+        limit = 10,
         category_id = null, 
         sub_category_id = null,
         min_price = null,
@@ -47,12 +35,7 @@ class ProductRepository extends BaseRepository {
     }) {
         try {
             const whereClause = {};
-            
-            // Filter by company
-            if (company_id) {
-                whereClause.company_id = company_id;
-            }
-            
+
             // Filter by price range
             if (min_price !== null || max_price !== null) {
                 whereClause.price = {};
@@ -74,11 +57,6 @@ class ProductRepository extends BaseRepository {
             
             // Build include options
             const includeOptions = [
-                {
-                    model: this.model.sequelize.model('Company'),
-                    as: 'company',
-                    attributes: ['company_name', 'logo_url']
-                },
                 {
                     model: this.model.sequelize.model('ProductImage'),
                     as: 'images',
@@ -123,11 +101,6 @@ class ProductRepository extends BaseRepository {
         try {
             return await this.model.findByPk(productId, {
                 include: [
-                    {
-                        model: this.model.sequelize.model('Company'),
-                        as: 'company',
-                        attributes: ['company_name', 'logo_url']
-                    },
                     {
                         model: this.model.sequelize.model('ProductImage'),
                         as: 'images',

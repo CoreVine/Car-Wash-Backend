@@ -1,5 +1,5 @@
-import * as crypto from 'crypto';
-import { BadTokenError } from '../utils/errors/types/Api.error';
+const { v4: uuidv4 } = require('uuid');
+const { BadTokenError } = require('../utils/errors/types/Api.error');
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const loggingService = require('../services/logging.service');
@@ -10,6 +10,7 @@ let jwtidCounter = 0;
 let blacklist = []; // TODO: Use redis
 
 const JwtService = {
+
   jwtSign: (_payload) => {
     try {
       if (process.env.SERVER_JWT !== "true")
@@ -37,7 +38,7 @@ const JwtService = {
         const refreshToken = jwt.sign(
           { 
             sub: payload,
-            jti: crypto.randomBytes(16).toString('hex')
+            jti: uuidv4().replace(/-/g, '')
           },
           process.env.SERVER_JWT_REFRESH_SECRET,
           { expiresIn: Number(process.env.SERVER_JWT_REFRESH_MAX_AGE) }

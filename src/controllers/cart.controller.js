@@ -1,5 +1,4 @@
 const CartRepository = require("../data-access/carts");
-const CarRepository = require("../data-access/cars");
 const CompanyRepository = require("../data-access/companies");
 const UserRepository = require("../data-access/users");
 const myFatoorahService = require("../services/myfatoorah.service");
@@ -8,13 +7,9 @@ const ProductRepository = require("../data-access/products");
 const CarWashOrderRepository = require("../data-access/car-wash-orders");
 const RentalOrderRepository = require("../data-access/rental-orders");
 const WashTypeRepository = require("../data-access/wash-types");
-const WashOrderWashTypeRepository = require("../data-access/wash-order-wash-types");
 const CarOrderRepository = require("../data-access/car-orders");
 const OrderRepository = require("../data-access/orders");
 const OrderStatusHistoryRepository = require("../data-access/order-status-histories");
-const PaymentMethodRepository = require("../data-access/payment-methods");
-import { logger } from "sequelize/lib/utils/logger";
-const orderController = require("./order.controller");
 require("dotenv").config();
 
 // FUTURE FU-001

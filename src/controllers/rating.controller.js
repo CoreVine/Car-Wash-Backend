@@ -1,7 +1,7 @@
 // Import repositories
-import RatingRepository from "../data-access/ratings";
-import CompanyRepository from "../data-access/companies";
-import UserRepository from "../data-access/users";
+const RatingRepository = require("../data-access/ratings");
+const CompanyRepository = require("../data-access/companies");
+const UserRepository = require("../data-access/users");
 const { createPagination } = require("../utils/responseHandler");
 const {
   ForbiddenError,

@@ -1,8 +1,8 @@
 const VerificationCodeModel = require('../../models/verificationCode');
 const BaseRepository = require('../base.repository');
 const { Op } = require("sequelize");
-const crypto = require('crypto');
 const { DatabaseError } = require('../../utils/errors/types/Sequelize.error');
+const { v4: uuidv4 } = require('uuid');
 
 class VerificationCodeRepository extends BaseRepository {
   constructor() {
@@ -172,7 +172,7 @@ class VerificationCodeRepository extends BaseRepository {
   async generateResetToken(id) {
     try {
       // Generate a secure random token
-      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetToken = uuidv4().replace(/-/g, '') + uuidv4().replace(/-/g, '');
       
       // Update the verification code with the token
       await this.model.update(

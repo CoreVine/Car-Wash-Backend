@@ -1,9 +1,7 @@
 const AdRepository = require('../data-access/ads');
-const { createPagination } = require('../utils/responseHandler');
 const { getRelativePath } = require("../utils/fileUtils");
 const { deleteUploadedFile } = require('../config/multer.config');
 const loggingService = require('../services/logging.service');
-const logger = loggingService.getLogger();
 const {
   BadRequestError,
   ForbiddenError,

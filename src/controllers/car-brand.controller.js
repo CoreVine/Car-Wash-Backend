@@ -67,7 +67,10 @@ const carBrandController = {
       }
       
       // Create relative path for the logo
-      const logoPath = getRelativePath(req.file.path, 'brand-logos');
+      const logoPath =
+      req.file.url ||
+      req.file.public_id ||
+      getRelativePath(req.file.path, "subcategory-icons");
       
       // Create the brand
       const brand = await CarBrandRepository.create({

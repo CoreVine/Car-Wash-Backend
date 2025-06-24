@@ -77,10 +77,6 @@ class Company extends Model {
       foreignKey: 'company_id',
       as: 'documents'
     });
-    this.hasMany(models.Product, {
-      foreignKey: 'company_id',
-      as: 'products'
-    });
     this.hasMany(models.Order, {
       foreignKey: 'company_id',
       as: 'orders'

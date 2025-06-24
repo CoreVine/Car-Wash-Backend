@@ -1,6 +1,6 @@
-import { Sequelize } from "sequelize";
-import databaseConfig from "../config/database";
-import fs from "fs";
+const { Sequelize } = require("sequelize");
+const databaseConfig = require("../config/database");
+const fs = require("fs");
 
 // The model files are loaded here
 const modelFiles = fs
@@ -11,7 +11,7 @@ const syncOptions = { force: process.env.SYNC_DB_FORCE === "true", alter: proces
 
 const sequelizeService = {
   connection: null,
-  
+
   init: async () => {
     try {
       let connection = new Sequelize(databaseConfig);
@@ -19,13 +19,13 @@ const sequelizeService = {
 
       /* Loading models automatically */
       const models = [];
-     
+
       // This is where models are initialized
       for (const file of modelFiles) {
-        const model = await import(`../models/${file}`);
+        const model = require(`../models/${file}`);
 
-        model.default.init(connection);
-        models.push(model.default);
+        model.init(connection);
+        models.push(model);
       }
 
       // This is where associations are set up
@@ -34,7 +34,7 @@ const sequelizeService = {
       }
 
       console.log("[SEQUELIZE] Database service initialized");
-      
+
       // Sync database if syncOptions is provided
       if (process.env.SYNC_DATABASE === "true") {
         if (syncOptions.force && databaseConfig.dialect === 'mysql') {
@@ -53,7 +53,7 @@ const sequelizeService = {
           console.log("[SEQUELIZE] Database synchronized successfully");
         }
       }
-      
+
       return connection;
     } catch (error) {
       console.log("[SEQUELIZE] Error during database service initialization");
@@ -62,4 +62,5 @@ const sequelizeService = {
   },
 };
 
-export default sequelizeService;
+module.exports = sequelizeService;
+

@@ -1,6 +1,6 @@
-import JwtService from "../services/jwt.service";
-import CompanyRepository from "../data-access/companies";
-import EmployeeRepository from "../data-access/employees";
+const CompanyRepository = require("../data-access/companies");
+const EmployeeRepository = require("../data-access/employees");
+const JwtService = require("../services/jwt.service");
 const Yup = require("yup");
 const bcrypt = require("bcryptjs");
 const {
