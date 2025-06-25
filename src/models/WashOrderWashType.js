@@ -45,12 +45,14 @@ class WashOrderWashType extends Model {
   static associate(models) {
     this.belongsTo(models.CarWashOrder, {
       foreignKey: 'order_id',
-      as: 'washOrder'
+      as: 'washOrder',
+      onDelete: "CASCADE"
     });
     
     this.belongsTo(models.WashType, {
       foreignKey: 'type_id',
-      as: 'washType'
+      as: 'washType',
+      onDelete: "CASCADE"
     });
   }
 }
