@@ -40,7 +40,7 @@ const productController = {
         product_name,
         description,
         price,
-        stock
+        stock,
       });
 
       // Use the new repository method for creating associations
@@ -303,8 +303,7 @@ const productController = {
 
       // Create a relative path for public access
       const relativePath =
-      req.file.url || getRelativePath(req.file.path, "subcategory-icons");
-
+        req.file.url || getRelativePath(req.file.path, "subcategory-icons");
 
       // Create image record in database with relative path
       const image = await ProductImageRepository.create({
@@ -371,6 +370,18 @@ const productController = {
       const categories = await CategoryRepository.findAllWithSubCategories();
 
       return res.success("Categories retrieved successfully", categories);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getCategory: async (req, res, next) => {
+    try {
+      // Use the new repository method
+      const { id } = req.params;
+      const category = await CategoryRepository.findById(id);
+
+      return res.success("category retrieved successfully", category);
     } catch (error) {
       next(error);
     }
