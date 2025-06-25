@@ -135,8 +135,8 @@ productRoutes.post(
   authMiddleware,
   isAdminMiddleware,
   ...(Array.isArray(productImageUploader.single("image"))
-  ? productImageUploader.single("image")
-  : [productImageUploader.single("image")]),
+    ? productImageUploader.single("image")
+    : [productImageUploader.single("image")]),
   requireFileUpload("image"),
   validate(productIdParamSchema, "params"),
   productController.addProductImage
@@ -157,6 +157,7 @@ productRoutes.delete(
 
 // Categories
 productRoutes.get("/categories", productController.getCategories);
+productRoutes.get("/categories/:id", productController.getCategory);
 
 productRoutes.post(
   "/categories",
