@@ -381,8 +381,7 @@ class CartRepository extends BaseRepository {
           await OrderItem.update(
             {
               quantity: existingItem.quantity + quantity,
-              price: product.price,
-              total_price: product.price * (existingItem.quantity + quantity),
+              price: product.price * (existingItem.quantity + quantity),
             },
             {
               where: { order_item_id: existingItem.order_item_id },
@@ -395,8 +394,7 @@ class CartRepository extends BaseRepository {
               order_id: cart.order_id,
               product_id: productId,
               quantity,
-              price: product.price,
-              total_price: product.price * quantity,
+              price: product.price * quantity,
             },
             { transaction: t }
           );
