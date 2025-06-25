@@ -10,7 +10,10 @@ class CompanyRepository extends BaseRepository {
   async findByEmail(email) {
     try {
       return await this.model.findOne({
-        where: { email },
+        where: { 
+          email,
+          company_name: { [Op.ne]: 'main' } 
+        },
       });
     } catch (error) {
       throw new DatabaseError(error);
@@ -19,6 +22,11 @@ class CompanyRepository extends BaseRepository {
 
   async findWithRatings(companyId) {
     try {
+      const company = await this.model.findByPk(companyId);
+      if (company && company.company_name === 'main') {
+        return null;
+      }
+      
       return await this.model.findByPk(companyId, {
         include: ["ratings"],
       });
@@ -29,6 +37,11 @@ class CompanyRepository extends BaseRepository {
 
   async findWithEmployees(companyId) {
     try {
+      const company = await this.model.findByPk(companyId);
+      if (company && company.company_name === 'main') {
+        return null;
+      }
+      
       return await this.model.findByPk(companyId, {
         include: [
           {
@@ -44,7 +57,10 @@ class CompanyRepository extends BaseRepository {
 
   async findCompaniesWithApprovalStatus(approved = null, page = 1, limit = 10) {
     try {
-      const whereClause = {};
+      const whereClause = {
+        company_name: { [Op.ne]: 'main' }
+      };
+      
       if (approved !== null) {
         whereClause.approved = approved;
       }
@@ -69,6 +85,7 @@ class CompanyRepository extends BaseRepository {
       return await this.model.findOne({
         where: {
           [Op.or]: [{ email }, { company_name: companyName }],
+          company_name: { [Op.ne]: 'main' }
         },
       });
     } catch (error) {
@@ -78,6 +95,11 @@ class CompanyRepository extends BaseRepository {
 
   async findCompanyWithAllDetails(companyId) {
     try {
+      const company = await this.model.findByPk(companyId);
+      if (company && company.company_name === 'main') {
+        return null;
+      }
+      
       return await this.model.findByPk(companyId, {
         attributes: { exclude: ["password_hash"] },
         include: [
@@ -88,11 +110,6 @@ class CompanyRepository extends BaseRepository {
           {
             association: "ratings",
           },
-          // {
-          //     association: 'products',
-          //     separate: true,
-          //     limit: 5
-          // },
           {
             association: "exhibitions",
             separate: true,
@@ -107,6 +124,11 @@ class CompanyRepository extends BaseRepository {
 
   async approveCompany(companyId) {
     try {
+      const company = await this.model.findByPk(companyId);
+      if (company && company.company_name === 'main') {
+        return null;
+      }
+      
       return await this.update(companyId, { approved: true });
     } catch (error) {
       throw new DatabaseError(error);
@@ -115,6 +137,11 @@ class CompanyRepository extends BaseRepository {
 
   async findCompanyBasicDetails(companyId) {
     try {
+      const company = await this.model.findByPk(companyId);
+      if (company && company.company_name === 'main') {
+        return null;
+      }
+      
       return await this.model.findByPk(companyId, {
         attributes: {
           exclude: ["password_hash", "created_at", "updated_at", "approved"],
