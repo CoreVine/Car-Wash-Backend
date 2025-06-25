@@ -4,86 +4,121 @@ const { BadRequestError } = require("../utils/errors/types/Api.error");
 const { verifyPayment } = require("../services/myfatoorah.service");
 
 const webhookController = {
+  // In your webhook.controller.js
+
   handleMyFatoorahWebhook: async (req, res, next) => {
     try {
-      console.log('=== MYFATOORAH WEBHOOK RECEIVED ===');
-      console.log('Body:', JSON.stringify(req.body, null, 2));
-      
-      const data = req.body;
-      const status = data.InvoiceStatus;
-      const paymentId = data.InvoiceId;
-      const customerReference = data.CustomerReference; // This is our cart order_id
-      
-      console.log(`Payment status: ${status}, Payment ID: ${paymentId}, Customer Reference: ${customerReference}`);
-      
-      if (status === 'Paid') {
-        if (!customerReference) {
-          console.log('Webhook received without a CustomerReference (cartId). Cannot process.');
-          return res.json({ received: true, message: 'CustomerReference is missing' });
-        }
-        
-        const paymentData = {
-          paymentId: paymentId,
-          status: status,
-          customerReference: customerReference,
-          rawResponse: data
-        };
+      const data = req.body || {};
+      const queryParams = req.query || {};
 
-        await OrderRepository.createFromPaidCart(customerReference, paymentData);
-        
-        return res.json({ received: true, message: 'Payment processed successfully' });
+      const paymentId =
+        data.InvoiceId || queryParams.paymentId || queryParams.Id;
+      const status = data.InvoiceStatus || "Pending";
 
-      } else {
-        console.log(`Payment not completed. Status: ${status}`);
-        return res.json({ received: true, message: 'Payment not completed' });
+      if (!paymentId) {
+        return res.status(400).json({
+          received: false,
+          message: "Payment ID is required",
+        });
+      }
+
+      switch (status) {
+        case "Paid":
+          if (!data.CustomerReference) {
+            return res.status(400).json({
+              received: false,
+              message: "CustomerReference is required for paid payments",
+            });
+          }
+
+          await OrderRepository.createFromPaidCart(data.CustomerReference, {
+            paymentId,
+            status,
+            customerReference: data.CustomerReference,
+            rawResponse: data,
+          });
+
+          return res.json({
+            received: true,
+            message: "Payment processed successfully",
+          });
+
+        case "Pending":
+          return res.json({
+            received: true,
+            message: "Payment not completed - still pending",
+            paymentId,
+            status,
+          });
+
+        case "Failed":
+        case "Cancelled":
+          return res.json({
+            received: true,
+            message: `Payment ${status.toLowerCase()}`,
+            paymentId,
+            status,
+          });
+
+        default:
+          return res.json({
+            received: true,
+            message: `Unknown payment status: ${status}`,
+            paymentId,
+            status,
+          });
       }
     } catch (error) {
-      console.error('Webhook processing error:', error);
-      return next(error);
+      console.error("Webhook processing error:", error);
+      res.status(500).json({
+        received: false,
+        message: "Internal server error processing webhook",
+      });
     }
   },
-
   // Verify payment status endpoint for MyFatoorah
   verifyPaymentStatus: async (req, res, next) => {
     try {
       const { payment_id, order_id } = req.query;
 
       if (!payment_id && !order_id) {
-        throw new BadRequestError('Either payment_id or order_id is required');
+        throw new BadRequestError("Either payment_id or order_id is required");
       }
 
-      let paymentStatus = 'pending';
+      let paymentStatus = "pending";
       let orderExists = false;
-      let cartStatus = 'cart';
+      let cartStatus = "cart";
 
       if (payment_id) {
         // Verify with MyFatoorah API
         const paymentData = await verifyPayment(payment_id);
-        
+
         // Map MyFatoorah status to our status
         switch (paymentData.status) {
-          case 'Paid':
-            paymentStatus = 'succeeded';
+          case "Paid":
+            paymentStatus = "succeeded";
             break;
-          case 'Failed':
-          case 'Cancelled':
-            paymentStatus = 'failed';
+          case "Failed":
+          case "Cancelled":
+            paymentStatus = "failed";
             break;
-          case 'Pending':
+          case "Pending":
           default:
-            paymentStatus = 'pending';
+            paymentStatus = "pending";
             break;
         }
 
         // Check if order exists for this payment
         if (paymentData.customerReference) {
           const order = await OrderRepository.findOne({
-            where: { cart_order_id: paymentData.customerReference }
+            where: { cart_order_id: paymentData.customerReference },
           });
           orderExists = !!order;
 
           // Get cart status
-          const cart = await CartRepository.findById(paymentData.customerReference);
+          const cart = await CartRepository.findById(
+            paymentData.customerReference
+          );
           if (cart) {
             cartStatus = cart.status;
           }
@@ -95,7 +130,7 @@ const webhookController = {
           order_exists: orderExists,
           cart_status: cartStatus,
           amount: paymentData.amount,
-          customer_reference: paymentData.customerReference
+          customer_reference: paymentData.customerReference,
         });
       }
 
@@ -107,24 +142,23 @@ const webhookController = {
         }
 
         const order = await OrderRepository.findOne({
-          where: { cart_order_id: order_id }
+          where: { cart_order_id: order_id },
         });
         orderExists = !!order;
 
         if (order) {
-          paymentStatus = order.payment_status || 'pending';
+          paymentStatus = order.payment_status || "pending";
         }
 
         return res.json({
           order_id: order_id,
           payment_status: paymentStatus,
           order_exists: orderExists,
-          cart_status: cartStatus
+          cart_status: cartStatus,
         });
       }
-
     } catch (error) {
-      console.error('Payment verification error:', error.message);
+      console.error("Payment verification error:", error.message);
       next(error);
     }
   },
@@ -133,33 +167,39 @@ const webhookController = {
   manualProcessPayment: async (req, res, next) => {
     try {
       const { paymentId, cartOrderId } = req.body;
-      
+
       if (!paymentId || !cartOrderId) {
-        throw new BadRequestError('Payment ID and Cart Order ID are required');
+        throw new BadRequestError("Payment ID and Cart Order ID are required");
       }
 
       console.log(`Manual processing for cart: ${cartOrderId}`);
 
       const paymentData = {
         paymentId: paymentId,
-        status: 'Paid',
+        status: "Paid",
         customerReference: cartOrderId,
-        rawResponse: { manual: true, paymentId: paymentId, note: 'Manually processed' }
+        rawResponse: {
+          manual: true,
+          paymentId: paymentId,
+          note: "Manually processed",
+        },
       };
 
-      const order = await OrderRepository.createFromPaidCart(cartOrderId, paymentData);
-      
-      return res.json({ 
-        message: 'Payment processed successfully', 
-        orderId: order.id,
-        cartId: cartOrderId
-      });
+      const order = await OrderRepository.createFromPaidCart(
+        cartOrderId,
+        paymentData
+      );
 
+      return res.json({
+        message: "Payment processed successfully",
+        orderId: order.id,
+        cartId: cartOrderId,
+      });
     } catch (error) {
-      console.error('Manual payment processing error:', error);
+      console.error("Manual payment processing error:", error);
       next(error);
     }
-  }
+  },
 };
 
-module.exports = webhookController; 
+module.exports = webhookController;
