@@ -209,7 +209,7 @@ class CarWashOrderRepository extends BaseRepository {
       try {
         // Create wash order
         const washOrderDataWithOrder = {
-          order_id: 1,
+          order_id: cartId,
           ...washOrderData,
         };
 
