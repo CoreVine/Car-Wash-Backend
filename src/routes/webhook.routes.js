@@ -4,12 +4,18 @@ const webhookController = require("../controllers/webhook.controller");
 const webhookRoutes = express.Router();
 
 // MyFatoorah webhook endpoint - receives payment notifications
-webhookRoutes.post("/payments/webhook", webhookController.handleMyFatoorahWebhook);
+webhookRoutes.get(
+  "/payments/webhook",
+  webhookController.handleMyFatoorahWebhook
+);
 
 // Payment verification endpoint - for checking payment status
 webhookRoutes.get("/payments/verify", webhookController.verifyPaymentStatus);
 
 // Manual payment processing endpoint - for testing
-webhookRoutes.post("/payments/manual-process", webhookController.manualProcessPayment);
+webhookRoutes.post(
+  "/payments/manual-process",
+  webhookController.manualProcessPayment
+);
 
-module.exports = webhookRoutes; 
+module.exports = webhookRoutes;

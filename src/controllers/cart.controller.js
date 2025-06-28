@@ -48,12 +48,13 @@ const cartController = {
       }
 
       if (cart.rentalOrder && cart.rentalOrder.car) {
-          const days =  Math.ceil(
-            (new Date(cart.rentalOrder.end_date) - new Date(cart.rentalOrder.start_date)) /
+        const days = Math.ceil(
+          (new Date(cart.rentalOrder.end_date) -
+            new Date(cart.rentalOrder.start_date)) /
             (1000 * 60 * 60 * 24)
-          );
+        );
 
-          totalPrice += Number(cart.rentalOrder.car.price * days);
+        totalPrice += Number(cart.rentalOrder.car.price * days);
       }
 
       cart = {
@@ -574,39 +575,35 @@ const cartController = {
     try {
       const userId = req.user.user_id;
 
-      // Get the user's active cart with all items
       const cart = await CartRepository.findCartWithItems(
-        (await CartRepository.findUserActiveCart(userId))?.order_id
+        (
+          await CartRepository.findUserActiveCart(userId)
+        )?.order_id
       );
 
       if (!cart) {
         throw new BadRequestError("No active cart found");
       }
 
-      // Calculate total amount from all cart items
       let totalAmount = 0;
-      
-      // Add product items
-      if (cart.orderItems && cart.orderItems.length > 0) {
+
+      if (cart.orderItems?.length > 0) {
         for (const item of cart.orderItems) {
           totalAmount += parseFloat(item.price) * item.quantity;
         }
       }
 
-      // Add car wash order amount
-      if (cart.carWashOrder && cart.carWashOrder.washOrderWashTypes) {
+      if (cart.carWashOrder?.washOrderWashTypes) {
         for (const washType of cart.carWashOrder.washOrderWashTypes) {
           totalAmount += parseFloat(washType.price) * washType.quantity;
         }
       }
 
-      // Add rental order amount
       if (cart.rentalOrder) {
         totalAmount += parseFloat(cart.rentalOrder.total_price || 0);
       }
 
-      // Add car order amount
-      if (cart.carOrder && cart.carOrder.car) {
+      if (cart.carOrder?.car) {
         totalAmount += parseFloat(cart.carOrder.car.price || 0);
       }
 
@@ -614,43 +611,33 @@ const cartController = {
         throw new BadRequestError("Cart is empty or has invalid total");
       }
 
-      // Get user details for payment
       const user = await UserRepository.findById(userId);
       if (!user) {
         throw new BadRequestError("User not found");
       }
 
-      console.log(`Creating MyFatoorah payment for user ${userId}, cart ${cart.order_id}, amount: ${totalAmount}`);
-
-      // Create payment with MyFatoorah
       const paymentData = await myFatoorahService.initiatePayment({
         amount: totalAmount,
-        customerName: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Customer',
+        customerName:
+          user.name ||
+          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          "Customer",
         customerEmail: user.email,
-        customerPhone: user.phone_number || '+96500000000', // Default phone if not provided
-        orderId: cart.order_id, // This will be sent as CustomerReference
+        customerPhone: user.phone_number || "+96500000000",
+        orderId: cart.order_id,
       });
 
-      console.log('MyFatoorah payment created successfully:', {
-        paymentId: paymentData.paymentId,
-        orderId: cart.order_id
-      });
-
-      // Return payment URL and details
       res.json({
         paymentUrl: paymentData.paymentUrl,
         paymentId: paymentData.paymentId,
         amount: totalAmount,
-        orderId: cart.order_id
+        orderId: cart.order_id,
       });
-
     } catch (error) {
-      console.error("Create checkout session error:", error.message);
       next(error);
     }
   },
 
-  // New method for Flutter app to poll payment status
   checkPaymentStatus: async (req, res, next) => {
     try {
       const userId = req.user.user_id;
@@ -660,57 +647,50 @@ const cartController = {
         throw new BadRequestError("Order ID is required");
       }
 
-      // Get the cart/order
       const cart = await CartRepository.findById(orderId);
       if (!cart) {
         throw new NotFoundError("Order not found");
       }
 
-      // Make sure the order belongs to the user
       if (cart.user_id !== userId) {
-        throw new BadRequestError("You do not have permission to view this order");
+        throw new BadRequestError("Unauthorized access to order");
       }
 
-      // Check if an order record exists (created by webhook)
       let order = await OrderRepository.findOne({
-        where: { cart_order_id: orderId }
+        where: { cart_order_id: orderId },
       });
 
-      let paymentStatus = 'pending';
-      let orderStatus = 'pending';
+      let paymentStatus = "pending";
+      let orderStatus = "pending";
       let paymentDetails = null;
 
       if (order) {
-        // Order exists, payment was successful
-        paymentStatus = 'paid';
-        orderStatus = 'completed'; 
-        const statusHistory = await OrderStatusHistoryRepository.findLatestByOrderId(order.id);
+        paymentStatus = "paid";
+        orderStatus = "completed";
+        const statusHistory =
+          await OrderStatusHistoryRepository.findLatestByOrderId(order.id);
         if (statusHistory) {
           orderStatus = statusHistory.status;
         }
       } else if (paymentId) {
-        // No order yet, check with MyFatoorah
         try {
           const paymentData = await myFatoorahService.verifyPayment(paymentId);
           paymentDetails = paymentData;
 
-          if (paymentData.status === 'Paid') {
-            paymentStatus = 'paid';
-            // Since payment is confirmed paid and no order exists, create it now.
-            console.log(`Payment confirmed for cart ${orderId}, but no order found. Creating order now.`);
-            order = await OrderRepository.createFromPaidCart(orderId, paymentData);
-            orderStatus = 'pending'; // The initial status upon creation
-          } else {
-            paymentStatus = 'pending';
+          if (paymentData.status === "Paid") {
+            paymentStatus = "paid";
+            order = await OrderRepository.createFromPaidCart(
+              orderId,
+              paymentData
+            );
+            orderStatus = "pending";
           }
         } catch (error) {
-          console.error('Error verifying payment with MyFatoorah:', error.message);
-          paymentStatus = 'pending';
+          console.error("Payment verification error:", error);
         }
       }
 
-      // Return status information for Flutter app
-      return res.success("Payment status retrieved successfully", {
+      res.json({
         orderId: orderId,
         paymentId: paymentId,
         cartStatus: cart.status,
@@ -718,9 +698,26 @@ const cartController = {
         orderStatus: orderStatus,
         orderExists: !!order,
         paymentDetails: paymentDetails,
-        amount: cart.totalPice || 0
+        amount: cart.totalPrice || 0,
       });
+    } catch (error) {
+      next(error);
+    }
+  },
 
+  getPaymentUrl: async (req, res, next) => {
+    try {
+      const { paymentId } = req.query;
+
+      if (!paymentId) {
+        throw new BadRequestError("Payment ID is required");
+      }
+
+      const paymentUrl = await myFatoorahService.getPaymentUrl(paymentId);
+
+      res.json({
+        paymentUrl,
+      });
     } catch (error) {
       next(error);
     }

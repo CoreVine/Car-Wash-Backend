@@ -79,95 +79,42 @@ const productController = {
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 10;
 
-      // If category_id is specifically provided without sub_category_id
-      if (req.query.category_id && !req.query.sub_category_id) {
-        const categoryId = req.query.category_id;
+      const { category_id, sub_category_id, min_price, max_price, search } =
+        req.query;
 
-        // Check if category exists
-        const category = await CategoryRepository.findById(categoryId);
-
+      // ✅ تحقق من صلاحية الفئة أو الفئة الفرعية إذا كانت موجودة
+      if (category_id) {
+        const category = await CategoryRepository.findById(category_id);
         if (!category) {
           throw new NotFoundError("Category not found");
         }
-
-        // Use the repository method to get products by category ID with images
-        const productAssociations =
-          await SubCatProductRepository.findByCategoryId(categoryId, {
-            limit,
-            offset: (page - 1) * limit,
-            singleProduct: false, // Indicate we want one image per product
-          });
-
-        // Extract products from associations
-        const products = productAssociations.map((assoc) => assoc.product);
-
-        // Count total products for pagination
-        const totalCount = await SubCatProductRepository.model.count({
-          include: [
-            {
-              association: "subCategory",
-              where: { category_id: categoryId },
-            },
-          ],
-        });
-
-        const pagination = createPagination(page, limit, totalCount);
-
-        return res.success(
-          "Products retrieved successfully",
-          products,
-          pagination
-        );
       }
 
-      // If sub_category_id is specifically provided
-      if (req.query.sub_category_id) {
-        const subCategoryId = req.query.sub_category_id;
-
-        // Check if subcategory exists
-        const subCategory = await SubCategoryRepository.findById(subCategoryId);
-
+      if (sub_category_id) {
+        const subCategory = await SubCategoryRepository.findById(
+          sub_category_id
+        );
         if (!subCategory) {
           throw new NotFoundError("Subcategory not found");
         }
-
-        // Use the repository method to get products by subcategory ID with images
-        const productAssociations =
-          await SubCatProductRepository.findBySubCategoryId(subCategoryId, {
-            limit,
-            offset: (page - 1) * limit,
-            singleProduct: false, // Indicate we want one image per product
-          });
-
-        // Extract products from associations
-        const products = productAssociations.map((assoc) => assoc.product);
-
-        // Count total products for pagination
-        const totalCount = await SubCatProductRepository.model.count({
-          where: { sub_category_id: subCategoryId },
-        });
-
-        const pagination = createPagination(page, limit, totalCount);
-
-        return res.success(
-          "Products retrieved successfully",
-          products,
-          pagination
-        );
       }
 
-      // For all other cases, modify the general filtering approach to include images
+      // ✅ استخدام الفلترة العامة التي تدعم جميع المعايير
       const { count, rows } = await ProductRepository.findProductsWithFilters({
         page,
         limit,
-        min_price: req.query.min_price,
-        max_price: req.query.max_price,
-        search: req.query.search,
+        category_id,
+        sub_category_id,
+        min_price,
+        max_price,
+        search,
         imageLimit: 1, // Limit to one image per product
       });
 
+      // ✅ إنشاء معلومات التصفح (pagination)
       const pagination = createPagination(page, limit, count);
 
+      // ✅ الإرجاع الناجح
       return res.success("Products retrieved successfully", rows, pagination);
     } catch (error) {
       next(error);
