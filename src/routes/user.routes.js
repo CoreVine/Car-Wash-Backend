@@ -33,9 +33,7 @@ const userUpdateSchema = Yup.object().shape({
   address: Yup.string(),
   profile_picture_url: Yup.string().nullable(),
   oldPassword: Yup.string().min(8),
-  password: Yup.string()
-    .min(8)
-    .required(),
+  password: Yup.string().min(8),
 });
 
 const userIdParamSchema = Yup.object().shape({

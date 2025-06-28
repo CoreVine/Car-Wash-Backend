@@ -12,9 +12,6 @@ const OrderRepository = require("../data-access/orders");
 const OrderStatusHistoryRepository = require("../data-access/order-status-histories");
 require("dotenv").config();
 
-// FUTURE FU-001
-// const CustomerCarRepository = require('../data-access/customer-cars');
-const { Op } = require("sequelize");
 const {
   BadRequestError,
   NotFoundError,
@@ -38,12 +35,12 @@ const cartController = {
       // Get cart with items, car wash orders, rental orders, and car orders
       cart = await CartRepository.findCartWithItems(cart.order_id);
       let totalPrice = cart.orderItems.reduce((total, item) => {
-        return Number(total + item.price);
+        return total + Number(item.price);
       }, 0);
 
       if (cart.carWashOrder && cart.carWashOrder.washTypes) {
         totalPrice += cart.carWashOrder.washTypes.reduce((total, type) => {
-          return Number(total + type.price);
+          return total + Number(type.price);
         }, 0);
       }
 
@@ -54,12 +51,12 @@ const cartController = {
             (1000 * 60 * 60 * 24)
         );
 
-        totalPrice += Number(cart.rentalOrder.car.price * days);
+        totalPrice += Number(cart.rentalOrder.car.price) * days;
       }
 
       cart = {
         ...cart.toJSON(),
-        totalPrice,
+        totalPrice: Number(totalPrice.toFixed(2))
       };
       return res.success("Cart retrieved successfully", cart);
     } catch (error) {
