@@ -82,7 +82,7 @@ const exhibitionIdParamSchema = Yup.object().shape({
 
 // Configure uploaders for car images
 const carImageUploader = createUploader({
-  storageType: process.env.STORAGE_TYPE || "disk",
+  storageType: process.env.STORAGE_TYPE || "cloudinary",
   uploadPath: "uploads/car-images",
   fileFilter: "images",
   fileSize: 5 * 1024 * 1024, // 5MB limit
@@ -106,6 +106,8 @@ carRoutes.post(
 
 carRoutes.get(
   "/cars",
+  authMiddleware,
+  // anyOf(isCompanyMiddleware),
   validate(carFilterSchema, "query"),
   carController.getCars
 );
@@ -117,6 +119,7 @@ carRoutes.get(
 
 carRoutes.get(
   "/cars/:carId",
+
   validate(carIdParamSchema, "params"),
   carController.getCar
 );

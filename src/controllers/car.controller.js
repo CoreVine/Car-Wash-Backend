@@ -125,7 +125,7 @@ const carController = {
         );
       }
 
-      const car = await CarRepository.findByPk(carId);
+      const car = await CarRepository.findById(carId);
 
       if (!car) {
         throw new NotFoundError("Car not found");
@@ -224,7 +224,7 @@ const carController = {
         throw new BadRequestError("No images uploaded");
       }
 
-      const car = await CarRepository.findByPk(carId);
+      const car = await CarRepository.findById(carId);
 
       if (!car) {
         throw new NotFoundError("Car not found");
@@ -239,7 +239,11 @@ const carController = {
 
       // Prepare image records
       const imageRecords = req.files.map((file) => ({
-        image_url: getRelativePath(file.path, "car-images"),
+        // image_url: getRelativePath(file.path, "car-images"),
+        image_url:
+          file.url ||
+          file.public_id ||
+          getRelativePath(req.file.path, "car-images"),
       }));
 
       // Use repository method to handle the transaction
@@ -265,10 +269,11 @@ const carController = {
           car_id: carId,
         },
         include: [
-          {
-            model: Car,
-            as: "car",
-          },
+          "car",
+          // {
+          //   model: "cars",
+          //   // as: "car",
+          // },
         ],
       });
 

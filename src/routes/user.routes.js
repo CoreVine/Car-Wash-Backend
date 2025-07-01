@@ -15,15 +15,16 @@ const userRoutes = Router();
 const userCreateSchema = Yup.object().shape({
   name: Yup.string().required(),
   email: Yup.string().email().required(),
-  password: Yup.string().min(8)
+  password: Yup.string()
+    .min(8)
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
     )
     .required(),
   phone_number: Yup.string(),
   address: Yup.string(),
-  profile_picture_url: Yup.string().nullable()
+  profile_picture_url: Yup.string().nullable(),
 });
 
 const userUpdateSchema = Yup.object().shape({
@@ -33,132 +34,124 @@ const userUpdateSchema = Yup.object().shape({
   address: Yup.string(),
   profile_picture_url: Yup.string().nullable(),
   oldPassword: Yup.string().min(8),
-  password: Yup.string()
-    .min(8)
-    .required(),
+  password: Yup.string().min(8).required(),
 });
 
 const userIdParamSchema = Yup.object().shape({
-  userId: Yup.number().integer().positive().required()
+  userId: Yup.number().integer().positive().required(),
 });
 
 const idParamSchema = Yup.object().shape({
-  id: Yup.number().integer().positive().required()
+  id: Yup.number().integer().positive().required(),
 });
 
 const paginationQuerySchema = Yup.object().shape({
   page: Yup.number().integer().positive().default(1),
-  limit: Yup.number().integer().positive().default(10)
+  limit: Yup.number().integer().positive().default(10),
 });
 
 // Create profile picture uploader with specific configuration
 const profilePictureUploader = createUploader({
-  storageType: 'disk', // or 's3' if you prefer AWS S3
-  uploadPath: 'uploads/profile-pictures',
-  fileFilter: 'images',
+  storageType: "disk", // or 's3' if you prefer AWS S3
+  uploadPath: "uploads/profile-pictures",
+  fileFilter: "images",
   fileSize: 5 * 1024 * 1024, // 5MB
-  fileNamePrefix: 'profile'
+  fileNamePrefix: "profile",
 });
 
 // Routes for the old controller methods (now updated)
 userRoutes.post(
-  "/user", 
-  authMiddleware, 
-  isAdminMiddleware, 
+  "/user",
+  authMiddleware,
+  isAdminMiddleware,
   validate(userCreateSchema),
   userController.add
 );
 
-userRoutes.get(
-  "/user", 
-  authMiddleware, 
-  isAdminMiddleware,
-  userController.get
-);
+userRoutes.get("/user", authMiddleware, isAdminMiddleware, userController.get);
 
 userRoutes.get(
-  "/user/paginated", 
-  authMiddleware, 
-  isAdminMiddleware, 
-  validate(paginationQuerySchema, 'query'),
+  "/user/paginated",
+  authMiddleware,
+  isAdminMiddleware,
+  validate(paginationQuerySchema, "query"),
   userController.getPaginated
 );
 
 userRoutes.get(
-  "/user/:id", 
-  authMiddleware, 
-  validate(idParamSchema, 'params'),
+  "/user/:id",
+  authMiddleware,
+  validate(idParamSchema, "params"),
   userController.find
 );
 
 userRoutes.put(
-  "/user/:id", 
-  authMiddleware, 
+  "/user/:id",
+  authMiddleware,
   validate({
     body: userUpdateSchema,
-    params: idParamSchema
+    params: idParamSchema,
   }),
   userController.update
 );
 
 userRoutes.delete(
-  "/user/:id", 
-  authMiddleware, 
+  "/user/:id",
+  authMiddleware,
   anyOf(isSelfAuthorizedMiddleware, isAdminMiddleware),
-  validate(idParamSchema, 'params'),
+  validate(idParamSchema, "params"),
   userController.delete
 );
 
 // New API routes
 userRoutes.get(
-  "/users", 
-  authMiddleware, 
-  isAdminMiddleware, 
+  "/users",
+  authMiddleware,
+  isAdminMiddleware,
   userController.getAllUsers
 );
 
 userRoutes.get(
-  "/users/:userId", 
-  authMiddleware, 
-  validate(userIdParamSchema, 'params'),
+  "/users/:userId",
+  authMiddleware,
+  validate(userIdParamSchema, "params"),
   userController.getUser
 );
 
 userRoutes.put(
-  "/users/:userId", 
-  authMiddleware, 
+  "/users/:userId",
+  authMiddleware,
   validate({
     body: userUpdateSchema,
-    params: userIdParamSchema
+    params: userIdParamSchema,
   }),
   userController.updateUser
 );
 
 // Updated profile picture routes with file upload
 userRoutes.post(
-  "/users/:userId/profile-picture", 
-  authMiddleware, 
-  validate(userIdParamSchema, 'params'),
-  profilePictureUploader.single('profileImage'),
+  "/users/:userId/profile-picture",
+  authMiddleware,
+  validate(userIdParamSchema, "params"),
+  profilePictureUploader.single("profileImage"),
   multerErrorHandler,
   userController.uploadProfilePicture
 );
 
 userRoutes.put(
-  "/users/:userId/profile-picture", 
+  "/users/:userId/profile-picture",
   authMiddleware,
-  validate(userIdParamSchema, 'params'),
-  profilePictureUploader.single('profileImage'),
+  validate(userIdParamSchema, "params"),
+  profilePictureUploader.single("profileImage"),
   multerErrorHandler,
   userController.updateProfilePicture
 );
 
 userRoutes.delete(
-  "/users/:userId/profile-picture", 
+  "/users/:userId/profile-picture",
   authMiddleware,
-  validate(userIdParamSchema, 'params'),
+  validate(userIdParamSchema, "params"),
   userController.deleteProfilePicture
 );
 
 module.exports = userRoutes;
-
