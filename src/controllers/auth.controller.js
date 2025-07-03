@@ -29,7 +29,7 @@ const authController = {
           password: Yup.string().min(8).required(),
           phone_number: Yup.string().required(),
           location: Yup.string().required(),
-          logo_url: Yup.string().required(),
+          // logo_url: Yup.string().required(),
           about: Yup.string().required(),
         });
         const validationErrors = await companySchema

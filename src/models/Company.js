@@ -29,7 +29,8 @@ class Company extends Model {
         },
         logo_url: {
           type: DataTypes.STRING(255),
-          allowNull: false,
+          defaultValue: "",
+          allowNull: true,
         },
         password_hash: {
           type: DataTypes.STRING(255),
@@ -74,8 +75,8 @@ class Company extends Model {
 
   static associate(models) {
     this.hasMany(models.CompanyDocument, {
-      foreignKey: 'company_id',
-      as: 'documents'
+      foreignKey: "company_id",
+      as: "documents",
     });
     this.hasMany(models.Order, {
       foreignKey: "company_id",

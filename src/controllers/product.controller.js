@@ -328,6 +328,9 @@ const productController = {
       const { id } = req.params;
       const category = await CategoryRepository.findById(id);
 
+      if (!category) {
+        throw new NotFoundError("Category not found");
+      }
       return res.success("category retrieved successfully", category);
     } catch (error) {
       next(error);
